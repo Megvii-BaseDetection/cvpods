@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Modified by BaseDetection group. All Rights Reserved
 
 import glob
 import os
@@ -117,23 +118,34 @@ def get_model_zoo_configs() -> List[str]:
     return config_paths
 
 
-cur_dir = os.getcwd()
-with open("tools/pods_train", "w") as cvpack_train:
-    cvpack_train.write(
-        f"python3 {os.path.join(cur_dir, 'tools', 'train_net.py')} $@")
-with open("tools/pods_test", "w") as pods_test:
-    pods_test.write(
-        f"python3 {os.path.join(cur_dir, 'tools', 'test_net.py')} $@")
+def build_cvpods_script():
+    cur_dir = os.getcwd()
+    head = "#!/bin/bash\n\nexport OMP_NUM_THREADS=1\n\n"
+    with open("tools/pods_train", "w") as pods_train:
+        pods_train.write(head + f"python3 {os.path.join(cur_dir, 'tools', 'train_net.py')} $@")
 
-setup(
-    name="cvpods",
-    version=get_version(),
-    author="BaseDetection",
-    description="cvpods is BaseDetection's research "
-    "platform for object detection and segmentation based on cvpods.",
-    packages=find_packages(exclude=("configs", "tests")),
-    python_requires=">=3.6",
-    ext_modules=get_extensions(),
-    cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
-    scripts=["tools/pods_train", "tools/pods_test"],
-)
+    with open("tools/pods_test", "w") as pods_test:
+        pods_test.write(head + f"python3 {os.path.join(cur_dir, 'tools', 'test_net.py')} $@")
+
+    with open("tools/pods_debug", "w") as pods_debug:
+        pods_debug.write(head + f"python3 {os.path.join(cur_dir, 'tools', 'debug_net.py')} $@")
+
+
+if __name__ == "__main__":
+    build_cvpods_script()
+    setup(
+        name="cvpods",
+        version=get_version(),
+        author="BaseDetection",
+        description="cvpods is BaseDetection's research "
+        "platform for object detection and segmentation based on cvpods.",
+        packages=find_packages(exclude=("configs", "tests")),
+        python_requires=">=3.6",
+        ext_modules=get_extensions(),
+        cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
+        scripts=[
+            "tools/pods_train",
+            "tools/pods_test",
+            "tools/pods_debug",
+        ],
+    )
