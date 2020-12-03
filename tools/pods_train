@@ -1,1 +1,0 @@
-python3 /data/repos/cvpods/tools/train_net.py $@
