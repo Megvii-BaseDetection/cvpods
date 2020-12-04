@@ -254,11 +254,11 @@ class ConfigDict(dict):
         """
         def update_helper(d, u):
             for k, v in six.iteritems(u):
-                if isinstance(v, collectionsAbc.Mapping):
-                    dv = d.get(k, EasyDict())
-                    if not dv:
-                        dv = EasyDict()
-                    setattr(d, k, update_helper(dv, v))
+                dv = d.get(k, EasyDict())
+                if not isinstance(dv, collectionsAbc.Mapping):
+                    d[k] = v
+                elif isinstance(v, collectionsAbc.Mapping):
+                    d[k] = update_helper(dv, v)
                 else:
                     d[k] = v
             return d
