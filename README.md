@@ -75,6 +75,7 @@ For all the models supported by cvpods, please refer to [MODEL_ZOO](https://gith
 * [DynamicHead](https://github.com/StevenGrove/DynamicHead)
 * [DynamicRouting](https://github.com/Megvii-BaseDetection/DynamicRouting)
 * [LearnableTreeFilterV2](https://github.com/StevenGrove/LearnableTreeFilterV2)
+* [SelfSup](https://github.com/poodarchu/SelfSup)
 
 
 ## Acknowledgement
