@@ -42,6 +42,8 @@ __all__ = [
     # Transform used in ssl
     "LightningTransform",
     "GaussianBlurTransform",
+    "GaussianBlurConvTransform",
+    "SolarizationTransform",
     "ComposeTransform",
     "JigsawCropTransform",
     "LabSpaceTransform",
@@ -807,6 +809,68 @@ class GaussianBlurTransform(Transform):
             sigma = random.uniform(self.sigma[0], self.sigma[1])
             img = Image.fromarray(img).filter(ImageFilter.GaussianBlur(radius=sigma))
         return np.array(img)
+
+    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
+        return coords
+
+
+class SolarizationTransform(Transform):
+    def __init__(self, thresh=128, p=0.5):
+        super().__init__()
+        self.thresh = thresh
+        self.p = p
+
+    def apply_image(self, img: np.ndarray) -> np.ndarray:
+        if np.random.random() > self.p:
+            return np.array(ImageOps.solarize(Image.fromarray(img), self.thresh))
+        else:
+            return img
+
+    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
+        return coords
+
+
+class GaussianBlurConvTransform(Transform):
+    def __init__(self, kernel_size, p=1.0):
+        super().__init__()
+        self._set_attributes(locals())
+        radias = kernel_size // 2
+        kernel_size = radias * 2 + 1
+        self.blur_h = torch.nn.Conv2d(3, 3, kernel_size=(kernel_size, 1),
+                                      stride=1, padding=0, bias=False, groups=3)
+        self.blur_v = torch.nn.Conv2d(3, 3, kernel_size=(1, kernel_size),
+                                      stride=1, padding=0, bias=False, groups=3)
+        self.k = kernel_size
+        self.r = radias
+
+        self.blur = torch.nn.Sequential(
+            torch.nn.ReflectionPad2d(radias),
+            self.blur_h,
+            self.blur_v
+        )
+
+        self.pil_to_tensor = transforms.ToTensor()
+        self.tensor_to_pil = transforms.ToPILImage()
+
+    def apply_image(self, img: np.ndarray) -> np.ndarray:
+        if np.random.random() > self.p:
+            img = self.pil_to_tensor(Image.fromarray(img)).unsqueeze(0)
+
+            sigma = np.random.uniform(0.1, 2.0)
+            x = np.arange(-self.r, self.r + 1)
+            x = np.exp(-np.power(x, 2) / (2 * sigma * sigma))
+            x = x / x.sum()
+            x = torch.from_numpy(x).view(1, -1).repeat(3, 1)
+
+            self.blur_h.weight.data.copy_(x.view(3, 1, self.k, 1))
+            self.blur_v.weight.data.copy_(x.view(3, 1, 1, self.k))
+
+            with torch.no_grad():
+                img = self.blur(img)
+                img = img.squeeze()
+
+            img = np.array(self.tensor_to_pil(img))
+        return img
 
     def apply_coords(self, coords: np.ndarray) -> np.ndarray:
         return coords
