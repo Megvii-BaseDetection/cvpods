@@ -374,6 +374,9 @@ class DefaultTrainer(SimpleTrainer):
         # TODO: @wangfeng02, `batch_subdivisions`
         super().__init__(model, data_loader, optimizer, cfg.SOLVER.BATCH_SUBDIVISIONS)
 
+        if not cfg.SOLVER.LR_SCHEDULER.get("EPOCH_WISE", False):
+            epoch_iters = -1
+
         self.scheduler = self.build_lr_scheduler(
             cfg, optimizer, epoch_iters=epoch_iters)
         # Assume no other objects need to be checkpointed.
