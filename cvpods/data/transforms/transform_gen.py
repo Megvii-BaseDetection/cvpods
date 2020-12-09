@@ -35,6 +35,8 @@ from .transform import (  # isort:skip
     ResizeTransform,
     # Transforms used in ssl
     GaussianBlurTransform,
+    GaussianBlurConvTransform,
+    SolarizationTransform,
     LightningTransform,
     ComposeTransform,
     TorchTransform,
@@ -73,6 +75,8 @@ __all__ = [
     "TorchTransformGen",
     # transforms used in ssl
     "GaussianBlur",
+    "GaussianBlurConv",
+    "Solarization",
     "Lightning",
     "RandomFiveCrop",
     "AutoAugment",
@@ -366,6 +370,26 @@ class GaussianBlur(TransformGen):
 
     def get_transform(self, img, annotations=None):
         return GaussianBlurTransform(self.sigma, self.p)
+
+
+@TRANSFORMS.register()
+class Solarization(TransformGen):
+    def __init__(self, threshold=128, p=0.5):
+        super().__init__()
+        self._init(locals())
+
+    def get_transform(self, img, annotations=None):
+        return SolarizationTransform(self.threshold, self.p)
+
+
+@TRANSFORMS.register()
+class GaussianBlurConv(TransformGen):
+    def __init__(self, kernel_size, p):
+        super().__init__()
+        self._init(locals())
+
+    def get_transform(self, img, annotations=None):
+        return GaussianBlurConvTransform(self.kernel_size, self.p)
 
 
 @TRANSFORMS.register()
