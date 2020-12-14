@@ -72,6 +72,7 @@ For all the models supported by cvpods, please refer to [MODEL_ZOO](https://gith
 
 * [AutoAssign](https://github.com/Megvii-BaseDetection/AutoAssign)
 * [BorderDet](https://github.com/Megvii-BaseDetection/BorderDet)
+* [DeFCN](https://github.com/Megvii-BaseDetection/DeFCN)
 * [DynamicHead](https://github.com/StevenGrove/DynamicHead)
 * [DynamicRouting](https://github.com/Megvii-BaseDetection/DynamicRouting)
 * [LearnableTreeFilterV2](https://github.com/StevenGrove/LearnableTreeFilterV2)
