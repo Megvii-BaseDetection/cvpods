@@ -209,12 +209,12 @@ class SimpleTrainer(TrainerBase):
                     # Actually, some metrics are not loss, such as
                     # top1_acc, top5_acc in classification, filter them out
                     if metrics_value.requires_grad:
-                        loss_dict[metrics_name] = metrics_value
+                        loss_dict[metrics_name] = metrics_value / self.batch_subdivisions
 
                 losses = sum([
                     metrics_value for metrics_value in loss_dict.values()
                     if metrics_value.requires_grad
-                ]) / self.batch_subdivisions
+                ])
                 self._detect_anomaly(losses, loss_dict)
 
                 # only in last subdivision iter, DDP needs to backward with sync
@@ -352,7 +352,7 @@ class DefaultTrainer(SimpleTrainer):
         self.start_iter = 0
 
         data_loader = self.build_train_loader(cfg)
-        epoch_iters = adjust_epoch_and_iter(cfg, data_loader)
+        maybe_adjust_epoch_and_iter(cfg, data_loader)
         self.max_iter = cfg.SOLVER.LR_SCHEDULER.MAX_ITER
         self.max_epoch = cfg.SOLVER.LR_SCHEDULER.MAX_EPOCH
 
@@ -376,6 +376,9 @@ class DefaultTrainer(SimpleTrainer):
 
         if not cfg.SOLVER.LR_SCHEDULER.get("EPOCH_WISE", False):
             epoch_iters = -1
+        else:
+            epoch_iters = cfg.SOLVER.LR_SCHEDULER.get("EPOCH_ITERS")
+            logger.warning(f"Setup LR Scheduler in EPOCH mode: {epoch_iters}")
 
         self.scheduler = self.build_lr_scheduler(
             cfg, optimizer, epoch_iters=epoch_iters)
@@ -604,12 +607,19 @@ class DefaultTrainer(SimpleTrainer):
         return results
 
 
-def adjust_epoch_and_iter(cfg, dataloader):
+def maybe_adjust_epoch_and_iter(cfg, dataloader):
     logger = logging.getLogger(__name__)
+
     max_epoch = cfg.SOLVER.LR_SCHEDULER.MAX_EPOCH
     max_iter = cfg.SOLVER.LR_SCHEDULER.MAX_ITER
+
+    subdivision = cfg.SOLVER.BATCH_SUBDIVISIONS
+    # adjust lr by batch_subdivisions
+    cfg.SOLVER.OPTIMIZER.BASE_LR *= subdivision
+
     if max_epoch:
-        epoch_iter = math.ceil(len(dataloader.dataset) / (cfg.SOLVER.IMS_PER_BATCH))
+        epoch_iter = math.ceil(len(dataloader.dataset) /
+                               (cfg.SOLVER.IMS_PER_BATCH * subdivision))
 
         if max_iter is not None:
             logger.warning(
@@ -627,4 +637,4 @@ def adjust_epoch_and_iter(cfg, dataloader):
     else:
         epoch_iter = -1
 
-    return epoch_iter
+    cfg.SOLVER.LR_SCHEDULER.EPOCH_ITERS = epoch_iter
