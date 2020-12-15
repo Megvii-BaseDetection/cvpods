@@ -50,7 +50,7 @@ class DETR(nn.Module):
         self.position_embedding = position_encoding_dict[cfg.MODEL.DETR.POSITION_EMBEDDING](
             num_pos_feats=hidden_dim // 2,
             temperature=cfg.MODEL.DETR.TEMPERATURE,
-            normalize=True if cfg.MODEL.DETR.POSITION_EMBEDDING else False,
+            normalize=True if cfg.MODEL.DETR.POSITION_EMBEDDING == "sine" else False,
             scale=None,
         )
 
