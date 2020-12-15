@@ -113,7 +113,7 @@ _config_dict = dict(
             GAMMA=0.1,
         ),
         OPTIMIZER=dict(
-            NAME="SGD",
+            NAME="D2SGD",
             BASE_LR=0.001,
             # Detectron v1 (and previous detection code) used a 2x higher LR and 0 WD for biases.
             # This is not useful (at least for recent models). You should avoid
