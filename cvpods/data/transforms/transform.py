@@ -767,7 +767,7 @@ class BoxJitterTransform(Transform):
         Returns:
             ndarray: the jittered coordinates.
         """
-        if np.random.random() > self.p:
+        if np.random.random() < self.p:
             coords = coords.reshape(-1, 4, 2)
             for coord in coords:
                 coord[:, 0] += np.random.randint(-self.ratio, high=self.ratio)
@@ -805,7 +805,7 @@ class GaussianBlurTransform(Transform):
         self._set_attributes(locals())
 
     def apply_image(self, img: np.ndarray) -> np.ndarray:
-        if np.random.random() > self.p:
+        if np.random.random() < self.p:
             sigma = random.uniform(self.sigma[0], self.sigma[1])
             img = Image.fromarray(img).filter(ImageFilter.GaussianBlur(radius=sigma))
         return np.array(img)
@@ -821,7 +821,7 @@ class SolarizationTransform(Transform):
         self.p = p
 
     def apply_image(self, img: np.ndarray) -> np.ndarray:
-        if np.random.random() > self.p:
+        if np.random.random() < self.p:
             return np.array(ImageOps.solarize(Image.fromarray(img), self.thresh))
         else:
             return img
@@ -853,7 +853,7 @@ class GaussianBlurConvTransform(Transform):
         self.tensor_to_pil = transforms.ToPILImage()
 
     def apply_image(self, img: np.ndarray) -> np.ndarray:
-        if np.random.random() > self.p:
+        if np.random.random() < self.p:
             img = self.pil_to_tensor(Image.fromarray(img)).unsqueeze(0)
 
             sigma = np.random.uniform(0.1, 2.0)
