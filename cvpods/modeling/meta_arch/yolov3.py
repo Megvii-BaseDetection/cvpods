@@ -325,9 +325,9 @@ class YOLOHead(nn.Module):
         LongTensor = lambda x: torch.LongTensor(x).to(pred_cls.device) # noqa
 
         # Calculate offsets for each grid
-        grid_x = FloatTensor(torch.linspace(0, in_w - 1, in_w).repeat(in_w, 1).repeat(
+        grid_x = FloatTensor(torch.linspace(0, in_w - 1, in_w).repeat(in_h, 1).repeat(
             bs * self.num_anchors, 1, 1).view(x.shape))
-        grid_y = FloatTensor(torch.linspace(0, in_h - 1, in_h).repeat(in_h, 1).t().repeat(
+        grid_y = FloatTensor(torch.linspace(0, in_h - 1, in_h).repeat(in_w, 1).t().repeat(
             bs * self.num_anchors, 1, 1).view(y.shape))
         # Calculate anchor w, h
         anchor_w = FloatTensor(scaled_anchors).index_select(1, LongTensor([0]))
