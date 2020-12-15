@@ -33,7 +33,6 @@ __all__ = [
     "NoOpTransform",
     "ScaleTransform",
     "DistortTransform",
-    "BoxJitterTransform",
     "Transform",
     "TransformList",
     "ExtentTransform",
@@ -744,37 +743,6 @@ class VFlipTransform(Transform):
         """
         coords[:, 1] = self.height - coords[:, 1]
         return coords
-
-
-class BoxJitterTransform(Transform):
-    """
-    A transofrm that perform gt box jittering without changing the image.
-    """
-    def __init__(self, p: float = 0.0, ratio: int = 0):
-        super().__init__()
-        self._set_attributes(locals())
-
-    def apply_image(self, img: np.ndarray) -> np.ndarray:
-        return img
-
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        """
-        Jitter the coordinates.
-
-        Args:
-            coords (ndarray): floating point array of shape Nx2. Each row is
-                (x, y).
-        Returns:
-            ndarray: the jittered coordinates.
-        """
-        if np.random.random() < self.p:
-            coords = coords.reshape(-1, 4, 2)
-            for coord in coords:
-                coord[:, 0] += np.random.randint(-self.ratio, high=self.ratio)
-                coord[:, 1] += np.random.randint(-self.ratio, high=self.ratio)
-            return coords.reshape(-1, 2)
-        else:
-            return coords
 
 
 class NoOpTransform(Transform):

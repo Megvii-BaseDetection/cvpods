@@ -28,7 +28,6 @@ from .transform import (  # isort:skip
     NoOpTransform,
     VFlipTransform,
     DistortTransform,
-    BoxJitterTransform,
     RandomSwapChannelsTransform,
     ExpandTransform,
     ExtentTransform,
@@ -64,7 +63,6 @@ __all__ = [
     "RandomSaturation",
     "RandomLighting",
     "RandomDistortion",
-    "RandomBoxJitter",
     "Resize",
     "ResizeShortestEdge",
     "ResizeLongestEdge",
@@ -333,25 +331,6 @@ class CenterAffine(TransformGen):
         dst[2, :] = dst[1, :] + (dst_dir[1], -dst_dir[0])
 
         return src, dst
-
-
-@TRANSFORMS.register()
-class RandomBoxJitter(TransformGen):
-    """
-    Random jitter bounding box without changing image.
-    """
-
-    def __init__(self, p: float = 0.0, ratio: int = 0):
-        """
-        Args:
-            p (float): probability of performing jitter
-            ratio (int): offsets along x and y axis in pixels.
-        """
-        super().__init__()
-        self._init(locals())
-
-    def get_transform(self, img, annotations=None):
-        return BoxJitterTransform(self.p, self.ratio)
 
 
 @TRANSFORMS.register()
