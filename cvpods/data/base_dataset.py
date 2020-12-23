@@ -94,7 +94,7 @@ class BaseDataset(Dataset):
     def _read_data(self, file_name):
         return read_image(file_name, format=self.data_format)
 
-    def _apply_transforms(self, image, annotations=None):
+    def _apply_transforms(self, image, annotations=None, **kwargs):
         """
         Apply a list of :class:`TransformGen` on the input image, and
         returns the transformed image and a list of transforms.
@@ -119,12 +119,12 @@ class BaseDataset(Dataset):
                 img = deepcopy(image)
                 annos = deepcopy(annotations)
                 for tfm in tfms:
-                    img, annos = tfm(img, annos)
+                    img, annos = tfm(img, annos, **kwargs)
                 dataset_dict[key] = (img, annos)
             return dataset_dict, None
         else:
             for tfm in self.transforms:
-                image, annotations = tfm(image, annotations)
+                image, annotations = tfm(image, annotations, **kwargs)
 
             return image, annotations
 

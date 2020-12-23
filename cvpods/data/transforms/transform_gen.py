@@ -125,10 +125,10 @@ class TransformGen(metaclass=ABCMeta):
 
     @abstractmethod
     def get_transform(self, img, annotations=None):
-        pass
+        raise NotImplementedError
 
-    def __call__(self, img, annotations=None):
-        return self.get_transform(img, annotations)(img, annotations)
+    def __call__(self, img, annotations=None, **kwargs):
+        return self.get_transform(img, annotations)(img, annotations, **kwargs)
 
     def _rand_range(self, low=1.0, high=None, size=None):
         """
@@ -1147,11 +1147,11 @@ class RepeatList(TransformGen):
     def get_transform(self, img, annotations=None):
         return ComposeTransform(self.transforms)
 
-    def __call__(self, img, annotations=None):
+    def __call__(self, img, annotations=None, **kwargs):
         repeat_imgs = []
         repeat_annotations = []
         for t in range(self.times):
-            tmp_img, tmp_anno = self.get_transform(img)(img, annotations)
+            tmp_img, tmp_anno = self.get_transform(img)(img, annotations, **kwargs)
             repeat_imgs.append(tmp_img)
             repeat_annotations.append(tmp_anno)
         repeat_imgs = np.stack(repeat_imgs, axis=0)
@@ -1176,6 +1176,6 @@ class JigsawCrop(TransformGen):
     def get_transform(self, img, annotations=None):
         return JigsawCropTransform(self.n_grid, self.img_size, self.crop_size)
 
-    def __call__(self, img, annotations=None):
-        crops, annos = self.get_transform(img)(img, annotations)
+    def __call__(self, img, annotations=None, **kwargs):
+        crops, annos = self.get_transform(img)(img, annotations, **kwargs)
         return np.stack(crops, axis=0), annos
