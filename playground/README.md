@@ -20,7 +20,7 @@
   * [Panoptic Segmentation](#panoptic-segmentation)
   * [Key\-Points](#key-points)
     + [COCO_PERSON](#coco_person)
-      - [Keypoint\-RCNN](#faster-r-cnn)
+      - [Keypoint\-RCNN](#keypoint-rcnn)
   * [3D](#3D)
 
 # Model Zoo
