@@ -41,6 +41,4 @@ wheels/
 # project dirs
 /datasets
 /models
-/cvpods_playground
-/playground
 tools/pods_*
