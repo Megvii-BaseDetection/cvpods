@@ -55,31 +55,31 @@ _PREDEFINED_SPLITS_COCO["coco"] = {
 }
 
 _PREDEFINED_SPLITS_COCO["coco_person"] = {
-    "coco_keypoints_2014_train": (
+    "coco_person_keypoints_2014_train": (
         "coco/train2014",
         "coco/annotations/person_keypoints_train2014.json",
     ),
-    "coco_keypoints_2014_val":
+    "coco_person_keypoints_2014_val":
     ("coco/val2014", "coco/annotations/person_keypoints_val2014.json"),
-    "coco_keypoints_2014_minival": (
+    "coco_person_keypoints_2014_minival": (
         "coco/val2014",
         "coco/annotations/person_keypoints_minival2014.json",
     ),
-    "coco_keypoints_2014_valminusminival": (
+    "coco_person_keypoints_2014_valminusminival": (
         "coco/val2014",
         "coco/annotations/person_keypoints_valminusminival2014.json",
     ),
-    "coco_keypoints_2014_minival_100": (
+    "coco_person_keypoints_2014_minival_100": (
         "coco/val2014",
         "coco/annotations/person_keypoints_minival2014_100.json",
     ),
-    "coco_keypoints_2017_train": (
+    "coco_person_keypoints_2017_train": (
         "coco/train2017",
         "coco/annotations/person_keypoints_train2017.json",
     ),
-    "coco_keypoints_2017_val":
+    "coco_person_keypoints_2017_val":
     ("coco/val2017", "coco/annotations/person_keypoints_val2017.json"),
-    "coco_keypoints_2017_val_100": (
+    "coco_person_keypoints_2017_val_100": (
         "coco/val2017",
         "coco/annotations/person_keypoints_val2017_100.json",
     ),

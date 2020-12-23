@@ -15,6 +15,7 @@ import pycocotools.mask as mask_util
 import torch
 import torchvision.transforms as transforms
 
+import cvpods
 from cvpods.structures import BoxMode
 
 from .transform_util import to_float_tensor, to_numpy
@@ -171,7 +172,7 @@ class Transform(metaclass=ABCMeta):
         """
         return [self.apply_coords(p) for p in polygons]
 
-    def __call__(self, image, annotations=None):
+    def __call__(self, image, annotations=None, **kwargs):
         """
         Apply transfrom to images and annotations (if exist)
         """
@@ -181,9 +182,8 @@ class Transform(metaclass=ABCMeta):
         if annotations is not None:
             for annotation in annotations:
                 if "bbox" in annotation:
-                    bbox = BoxMode.convert(annotation["bbox"],
-                                           annotation["bbox_mode"],
-                                           BoxMode.XYXY_ABS)
+                    bbox = BoxMode.convert(
+                        annotation["bbox"], annotation["bbox_mode"], BoxMode.XYXY_ABS)
                     # Note that bbox is 1d (per-instance bounding box)
                     annotation["bbox"] = self.apply_box([bbox])[0]
                     annotation["bbox_mode"] = BoxMode.XYXY_ABS
@@ -195,8 +195,7 @@ class Transform(metaclass=ABCMeta):
                         # polygons
                         polygons = [np.asarray(p).reshape(-1, 2) for p in segm]
                         annotation["segmentation"] = [
-                            p.reshape(-1)
-                            for p in self.apply_polygons(polygons)
+                            p.reshape(-1) for p in self.apply_polygons(polygons)
                         ]
                     elif isinstance(segm, dict):
                         # RLE
@@ -222,9 +221,21 @@ class Transform(metaclass=ABCMeta):
                     """
                     # (N*3,) -> (N, 3)
                     keypoints = annotation["keypoints"]
-                    keypoints = np.asarray(keypoints,
-                                           dtype="float64").reshape(-1, 3)
+                    keypoints = np.asarray(keypoints, dtype="float64").reshape(-1, 3)
                     keypoints[:, :2] = self.apply_coords(keypoints[:, :2])
+
+                    # This assumes that HorizFlipTransform is the only one that does flip
+                    do_hflip = isinstance(self, cvpods.data.transforms.transform.HFlipTransform)
+
+                    # Alternative way: check if probe points was horizontally flipped.
+                    # probe = np.asarray([[0.0, 0.0], [image_width, 0.0]])
+                    # probe_aug = transforms.apply_coords(probe.copy())
+                    # do_hflip = np.sign(probe[1][0] - probe[0][0]) != np.sign(probe_aug[1][0] - probe_aug[0][0])  # noqa
+
+                    # If flipped, swap each keypoint with its opposite-handed equivalent
+                    if do_hflip:
+                        if "keypoint_hflip_indices" in kwargs:
+                            keypoints = keypoints[kwargs["keypoint_hflip_indices"], :]
 
                     # Maintain COCO convention that if visibility == 0, then x, y = 0
                     # TODO may need to reset visibility for cropped keypoints,
@@ -305,9 +316,9 @@ class ComposeTransform(object):
             return False
         return self.transforms == other.transforms
 
-    def __call__(self, img, annotations=None):
+    def __call__(self, img, annotations=None, **kwargs):
         for tfm in self.transforms:
-            img, annotations = tfm(img, annotations)
+            img, annotations = tfm(img, annotations, **kwargs)
         return img, annotations
 
     def __repr__(self):
@@ -540,23 +551,6 @@ class AffineTransform(Transform):
         coords[..., 0] = np.clip(coords[..., 0], 0, w - 1)
         coords[..., 1] = np.clip(coords[..., 1], 0, h - 1)
         return coords
-
-
-# Remove it later
-"""
-class ColorTransform(Transform):
-
-    def __init__(self, src, dst, shape, ):
-        super().__init__()
-        affine = cv2.getAffineTransform(np.float32(src), np.float32(dst))
-        self._set_attributes(locals())
-
-    def apply_image(self, img: np.ndarray) -> np.ndarray:
-        return img
-
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        return coords
-"""
 
 
 class RotationTransform(Transform):

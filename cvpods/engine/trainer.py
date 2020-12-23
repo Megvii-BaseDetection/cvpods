@@ -202,41 +202,29 @@ class SimpleTrainer(TrainerBase):
             """
             If your want to do something with the losses, you can wrap the model.
             """
-            try:
-                loss_dict = self.model(data)
+            loss_dict = self.model(data)
 
-                for metrics_name, metrics_value in loss_dict.items():
-                    # Actually, some metrics are not loss, such as
-                    # top1_acc, top5_acc in classification, filter them out
-                    if metrics_value.requires_grad:
-                        loss_dict[metrics_name] = metrics_value / self.batch_subdivisions
+            for metrics_name, metrics_value in loss_dict.items():
+                # Actually, some metrics are not loss, such as
+                # top1_acc, top5_acc in classification, filter them out
+                if metrics_value.requires_grad:
+                    loss_dict[metrics_name] = metrics_value / self.batch_subdivisions
 
-                losses = sum([
-                    metrics_value for metrics_value in loss_dict.values()
-                    if metrics_value.requires_grad
-                ])
-                self._detect_anomaly(losses, loss_dict)
+            losses = sum([
+                metrics_value for metrics_value in loss_dict.values()
+                if metrics_value.requires_grad
+            ])
+            self._detect_anomaly(losses, loss_dict)
 
-                # only in last subdivision iter, DDP needs to backward with sync
-                if (
-                    division_iter != self.batch_subdivisions - 1
-                    and isinstance(self.model, DistributedDataParallel)
-                ):
-                    with self.model.no_sync():
-                        losses.backward()
-                else:
+            # only in last subdivision iter, DDP needs to backward with sync
+            if (
+                division_iter != self.batch_subdivisions - 1
+                and isinstance(self.model, DistributedDataParallel)
+            ):
+                with self.model.no_sync():
                     losses.backward()
-
-            except Exception:
-                ckpt = Checkpointer(
-                    self.model, save_dir="./log", save_to_disk=True,
-                    optimizer=self.optimizer
-                )
-                ckpt.save(
-                    "debug_ckpt_rank{}".format(comm.get_rank()), tag_checkpoint=False,
-                    inputs=data
-                )
-                raise
+            else:
+                losses.backward()
 
             # The values in dict: `loss_dict` can be divided into two cases:
             #   * case 1. value.requires_grad = True, this values is loss, need to be summed
