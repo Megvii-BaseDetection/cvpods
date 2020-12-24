@@ -400,7 +400,7 @@ class DefaultTrainer(SimpleTrainer):
         # We can later make it checkpoint the stateful hooks
         optional = {}
         if cfg.TRAINER.FP16.ENABLED:
-            optional.update["amp"] = amp
+            optional["amp"] = amp
         self.checkpointer = DetectionCheckpointer(
             # Assume you want to save checkpoints together with logs/statistics
             model,
