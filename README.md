@@ -29,6 +29,7 @@ A versatile and efficient codebase for many computer vision tasks: classificatio
 * OpenCV
 * pycocotools
 * GCC >= 4.9
+* apex
 
 ## Get Started
 
