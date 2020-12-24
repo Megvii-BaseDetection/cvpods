@@ -174,6 +174,18 @@ _config_dict = dict(
         ),
         PRECISE_BN=dict(ENABLED=False, NUM_ITER=200),
     ),
+    # Trainer is used to specify options related to control the training process
+    TRAINER=dict(
+        FP16=dict(
+            ENABLED=False,
+            # options: [APEX, PyTorch]
+            TYPE="APEX",
+            # OPTS: kwargs for each option
+            OPTS=dict(
+                OPT_LEVEL="O1",
+            ),
+        ),
+    ),
     # Directory where output files are written
     OUTPUT_DIR="./output",
     # Set seed to negative to fully randomize everything.

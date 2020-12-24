@@ -13,7 +13,7 @@ import numpy as np
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
-from cvpods.checkpoint import Checkpointer, DetectionCheckpointer
+from cvpods.checkpoint import DetectionCheckpointer
 from cvpods.data import build_detection_test_loader, build_detection_train_loader
 from cvpods.evaluation import (
     DatasetEvaluator,
@@ -35,6 +35,14 @@ from cvpods.utils import (
 
 from . import hooks
 from .hooks import HookBase
+
+try:
+    from apex import amp
+except ImportError:
+    raise ImportError(
+        "Please install apex from https://www.github.com/nvidia/apex to run this example."
+    )
+
 
 __all__ = ["TrainerBase", "SimpleTrainer", "DefaultTrainer"]
 
@@ -216,15 +224,28 @@ class SimpleTrainer(TrainerBase):
             ])
             self._detect_anomaly(losses, loss_dict)
 
-            # only in last subdivision iter, DDP needs to backward with sync
-            if (
-                division_iter != self.batch_subdivisions - 1
-                and isinstance(self.model, DistributedDataParallel)
-            ):
-                with self.model.no_sync():
-                    losses.backward()
+            # if use fp16 mode
+            if self.cfg.TRAINER.FP16.ENABLED:
+                # only in last subdivision iter, DDP needs to backward with sync
+                if (
+                    division_iter != self.batch_subdivisions - 1
+                    and isinstance(self.model, DistributedDataParallel)
+                ):
+                    with self.model.no_sync():
+                        with amp.scale_loss(losses, self.optimizer) as scaled_loss:
+                            scaled_loss.backward()
+                else:
+                    with amp.scale_loss(losses, self.optimizer) as scaled_loss:
+                        scaled_loss.backward()
             else:
-                losses.backward()
+                if (
+                    division_iter != self.batch_subdivisions - 1
+                    and isinstance(self.model, DistributedDataParallel)
+                ):
+                    with self.model.no_sync():
+                        losses.backward()
+                else:
+                    losses.backward()
 
             # The values in dict: `loss_dict` can be divided into two cases:
             #   * case 1. value.requires_grad = True, this values is loss, need to be summed
@@ -353,6 +374,11 @@ class DefaultTrainer(SimpleTrainer):
 
         # For training, wrap with DDP. But don't need this for inference.
         if comm.get_world_size() > 1:
+            if cfg.TRAINER.FP16.ENABLED:
+                if cfg.TRAINER.FP16.TYPE == "APEX":
+                    model, optimizer = amp.initialize(
+                        model, optimizer, opt_level=cfg.TRAINER.FP16.OPTS.OPT_LEVEL
+                    )
             model = DistributedDataParallel(
                 model,
                 device_ids=[comm.get_local_rank()],
@@ -372,12 +398,16 @@ class DefaultTrainer(SimpleTrainer):
             cfg, optimizer, epoch_iters=epoch_iters)
         # Assume no other objects need to be checkpointed.
         # We can later make it checkpoint the stateful hooks
+        optional = {}
+        if cfg.TRAINER.FP16.ENABLED:
+            optional["amp"] = amp
         self.checkpointer = DetectionCheckpointer(
             # Assume you want to save checkpoints together with logs/statistics
             model,
             cfg.OUTPUT_DIR,
             optimizer=optimizer,
             scheduler=self.scheduler,
+            **optional,
         )
 
         self.cfg = cfg
