@@ -4,7 +4,7 @@ from cvpods.configs.pointrend_config import PointRendRCNNFPNConfig
 
 _config_dict = dict(
     MODEL=dict(
-        WEIGHTS="s3://generalDetection/cvpods/ImageNetPretrained/MSRA/R-101.pkl",
+        WEIGHTS="detectron2://ImageNetPretrained/MSRA/R-101.pkl",
         RESNETS=dict(
             DEPTH=101,
             FREEZE_AT=0,

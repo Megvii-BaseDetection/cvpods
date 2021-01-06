@@ -10,14 +10,35 @@
       - [FreeAnchor](#freeanchor)
       - [TridentNet](#tridentnet)
       - [RepPoints](#reppoints)
+      - [CenterNet](#centernet)
+      - [EfficientDet](#efficientdet)
+      - [YOLO](#yolo)
+      - [SSD](#ssd)
       - [DETR](#detr)
+      - [Sparse R-CNN](#sparse-r-cnn)
     + [PASCAL VOC](#pascal-voc)
     + [WIDER FACE](#wider-face)
     + [CityPersons](#citypersons)
     + [CrowdHuman](#crowdhuman)
   * [Instance Segmentation](#instance-segmentation)
+    + [COCO](#coco-1)
+      - [Mask R-CNN](#mask-r-cnn)
+      - [TensorMask](#tensormask)
+      - [CascadeRCNN](#cascadercnn)
+      - [PointRend](#pointrend)
+      - [SOLO](#solo)
+    + [LVIS](#lvis)
+    + [CITYSCAPES](#cityscapes)
   * [Semantic Segmentation](#semantic-segmentation)
+    + [COCO](#coco-2)
+      - [SemanticFPN](#semanticfpn)
+    + [CITYSCAPES](#cityscapes-1)
+      - [PointRend](#pointrend-1)
+      - [DynamicRouting](#dynamicrouting)
+      - [FCN](#fcn)
   * [Panoptic Segmentation](#panoptic-segmentation)
+    + [COCO](#coco-3)
+      - [PanopticFPN](#Panopticfpn)
   * [Key\-Points](#key-points)
     + [COCO_PERSON](#coco_person)
       - [Keypoint\-RCNN](#keypoint-rcnn)
@@ -41,71 +62,135 @@ Comming Soon.
 
 #### Faster R-CNN
 
-| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP |
-| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ |
-| [FasterRCNN-R50-FPN](playground/detection/coco/rcnn/faster_rcnn.res50.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.225(2080ti)       | 2.82           | 38.1   |
-| [FasterRCNN-R50-FPN-SyncBN](playground/detection/coco/rcnn/faster_rcnn.res50.fpn.coco.multiscale.2x.syncbn) | 640-800    | 180k     | 0.546               | 5.23           | 39.9   |
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                                                |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ------------------------------------------------------------ |
+| [FasterRCNN-R50-FPN](detection/coco/rcnn/faster_rcnn.res50.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.225(2080ti)       | 2.82           | 38.1   | [LINK](detection/coco/rcnn/faster_rcnn.res50.fpn.coco.multiscale.1x/model_final.pth) |
+| [FasterRCNN-R50-FPN-SyncBN](detection/coco/rcnn/faster_rcnn.res50.fpn.coco.multiscale.2x.syncbn) | 640-800    | 180k     | 0.546               | 5.23           | 39.9   | [LINK](detection/coco/rcnn/faster_rcnn.res50.fpn.coco.multiscale.2x.syncbn/model_final.pth) |
+| [FasterRCNN-ResNeSt50-FPN](detection/coco/rcnn/faster_rcnn.resnest50.fpn.coco.800size.1x) | 800    | 90k      | 0.416               | 3.53           | 39.9   | [LINK](detection/coco/rcnn/faster_rcnn.resnest50.fpn.coco.800size.1x/model_final.pth) |
+| [FasterRCNN-ResNeSt50-FPN-SyncBN](detection/coco/rcnn/faster_rcnn.resnest50.fpn.coco.multiscale.1x.syncbn.4conv) | 640-800    | 90k      | 0.661               | 5.35           | 42.5   | [LINK](detection/coco/rcnn/faster_rcnn.resnest50.fpn.coco.multiscale.1x.syncbn.4conv/model_final.pth) |
+| [FasterRCNN-MOBILENET-FPN](detection/coco/rcnn/faster_rcnn.mobilenet.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.279(2080ti)       | 3.47           | 29.27   | [LINK](detection/coco/rcnn/faster_rcnn.mobilenet.fpn.coco.multiscale.1x/model_final.pth) |
+| [FasterRCNN-MOBILENET-FPN-NoP2](detection/coco/rcnn/faster_rcnn.mobilenet.fpn.coco.multiscale.1x.no_p2) | 640-800    | 90k      | 0.227(2080ti)       | 2.49           | 29.57   | [LINK](detection/coco/rcnn/faster_rcnn.mobilenet.fpn.coco.multiscale.1x.no_p2/model_final.pth) |
 
 #### RetinaNet
 
-| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP |
-| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ |
-| [RetinaNet-R50](playground/detection/coco/retinanet/retinanet.res50.fpn.coco.800size.1x) | 800        | 90k      | 0.3593              | 3.85           | 35.9 |
-| [RetinaNet-R50](playground/detection/coco/retinanet/retinanet.res50.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.244               | 3.84           | 36.5 |
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [RetinaNet-R50](detection/coco/retinanet/retinanet.res50.fpn.coco.800size.1x) | 800    | 90k      | 0.3593               | 3.85           | 35.9   | [LINK](detection/coco/retinanet/retinanet.res50.fpn.coco.800size.1x/model_final.pth) |
+| [RetinaNet-R50](detection/coco/retinanet/retinanet.res50.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.244               | 3.84           | 36.5   | [LINK](detection/coco/retinanet/retinanet.res50.fpn.coco.multiscale.1x/model_final.pth) |
+| [RetinaNet-R50](detection/coco/retinanet/retinanet.res50.fpn.coco.multiscale.1x.l1_loss) | 640-800    | 90k      | 0.344(2080ti)       | 3.96           | 37.2   | [LINK](detection/coco/retinanet/retinanet.res50.fpn.coco.multiscale.1x.l1_loss/model_final.pth) |
+| [RetinaNet-R50-DRLoss](detection/coco/retinanet/retinanet.res50.fpn.coco.800size.1x.dr_loss) | 800        | 90k      | 0.357(2080ti)       | 3.72           | 37.4   | [LINK](detection/coco/retinanet/retinanet.res50.fpn.coco.800size.1x.dr_loss/model_final.pth) |
+| [RetinaNet-MOBILENET](detection/coco/retinanet/retinanet.mobilenet.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.266               | 4.46           | 28.5   | [LINK](detection/coco/retinanet/retinanet.mobilenet.fpn.coco.multiscale.1x/model_final.pth) |
 
 #### FCOS
 
-| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP |
-| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- |   --- |
-| [FCOS-R50-FPN](playground/detection/coco/fcos/fcos.res50.fpn.coco.800size.1x) | 800        | 90k      | 0.334(2080ti)       | 3.09           | 38.8  |
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [FCOS-R50-FPN](detection/coco/fcos/fcos.res50.fpn.coco.800size.1x) | 800        | 90k      | 0.334(2080ti)       | 3.09           | 38.8   | [LINK](detection/coco/fcos/fcos.res50.fpn.coco.800size.1x/model_final.pth) |
 
 
 #### ATSS
 
-| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP |
-| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- |   --- |
-| [ATSS-R50-FPN](playground/detection/coco/atss/atss.res50.fpn.coco.800size.1x) | 800        | 90k      | 0.340(2080ti)       | 3.09           | 39.3  |
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [ATSS-R50-FPN](detection/coco/atss/atss.res50.fpn.coco.800size.1x) | 800        | 90k      | 0.340(2080ti)       | 3.09           | 39.3   | [LINK](detection/coco/atss/atss.res50.fpn.coco.800size.1x/model_final.pth) |
 
 #### FreeAnchor
 
-| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP |
-| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | --- |
-| [FreeAnchor-R50-FPN](playground/detection/coco/free_anchor/free_anchor.res50.fpn.coco.800size.1x) | 800        | 90k      | 0.353(2080ti)       | 4.08           | 38.3  |
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [FreeAnchor-R50-FPN](detection/coco/free_anchor/free_anchor.res50.fpn.coco.800size.1x) | 800        | 90k      | 0.353(2080ti)       | 4.08           | 38.3   | [LINK](detection/coco/free_anchor/free_anchor.res50.fpn.coco.800size.1x/model_final.pth) |
 
 #### TridentNet
 
-| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP |
-| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | --- |
-| [TridentNet-R50-C4](playground/detection/coco/tridentnet/tridentnet.res50.C4.coco.800size.1x) | 800        | 90k      | 0.754(2080ti)       | 4.65           | 37.7  |
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [TridentNet-R50-C4](detection/coco/tridentnet/tridentnet.res50.C4.coco.800size.1x) | 800        | 90k      | 0.754(2080ti)       | 4.65           | 37.7   | [LINK](detection/coco/tridentnet/tridentnet.res50.C4.coco.800size.1x/model_final.pth) |
 
 #### RepPoints
 
-| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP |
-| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | --- |
-| [RepPoints-R50-FPN](playground/detection/coco/reppoints/reppoints.res50.fpn.coco.800size.1x.partial_minmax) | 800        | 90k      | 0.415(2080ti)       | 2.85           | 38.2  |
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [RepPoints-R50-FPN](detection/coco/reppoints/reppoints.res50.fpn.coco.800size.1x.partial_minmax) | 800        | 90k      | 0.415(2080ti)       | 2.85           | 38.2   | [LINK](detection/coco/reppoints/reppoints.res50.fpn.coco.800size.1x.partial_minmax/model_final.pth) |
+
+#### CenterNet
+
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [CenterNet-R18](detection/coco/centernet/centernet.res18.coco.512size) | 512        | 126k     | TBD                 | TBD            | 29.8   | <details><summary>TBD</summary>) |
+| [CenterNet-R50](detection/coco/centernet/centernet.res50.coco.512size) | 512        | 126k     | TBD                 | TBD            | 34.9   | <details><summary>TBD</summary>) |
+| [CenterNet-R101](detection/coco/centernet/centernet.res101.coco.512size) | 512        | 126k     | TBD                 | TBD            | 36.8   | <details><summary>TBD</summary>) |
+
+#### EfficientDet
+
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [EffDet0-Effnet0-BiFPN](detection/coco/efficientdet/effdet0.effnet0.bifpn.coco.512size.300e) | 512        | 562k     | 0.540(2080ti)       | 5.77           | 32.6   | [LINK](detection/coco/efficientdet/effdet0.effnet0.bifpn.coco.512size.300e/model_final.pth) |
+| [EffDet0-Effnet0-BiFPN-SyncBN](detection/coco/efficientdet/effdet0.effnet0.bifpn.coco.512size.300e.syncbn) | 512        | 562k     | 0.760(2080ti)       | 5.77           | 33.2   | [LINK](detection/coco/efficientdet/effdet0.effnet0.bifpn.coco.512size.300e.syncbn/model_final.pth) |
+| [EffDet1-Effnet1-BiFPN](detection/coco/efficientdet/effdet1.effnet1.bifpn.coco.640size.300e) | 640        | 562k     | 0.782(v100)         | 23.18          | 38.1   | [LINK](detection/coco/efficientdet/effdet1.effnet1.bifpn.coco.640size.300e/model_final.pth) |
+| [EffDet1-Effnet1-BiFPN-SyncBN](detection/coco/efficientdet/effdet1.effnet1.bifpn.coco.640size.300e.syncbn) | 640        | 562k     | 1.182(v100)         | 23.18          | 38.0   | [LINK](detection/coco/efficientdet/effdet1.effnet1.bifpn.coco.640size.300e.syncbn/model_final.pth) |
+
+#### YOLO
+
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [YOLOv3-Darknet53-SyncBN](detection/coco/yolo/yolov3.darknet53.coco.multiscale.syncbn) | 320-608    | 470k     | 0.729                 | 7.45            | 37.5   | [LINK](detection/coco/yolo/yolov3.darknet53.coco.multiscale.syncbn/model_final.pth) |
+
+#### SSD
+
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                                                |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ------------------------------------------------------------ |
+| [SSD-VGG16](detection/coco/ssd/ssd.vgg16.coco.300size) | 300        | 200k     | 0.442               | 1.93           | 23.6   | [LINK](detection/coco/ssd/ssd.vgg16.coco.300size/model_final.pth) |
+| [SSD-VGG16-Expand](detection/coco/ssd/ssd.vgg16.coco.300size.expand_aug) | 300        | 200k     | 0.448               | 1.93           | 24.9   | [LINK](detection/coco/ssd/ssd.vgg16.coco.300size.expand_aug/model_final.pth) |
+| [SSD-VGG16](detection/coco/ssd/ssd.vgg16.coco.512size) | 512        | 200k     | 0.487               | 4.37           | 26.7   | [LINK](detection/coco/ssd/ssd.vgg16.coco.512size/model_final.pth) |
+| [SSD-VGG16-Expand](detection/coco/ssd/ssd.vgg16.coco.512size.expand_aug) | 512        | 200k     | 0.491               | 4.37           | 29.0   | [LINK](detection/coco/ssd/ssd.vgg16.coco.512size.expand_aug/model_final.pth) |
 
 #### DETR
 
-| Named                                                        | input size | lr sched | train time (s/iter) | train mem (GB) | box AP |
-| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | --- |
-| [DETR-R50-C5](playground/detection/coco/detr/detr.res50.c5.coco.multiscale.150e.bs16) | 480-800    | 150e     | 0.270(v100)         | 3.62           | 38.7   |
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [DETR-R50-C5](detection/coco/detr/detr.res50.c5.coco.multiscale.150e.bs16) | 480-800        | 150e      | 0.270(v100)       | 3.62           | 38.7   | [LINK](detection/coco/detr/detr.res50.c5.coco.multiscale.150e.bs16/model_final.pth) |
+
+#### Sparse R-CNN
+
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [SparseRCNN-R50-FPN](detection/coco/sparse_rcnn/sparse_rcnn.res50.fpn.coco.multiscale.3x) | 480-800        | 270k      | 0.627(2080ti)       | 4.11           | 43.2   | [LINK](detection/coco/sparse_rcnn/sparse_rcnn.res50.fpn.coco.multiscale.3x/model_final.pth) |
+
 
 
 ### PASCAL VOC
 
-Comming Soon.
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | AP   | AP50 | AP75 | Trained Model                                                |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ---- | ---- | ---- | ------------------------------------------------------------ |
+| [FasterRCNN-R50-FPN](detection/voc/rcnn/faster_rcnn.res50.fpn.voc.multiscale.1x) | 480-800    | 18k      | 0.377               | 2.82           | 54.2 | 82.1 | 59.3 | [LINK](detection/voc/rcnn/faster_rcnn.res50.fpn.voc.multiscale.1x/model_final.pth) |
+
+
 
 ### WIDER FACE
 
-Comming Soon.
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ----------------------------------------- |
+| [RetinaNet-R50](detection/widerface/retinanet/retinanet.res50.fpn.widerface.600size.0.5x_crop) | 600        | 45k      | 0.342               | 4.76           | 49.4   | [LINK](detection/widerface/retinanet/retinanet.res50.fpn.widerface.600size.0.5x_crop/model_final.pth) |
+| [FCOS-R50-FPN](detection/widerface/fcos/fcos.res50.fpn.widerface.600size.0.5x_crop.plus.norm_sync) | 600        | 45k      | 0.382               | 5.75           | 50.8   | [LINK](detection/widerface/fcos/fcos.res50.fpn.widerface.600size.0.5x_crop.plus.norm_sync/model_final.pth) |
+
+
 
 ### CityPersons
 
-Comming Soon.
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | MR   | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ---- | ----------------------------------------- |
+| [FasterRCNN-R50-FPN](detection/citypersons/rcnn/faster_rcnn.res50.fpn.citypersons.640size.1x) | 640        | 9K       | 0.401               | 3.38           | 36.1   | 0.37 | [LINK](detection/citypersons/rcnn/faster_rcnn.res50.fpn.citypersons.640size.1x/model_final.pth) |
+| [RetinaNet-R50](detection/citypersons/retinanet/retinanet.res50.fpn.citypersons.640size.1x) | 640        | 18k      | 0.349               | 2.97           | 33.6   | 0.42 | [LINK](detection/citypersons/retinanet/retinanet.res50.fpn.citypersons.640size.1x/model_final.pth) |
+| [FCOS-R50-FPN](detection/citypersons/fcos/fcos.res50.fpn.citypersons.640size.1x) | 640        | 9K       | 0.375               | 3.55           | 35.7   | 0.40 | [LINK](detection/citypersons/fcos/fcos.res50.fpn.citypersons.640size.1x/model_final.pth) |
+
+
 
 ### CrowdHuman
 
-Comming Soon.
+| Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | MR   | Trained Model                             |
+| ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ---- | ----------------------------------------- |
+| [FasterRCNN-R50-FPN](detection/crowdhuman/rcnn/faster_rcnn.res50.fpn.crowdhuman.800size.1x) | 800        | 2.8K       | 0.856               | 4.80           | 84.1   | 0.481 | [LINK](detection/crowdhuman/rcnn/faster_rcnn.res50.fpn.crowdhuman.800size.1x/model_final.pth) |
+
 
 ## Instance Segmentation 
 
