@@ -51,6 +51,7 @@ class COCODataset(BaseDataset):
             self.task_key = "coco"          # for task: instance detection/segmentation
 
         self.meta = self._get_metadata()
+
         if self.task_key in ["coco", "coco_person"]:
             self.dataset_dicts = self._load_annotations(
                 self.meta["json_file"],
@@ -122,7 +123,7 @@ class COCODataset(BaseDataset):
         if self.keypoint_on:
             # Flip only makes sense in training
             self.keypoint_hflip_indices = create_keypoint_hflip_indices(
-                cfg.DATASETS.TRAIN)
+                cfg.DATASETS.TRAIN, self.meta)
         else:
             self.keypoint_hflip_indices = None
 
@@ -153,7 +154,7 @@ class COCODataset(BaseDataset):
 
         # apply transfrom
         image, annotations = self._apply_transforms(
-            image, annotations)
+            image, annotations, keypoint_hflip_indices=self.keypoint_hflip_indices)
 
         if "sem_seg_file_name" in dataset_dict:
             dataset_dict.pop("sem_seg_file_name")
@@ -235,14 +236,13 @@ class COCODataset(BaseDataset):
 
         id_map = None
         if dataset_name is not None:
-            meta = self.meta
             cat_ids = sorted(coco_api.getCatIds())
             cats = coco_api.loadCats(cat_ids)
             # The categories in a custom json file may not be sorted.
             thing_classes = [
                 c["name"] for c in sorted(cats, key=lambda x: x["id"])
             ]
-            meta["thing_classes"] = thing_classes
+            self.meta["thing_classes"] = thing_classes
 
             # In COCO, certain category ids are artificially removed,
             # and by convention they are always ignored.
@@ -258,7 +258,7 @@ class COCODataset(BaseDataset):
     Category ids in annotations are not in [1, #categories]! We'll apply a mapping for you.
     """)
             id_map = {v: i for i, v in enumerate(cat_ids)}
-            meta["thing_dataset_id_to_contiguous_id"] = id_map
+            self.meta["thing_dataset_id_to_contiguous_id"] = id_map
 
         # sort indices for reproducible results
         img_ids = sorted(coco_api.imgs.keys())
@@ -373,7 +373,7 @@ class COCODataset(BaseDataset):
 
     def _get_metadata(self):
         if self.task_key in ["coco", "coco_person"]:
-            meta = _get_builtin_metadata("coco")
+            meta = _get_builtin_metadata(self.task_key)
             image_root, json_file = _PREDEFINED_SPLITS_COCO[self.task_key][self.name]
             meta["image_root"] = osp.join(self.data_root, image_root) \
                 if "://" not in image_root else image_root

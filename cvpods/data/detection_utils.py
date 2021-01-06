@@ -223,105 +223,6 @@ def transform_proposals(dataset_dict, image_shape, transforms,
         dataset_dict["proposals"] = proposals
 
 
-def transform_instance_annotations(annotation,
-                                   transforms,
-                                   image_size,
-                                   *,
-                                   keypoint_hflip_indices=None):
-    """
-    Apply transforms to box, segmentation and keypoints annotations of a single instance.
-
-    It will use `transforms.apply_box` for the box, and
-    `transforms.apply_coords` for segmentation polygons & keypoints.
-    If you need anything more specially designed for each data structure,
-    you'll need to implement your own version of this function or the transforms.
-
-    Args:
-        annotation (dict): dict of instance annotations for a single instance.
-            It will be modified in-place.
-        transforms (TransformList):
-        image_size (tuple): the height, width of the transformed image
-        keypoint_hflip_indices (ndarray[int]): see `create_keypoint_hflip_indices`.
-
-    Returns:
-        dict:
-            the same input dict with fields "bbox", "segmentation", "keypoints"
-            transformed according to `transforms`.
-            The "bbox_mode" field will be set to XYXY_ABS.
-    """
-    bbox = BoxMode.convert(annotation["bbox"], annotation["bbox_mode"],
-                           BoxMode.XYXY_ABS)
-    # Note that bbox is 1d (per-instance bounding box)
-    annotation["bbox"] = transforms.apply_box([bbox])[0]
-    annotation["bbox_mode"] = BoxMode.XYXY_ABS
-
-    if "segmentation" in annotation:
-        # each instance contains 1 or more polygons
-        segm = annotation["segmentation"]
-        if isinstance(segm, list):
-            # polygons
-            polygons = [np.asarray(p).reshape(-1, 2) for p in segm]
-            annotation["segmentation"] = [
-                p.reshape(-1) for p in transforms.apply_polygons(polygons)
-            ]
-        elif isinstance(segm, dict):
-            # RLE
-            mask = mask_util.decode(segm)
-            mask = transforms.apply_segmentation(mask)
-            assert tuple(mask.shape[:2]) == image_size
-            annotation["segmentation"] = mask
-        else:
-            raise ValueError(
-                "Cannot transform segmentation of type '{}'!"
-                "Supported types are: polygons as list[list[float] or ndarray],"
-                " COCO-style RLE as a dict.".format(type(segm)))
-
-    if "keypoints" in annotation:
-        keypoints = transform_keypoint_annotations(annotation["keypoints"],
-                                                   transforms, image_size,
-                                                   keypoint_hflip_indices)
-        annotation["keypoints"] = keypoints
-
-    return annotation
-
-
-def transform_keypoint_annotations(keypoints,
-                                   transforms,
-                                   keypoint_hflip_indices=None):
-    """
-    Transform keypoint annotations of an image.
-
-    Args:
-        keypoints (list[float]): Nx3 float in cvpods Dataset format.
-        transforms (TransformList):
-        keypoint_hflip_indices (ndarray[int]): see `create_keypoint_hflip_indices`.
-    """
-    # (N*3,) -> (N, 3)
-    keypoints = np.asarray(keypoints, dtype="float64").reshape(-1, 3)
-    keypoints[:, :2] = transforms.apply_coords(keypoints[:, :2])
-
-    # This assumes that HorizFlipTransform is the only one that does flip
-    do_hflip = (
-        sum(isinstance(t, T.HFlipTransform)
-            for t in transforms.transforms) % 2 == 1)
-
-    # Alternative way: check if probe points was horizontally flipped.
-    # probe = np.asarray([[0.0, 0.0], [image_width, 0.0]])
-    # probe_aug = transforms.apply_coords(probe.copy())
-    # do_hflip = np.sign(probe[1][0] - probe[0][0]) != np.sign(probe_aug[1][0] - probe_aug[0][0])  # noqa
-
-    # If flipped, swap each keypoint with its opposite-handed equivalent
-    if do_hflip:
-        assert keypoint_hflip_indices is not None
-        keypoints = keypoints[keypoint_hflip_indices, :]
-
-    # Maintain COCO convention that if visibility == 0, then x, y = 0
-    # TODO may need to reset visibility for cropped keypoints,
-    # but it does not matter for our existing algorithms
-    keypoints[keypoints[:, 2] == 0] = 0
-    return keypoints
-
-
 def annotations_to_instances(annos, image_size, mask_format="polygon"):
     """
     Create an :class:`Instances` object used by the models,
@@ -462,12 +363,12 @@ def create_keypoint_hflip_indices(dataset_names, meta):
         horizontally-flipped keypoint indices.
     """
 
-    check_metadata_consistency("keypoint_names", dataset_names)
-    check_metadata_consistency("keypoint_flip_map", dataset_names)
+    check_metadata_consistency("keypoint_names", dataset_names, meta)
+    check_metadata_consistency("keypoint_flip_map", dataset_names, meta)
 
-    names = meta.keypoint_names
+    names = meta["keypoint_names"]
     # TODO flip -> hflip
-    flip_map = dict(meta.keypoint_flip_map)
+    flip_map = dict(meta["keypoint_flip_map"])
     flip_map.update({v: k for k, v in flip_map.items()})
     flipped_names = [i if i not in flip_map else flip_map[i] for i in names]
     flip_indices = [names.index(i) for i in flipped_names]

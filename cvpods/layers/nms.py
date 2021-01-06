@@ -8,9 +8,18 @@ from torchvision.ops import nms  # BC-compat
 from cvpods import _C
 from cvpods.layers.rotated_boxes import pairwise_iou_rotated
 
+try:
+    from apex.amp import float_function
+except ImportError:
+    raise ImportError(
+        "Please install apex from https://www.github.com/nvidia/apex to run this example."
+    )
+
+
 ml_nms = _C.ml_nms
 
 
+@float_function
 def batched_nms(boxes, scores, idxs, iou_threshold):
     """
     Same as torchvision.ops.boxes.batched_nms, but safer.

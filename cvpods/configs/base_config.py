@@ -113,7 +113,7 @@ _config_dict = dict(
             GAMMA=0.1,
         ),
         OPTIMIZER=dict(
-            NAME="SGD",
+            NAME="D2SGD",
             BASE_LR=0.001,
             # Detectron v1 (and previous detection code) used a 2x higher LR and 0 WD for biases.
             # This is not useful (at least for recent models). You should avoid
@@ -173,6 +173,18 @@ _config_dict = dict(
             SCALE_RANGES=(),
         ),
         PRECISE_BN=dict(ENABLED=False, NUM_ITER=200),
+    ),
+    # Trainer is used to specify options related to control the training process
+    TRAINER=dict(
+        FP16=dict(
+            ENABLED=False,
+            # options: [APEX, PyTorch]
+            TYPE="APEX",
+            # OPTS: kwargs for each option
+            OPTS=dict(
+                OPT_LEVEL="O1",
+            ),
+        ),
     ),
     # Directory where output files are written
     OUTPUT_DIR="./output",
@@ -254,11 +266,11 @@ class ConfigDict(dict):
         """
         def update_helper(d, u):
             for k, v in six.iteritems(u):
-                if isinstance(v, collectionsAbc.Mapping):
-                    dv = d.get(k, EasyDict())
-                    if not dv:
-                        dv = EasyDict()
-                    setattr(d, k, update_helper(dv, v))
+                dv = d.get(k, EasyDict())
+                if not isinstance(dv, collectionsAbc.Mapping):
+                    d[k] = v
+                elif isinstance(v, collectionsAbc.Mapping):
+                    d[k] = update_helper(dv, v)
                 else:
                     d[k] = v
             return d

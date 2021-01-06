@@ -29,6 +29,7 @@ A versatile and efficient codebase for many computer vision tasks: classificatio
 * OpenCV
 * pycocotools
 * GCC >= 4.9
+* apex
 
 ## Get Started
 
@@ -64,13 +65,19 @@ pods_test --num-gpus 8 \
 pods_train --num-gpus 8 --num-machines N --machine-rank 0/1/.../N-1 --dist-url "tcp://MASTER_IP:port"
 ```
 
+## Model ZOO
+
+For all the models supported by cvpods, please refer to [MODEL_ZOO](https://github.com/Megvii-BaseDetection/cvpods/blob/master/playground/README.md).
+
 ## Projects based on cvpods
 
 * [AutoAssign](https://github.com/Megvii-BaseDetection/AutoAssign)
 * [BorderDet](https://github.com/Megvii-BaseDetection/BorderDet)
+* [DeFCN](https://github.com/Megvii-BaseDetection/DeFCN)
 * [DynamicHead](https://github.com/StevenGrove/DynamicHead)
 * [DynamicRouting](https://github.com/Megvii-BaseDetection/DynamicRouting)
 * [LearnableTreeFilterV2](https://github.com/StevenGrove/LearnableTreeFilterV2)
+* [SelfSup](https://github.com/poodarchu/SelfSup)
 
 
 ## Acknowledgement

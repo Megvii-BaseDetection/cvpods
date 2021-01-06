@@ -41,6 +41,8 @@ wheels/
 # project dirs
 /datasets
 /models
-/cvpods_playground
-/playground
 tools/pods_*
+#
+# soft link
+**/log
+

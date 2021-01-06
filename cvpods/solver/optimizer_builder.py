@@ -39,6 +39,20 @@ class SGDBuilder(OptimizerBuilder):
 
     @staticmethod
     def build(model, cfg):
+        optimizer = optim.SGD(
+            model.parameters(),
+            lr=cfg.SOLVER.OPTIMIZER.BASE_LR,
+            weight_decay=cfg.SOLVER.OPTIMIZER.WEIGHT_DECAY,
+            momentum=cfg.SOLVER.OPTIMIZER.MOMENTUM,
+        )
+        return optimizer
+
+
+@OPTIMIZER_BUILDER.register()
+class D2SGDBuilder(OptimizerBuilder):
+
+    @staticmethod
+    def build(model, cfg):
         params: List[Dict[str, Any]] = []
         memo: Set[torch.nn.parameter.Parameter] = set()
         for module in model.modules():
