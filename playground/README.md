@@ -115,48 +115,48 @@ Comming Soon.
 
 | Name                         | input size | lr sched  | train time (s/iter) | train mem (GB)  | box AP | mask AP | Trained Model |
 | ---------- | --------- | --------------- | --------------- | ------ | ------- | ---- | ---- |
-| [MaskRCNN-R50-C4](examples/segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.1x) |  640-800   |    90k    |   0.609         |      5.04       |  36.8  |   32.2  | [LINK](segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.1x/model_final.pth)  |
-| [MaskRCNN-R50-C4-SyncBN-ExtraNorm](examples/segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.1x.syncbn.extra_norm) |  640-800   |    90k    |   0.852         |      9.82       |  37.9  |   33.1  | [LINK](TBD)  |
-| [MaskRCNN-R50-C4-SyncBN](examples/segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.2x.syncbn) | 640-800 | 180k |   0.837         |      9.82       |  39.9  |   34.5  | [LINK](TBD))  |
-| [MaskRCNN-R50-C4-SyncBN-ExtraNorm](examples/segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.2x.syncbn.extra_norm) |  640-800   | 180k  |   0.853   |  9.82   |  40.1  |   34.7  | [LINK](segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.2x.syncbn.extra_norm/model_final.pth)  |
-| [MaskRCNN-R50-FPN](examples/segmentation/coco/rcnn/mask_rcnn.res50.fpn.coco.multiscale.1x) | 640-800 | 90k | 0.297(2080ti) | 3.36 | 38.5 | 35.2 | [LINK](segmentation/coco/rcnn/mask_rcnn.res50.fpn.coco.multiscale.1x/model_final.pth) |
+| [MaskRCNN-R50-C4](segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.1x) |  640-800   |    90k    |   0.609         |      5.04       |  36.8  |   32.2  | [LINK](segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.1x/model_final.pth)  |
+| [MaskRCNN-R50-C4-SyncBN-ExtraNorm](segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.1x.syncbn.extra_norm) |  640-800   |    90k    |   0.852         |      9.82       |  37.9  |   33.1  | [LINK](TBD)  |
+| [MaskRCNN-R50-C4-SyncBN](segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.2x.syncbn) | 640-800 | 180k |   0.837         |      9.82       |  39.9  |   34.5  | [LINK](TBD))  |
+| [MaskRCNN-R50-C4-SyncBN-ExtraNorm](segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.2x.syncbn.extra_norm) |  640-800   | 180k  |   0.853   |  9.82   |  40.1  |   34.7  | [LINK](segmentation/coco/rcnn/mask_rcnn.res50.c4.coco.multiscale.2x.syncbn.extra_norm/model_final.pth)  |
+| [MaskRCNN-R50-FPN](segmentation/coco/rcnn/mask_rcnn.res50.fpn.coco.multiscale.1x) | 640-800 | 90k | 0.297(2080ti) | 3.36 | 38.5 | 35.2 | [LINK](segmentation/coco/rcnn/mask_rcnn.res50.fpn.coco.multiscale.1x/model_final.pth) |
 
 #### TensorMask
 
 | Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | mask AP | Trained Model                             |
 | ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ------- | ----------------------------------------- |
-| [TensorMask-R50-FPN](examples/segmentation/coco/tensormask/tensormask.res50.fpn.coco.800size.1x) | 800        | 90k      | 0.788(2080ti)       | 7.83           | 37.5   | 32.3    | [LINK](segmentation/coco/tensormask/tensormask.res50.fpn.coco.800size.1x/model_final.pth) |
+| [TensorMask-R50-FPN](segmentation/coco/tensormask/tensormask.res50.fpn.coco.800size.1x) | 800        | 90k      | 0.788(2080ti)       | 7.83           | 37.5   | 32.3    | [LINK](segmentation/coco/tensormask/tensormask.res50.fpn.coco.800size.1x/model_final.pth) |
 
 #### CascadeRCNN
 
 | Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | mask AP | Trained Model                                                |
 | ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ------- | ------------------------------------------------------------ |
-| [CascadeRCNN-R50-FPN](examples/segmentation/coco/rcnn/cascade_rcnn.res50.fpn.coco.800size.1x) | 800        | 90k      | 0.546               | 3.91           | 41.7   | 36.1    | [LINK](segmentation/coco/rcnn/cascade_rcnn.res50.fpn.coco.800size.1x/model_final.pth) |
+| [CascadeRCNN-R50-FPN](segmentation/coco/rcnn/cascade_rcnn.res50.fpn.coco.800size.1x) | 800        | 90k      | 0.546               | 3.91           | 41.7   | 36.1    | [LINK](segmentation/coco/rcnn/cascade_rcnn.res50.fpn.coco.800size.1x/model_final.pth) |
 
 #### PointRend
 
 | Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | mask AP | Trained Model                                                |
 | ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ------- | ------------------------------------------------------------ |
-| [PointRend-R50-FPN](examples/segmentation/coco/pointrend/pointrend.res50.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.439               | 4.88           | 38.4   | 36.2    | [LINK](segmentation/coco/pointrend/pointrend.res50.fpn.coco.multiscale.1x/model_final.pth) |
-| [PointRend-R50-FPN](examples/segmentation/coco/pointrend/pointrend.res50.fpn.coco.multiscale.3x) | 640-800    | 270k     | 0.416               | 4.88           | 41.1   | 38.2    | [LINK](segmentation/coco/pointrend/pointrend.res50.fpn.coco.multiscale.3x/model_final.pth) |
+| [PointRend-R50-FPN](segmentation/coco/pointrend/pointrend.res50.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.439               | 4.88           | 38.4   | 36.2    | [LINK](segmentation/coco/pointrend/pointrend.res50.fpn.coco.multiscale.1x/model_final.pth) |
+| [PointRend-R50-FPN](segmentation/coco/pointrend/pointrend.res50.fpn.coco.multiscale.3x) | 640-800    | 270k     | 0.416               | 4.88           | 41.1   | 38.2    | [LINK](segmentation/coco/pointrend/pointrend.res50.fpn.coco.multiscale.3x/model_final.pth) |
 
 #### SOLO
 
 | Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | mask AP | Trained Model                                                |
 | ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ------- | ------------------------------------------------------------ |
-| [SOLO-R50-FPN](examples/segmentation/coco/solo/solo.res50.fpn.coco.800size.1x) | 800    | 90k      | 0.970               | 6.99           | 33.1   | 32.7    | [LINK](segmentation/coco/solo/solo.res50.fpn.coco.800size.1x/model_final.pth) |
-| [SOLO-R50-FPN](examples/segmentation/coco/solo/solo.res50.fpn.coco.multiscale.3x) | 640-800    | 270k      | 0.950               | 6.99           | 35.6   | 35.2    | [LINK](segmentation/coco/solo/solo.res50.fpn.coco.multiscale.3x/model_final.pth) |
-| [DecoupledSOLO-R50-FPN](examples/segmentation/coco/solo/decoupled_solo.res50.fpn.coco.800size.1x) | 800    | 90k      | 1.097               | 6.68           | 34.0   | 33.7    | [LINK](segmentation/coco/solo/decoupled_solo.res50.fpn.coco.800size.1x/model_final.pth) |
-| [DecoupledSOLO-R50-FPN](examples/segmentation/coco/solo/decoupled_solo.res50.fpn.coco.multiscale.3x) | 640-800    | 270k      | 0.922               | 6.47           | 35.9   | 35.6    | [LINK](segmentation/coco/solo/decoupled_solo.res50.fpn.coco.multiscale.3x/model_final.pth) |
+| [SOLO-R50-FPN](segmentation/coco/solo/solo.res50.fpn.coco.800size.1x) | 800    | 90k      | 0.970               | 6.99           | 33.1   | 32.7    | [LINK](segmentation/coco/solo/solo.res50.fpn.coco.800size.1x/model_final.pth) |
+| [SOLO-R50-FPN](segmentation/coco/solo/solo.res50.fpn.coco.multiscale.3x) | 640-800    | 270k      | 0.950               | 6.99           | 35.6   | 35.2    | [LINK](segmentation/coco/solo/solo.res50.fpn.coco.multiscale.3x/model_final.pth) |
+| [DecoupledSOLO-R50-FPN](segmentation/coco/solo/decoupled_solo.res50.fpn.coco.800size.1x) | 800    | 90k      | 1.097               | 6.68           | 34.0   | 33.7    | [LINK](segmentation/coco/solo/decoupled_solo.res50.fpn.coco.800size.1x/model_final.pth) |
+| [DecoupledSOLO-R50-FPN](segmentation/coco/solo/decoupled_solo.res50.fpn.coco.multiscale.3x) | 640-800    | 270k      | 0.922               | 6.47           | 35.9   | 35.6    | [LINK](segmentation/coco/solo/decoupled_solo.res50.fpn.coco.multiscale.3x/model_final.pth) |
 
 
 ### LVIS
 
 | Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | box AP | mask AP | Trained Model                             |
 | ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------ | ------- | ----------------------------------------- |
-| [MaskRCNN-R50-FPN](examples/segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.800size.1x) | 800        | 90k      | 0.486               | 5.26           | 20.3   | 21.0    | [LINK](segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.800size.1x/model_final.pth) |
-| [MaskRCNN-R50-FPN-DataResampling](examples/segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.800size.1x.data_resampling) | 800        | 90k      | 0.500               | 5.26           | 23.0   | 23.1    | [LINK](segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.800size.1x.data_resampling/model_final.pth) |
-| [MaskRCNN-R50-FPN-DataResampling](examples/segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.multiscale.1x.data_resampling) | 640-800    | 90k      | 0.485               | 5.25           | 24.1   | 24.7    | [LINK](segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.multiscale.1x.data_resampling/model_final.pth) |
+| [MaskRCNN-R50-FPN](segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.800size.1x) | 800        | 90k      | 0.486               | 5.26           | 20.3   | 21.0    | [LINK](segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.800size.1x/model_final.pth) |
+| [MaskRCNN-R50-FPN-DataResampling](segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.800size.1x.data_resampling) | 800        | 90k      | 0.500               | 5.26           | 23.0   | 23.1    | [LINK](segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.800size.1x.data_resampling/model_final.pth) |
+| [MaskRCNN-R50-FPN-DataResampling](segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.multiscale.1x.data_resampling) | 640-800    | 90k      | 0.485               | 5.25           | 24.1   | 24.7    | [LINK](segmentation/lvis/rcnn/mask_rcnn.res50.fpn.lvis.multiscale.1x.data_resampling/model_final.pth) |
 
 
 
@@ -164,8 +164,8 @@ Comming Soon.
 
 | Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | mask AP |                                                              |
 | ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ------- | ------------------------------------------------------------ |
-| [MaskRCNN-R50-FPN](examples/segmentation/cityscapes/rcnn/mask_rcnn.res50.fpn.cityscapes.multiscales.1x) | 640-800    | 90k      | 0.737               | 5.21           | 37.4    | [LINK](segmentation/cityscapes/rcnn/mask_rcnn.res50.fpn.cityscapes.multiscales.1x/model_final.pth) |
-| [PointRend-R50-FPN](examples/segmentation/cityscapes/pointrend/pointrend.res50.fpn.cityscapes.multiscale.1x) | 800-1024 | 240k   | 0.746         | 8.21       | 36.0 | [LINK](segmentation/cityscapes/pointrend/pointrend.res50.fpn.cityscapes.multiscale.1x/model_final.pth) |
+| [MaskRCNN-R50-FPN](segmentation/cityscapes/rcnn/mask_rcnn.res50.fpn.cityscapes.multiscales.1x) | 640-800    | 90k      | 0.737               | 5.21           | 37.4    | [LINK](segmentation/cityscapes/rcnn/mask_rcnn.res50.fpn.cityscapes.multiscales.1x/model_final.pth) |
+| [PointRend-R50-FPN](segmentation/cityscapes/pointrend/pointrend.res50.fpn.cityscapes.multiscale.1x) | 800-1024 | 240k   | 0.746         | 8.21       | 36.0 | [LINK](segmentation/cityscapes/pointrend/pointrend.res50.fpn.cityscapes.multiscale.1x/model_final.pth) |
 
 
 ## Semantic Segmentation
@@ -176,7 +176,7 @@ Comming Soon.
 
 | Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | mIoU | Trained Model                                                |
 | ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ---- | ------------------------------------------------------------ |
-| [SemanticFPN-R50-FPN](examples/semantic_segmentation/coco/semanticfpn/semanticfpn.res50.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.285               | 6.16            | 40.3 | [LINK](semantic_segmentation/coco/semanticfpn/semanticfpn.res50.fpn.coco.multiscale.1x/model_final.pth) |
+| [SemanticFPN-R50-FPN](semantic_segmentation/coco/semanticfpn/semanticfpn.res50.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.285               | 6.16            | 40.3 | [LINK](semantic_segmentation/coco/semanticfpn/semanticfpn.res50.fpn.coco.multiscale.1x/model_final.pth) |
 
 ### CITYSCAPES
 
@@ -184,24 +184,24 @@ Comming Soon.
 
 | Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | mIoU | Trained Model                                                |
 | ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ---- | ------------------------------------------------------------ |
-| [PointRend-R101-FPN](examples/semantic_segmentation/cityscapes/pointrend/pointrend.res101.fpn.cityscapes.multiscale.1x) | 512-2048 | 65k    | 1.900             | 3.88        | 78.2 | [LINK](semantic_segmentation/cityscapes/pointrend/pointrend.res101.fpn.cityscapes.multiscale.1x/model_final.pth) |
+| [PointRend-R101-FPN](semantic_segmentation/cityscapes/pointrend/pointrend.res101.fpn.cityscapes.multiscale.1x) | 512-2048 | 65k    | 1.900             | 3.88        | 78.2 | [LINK](semantic_segmentation/cityscapes/pointrend/pointrend.res101.fpn.cityscapes.multiscale.1x/model_final.pth) |
 
 #### DynamicRouting
 
 | Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | mIoU | Trained Model                                                |
 | ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ---- | ------------------------------------------------------------ |
-| [Dynamic-A](examples/semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_A) | 512-2048 | 190k    | 0.736             | 8.74        | 75.7 | [LINK](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_A/model_final.pth) |
-| [Dynamic-B](examples/semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_B) | 512-2048 | 190k    | 0.706             | 8.74        | 75.3 | [LINK](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_B/model_final.pth) |
-| [Dynamic-C](examples/semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_C) | 512-2048 | 190k    | 0.717             | 8.74        | 76.2 | [LINK](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_C/model_final.pth) |
-| [Dynamic-Raw](examples/semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16) | 512-2048 | 190k    | 0.757             | 8.73        | 76.5 | [LINK](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16/model_final.pth) |
+| [Dynamic-A](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_A) | 512-2048 | 190k    | 0.736             | 8.74        | 75.7 | [LINK](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_A/model_final.pth) |
+| [Dynamic-B](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_B) | 512-2048 | 190k    | 0.706             | 8.74        | 75.3 | [LINK](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_B/model_final.pth) |
+| [Dynamic-C](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_C) | 512-2048 | 190k    | 0.717             | 8.74        | 76.2 | [LINK](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16.SmallGate.Dynamic_C/model_final.pth) |
+| [Dynamic-Raw](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16) | 512-2048 | 190k    | 0.757             | 8.73        | 76.5 | [LINK](semantic_segmentation/cityscapes/dynamic_routing/Seg.Layer16/model_final.pth) |
 
 #### FCN
 
 | Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | mIoU | Trained Model                                                |
 | ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ---- | ------------------------------------------------------------ |
-| [FCN-Res101-s32](examples/semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s32) | 512-2048 | 65k    | 0.605             | 3.44        | 71.9 | [LINK](semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s32/model_final.pth) |
-| [FCN-Res101-s16](examples/semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s16) | 512-2048 | 65k    | 0.593             | 3.41        | 73.5 | [LINK](semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s16/model_final.pth) |
-| [FCN-Res101-s8](examples/semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s8) | 512-2048 | 65k    | 0.541             | 3.41        | 74.0 | [LINK](semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s8/model_final.pth) |
+| [FCN-Res101-s32](semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s32) | 512-2048 | 65k    | 0.605             | 3.44        | 71.9 | [LINK](semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s32/model_final.pth) |
+| [FCN-Res101-s16](semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s16) | 512-2048 | 65k    | 0.593             | 3.41        | 73.5 | [LINK](semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s16/model_final.pth) |
+| [FCN-Res101-s8](semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s8) | 512-2048 | 65k    | 0.541             | 3.41        | 74.0 | [LINK](semantic_segmentation/cityscapes/fcn/fcn.res101.cityscapes.multiscale.1x.s8/model_final.pth) |
 
 ## Panoptic Segmentation
 
@@ -211,8 +211,8 @@ Comming Soon.
 
 | Name                                                         | input size | lr sched | train time (s/iter) | train mem (GB) | PG | Trained Model                                                |
 | ------------------------------------------------------------ | ---------- | -------- | ------------------- | -------------- | ---- | ------------------------------------------------------------ |
-| [PanopticFPN-R50-FPN-800](examples/panoptic_segmentation/coco/panoptic_fpn.res50.fpn.coco.800size.1x) | 800    | 90k      | 0.4842               | 4.74            | 39.4 | [LINK](panoptic_segmentation/coco/panoptic_fpn.res50.fpn.coco.800size.1x/model_final.pth) |
-| [PanopticFPN-R50-FPN-MS](examples/panoptic_segmentation/coco/panoptic_fpn.res50.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.4657               | 4.74            | 39.5 | [LINK](panoptic_segmentation/coco/panoptic_fpn.res50.fpn.coco.multiscale.1x/model_final.pth) |
+| [PanopticFPN-R50-FPN-800](panoptic_segmentation/coco/panoptic_fpn.res50.fpn.coco.800size.1x) | 800    | 90k      | 0.4842               | 4.74            | 39.4 | [LINK](panoptic_segmentation/coco/panoptic_fpn.res50.fpn.coco.800size.1x/model_final.pth) |
+| [PanopticFPN-R50-FPN-MS](panoptic_segmentation/coco/panoptic_fpn.res50.fpn.coco.multiscale.1x) | 640-800    | 90k      | 0.4657               | 4.74            | 39.5 | [LINK](panoptic_segmentation/coco/panoptic_fpn.res50.fpn.coco.multiscale.1x/model_final.pth) |
 
 # Key-Points
 
