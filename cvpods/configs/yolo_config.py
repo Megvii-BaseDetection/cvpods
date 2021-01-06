@@ -11,7 +11,7 @@ _config_dict = dict(
         DARKNET=dict(
             DEPTH=53,
             STEM_OUT_CHANNELS=32,
-            WEIGHTS="s3://generalDetection/cvpods/ImageNetPretrained/custom/darknet53.mix.pth",
+            WEIGHTS="cvpods/ImageNetPretrained/custom/darknet53.mix.pth",
             OUT_FEATURES=["dark3", "dark4", "dark5"]
         ),
         YOLO=dict(

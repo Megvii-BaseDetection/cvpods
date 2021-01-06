@@ -4,7 +4,7 @@ from cvpods.configs.rcnn_fpn_config import RCNNFPNConfig
 
 _config_dict = dict(
     MODEL=dict(
-        WEIGHTS="s3://generalDetection/cvpods/ImageNetPretrained/FAIR/maskrcnn_3x.pkl",
+        WEIGHTS="cvpods/ImageNetPretrained/FAIR/maskrcnn_3x.pkl",
         MASK_ON=True,
         RESNETS=dict(DEPTH=50),
         ROI_HEADS=dict(NUM_CLASSES=8),
