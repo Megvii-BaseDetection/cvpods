@@ -104,8 +104,9 @@ def adjust_config(cfg):
         cfg.SOLVER.CHECKPOINT_PERIOD = int(cfg.SOLVER.CHECKPOINT_PERIOD / machines_ratio)
         cfg.TEST.EVAL_PERIOD = int(cfg.TEST.EVAL_PERIOD / machines_ratio)
 
-    # adjust learning rate according to Linear rule
-    cfg.SOLVER.OPTIMIZER.BASE_LR = machines_ratio * cfg.SOLVER.OPTIMIZER.BASE_LR
+    if "SGD" in cfg.SOLVER.OPTIMIZER.NAME:
+        # adjust learning rate according to Linear rule
+        cfg.SOLVER.OPTIMIZER.BASE_LR = machines_ratio * cfg.SOLVER.OPTIMIZER.BASE_LR
 
 
 def default_setup(cfg, args):
