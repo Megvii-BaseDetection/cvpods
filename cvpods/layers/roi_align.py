@@ -5,13 +5,7 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
 from cvpods import _C
-
-try:
-    from apex.amp import float_function
-except ImportError:
-    raise ImportError(
-        "Please install apex from https://www.github.com/nvidia/apex to run this example."
-    )
+from cvpods.utils.apex_wrapper import float_function
 
 
 class _ROIAlign(Function):

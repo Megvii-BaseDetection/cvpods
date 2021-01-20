@@ -55,7 +55,7 @@ class PositionEmbeddingLearned(nn.Module):
     Absolute pos embedding, learned.
     """
 
-    def __init__(self, num_pos_feats=256, **kwargs):
+    def __init__(self, num_pos_feats=256, **kwargs):  # pylint: disable=unused-argument
         super().__init__()
         self.row_embed = nn.Embedding(50, num_pos_feats)
         self.col_embed = nn.Embedding(50, num_pos_feats)

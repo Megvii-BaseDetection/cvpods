@@ -140,7 +140,7 @@ void MatchDetectionsToGroundTruth(
 
 std::vector<ImageEvaluation> EvaluateImages(
     const std::vector<std::array<double, 2>>& area_ranges,
-    uint64_t max_detections,
+    int max_detections,
     const std::vector<double>& iou_thresholds,
     const ImageCategoryInstances<std::vector<double>>& image_category_ious,
     const ImageCategoryInstances<InstanceAnnotation>&
@@ -168,7 +168,7 @@ std::vector<ImageEvaluation> EvaluateImages(
 
       SortInstancesByDetectionScore(
           detection_instances, &detection_sorted_indices);
-      if (detection_sorted_indices.size() > max_detections) {
+      if (detection_sorted_indices.size() > (uint)max_detections) {
         detection_sorted_indices.resize(max_detections);
       }
 
