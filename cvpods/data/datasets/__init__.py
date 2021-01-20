@@ -7,6 +7,7 @@ from .crowdhuman import CrowdHumanDataset
 from .imagenet import ImageNetDataset
 from .lvis import LVISDataset
 from .objects365 import Objects365Dataset
+from .torchvision_datasets import CIFAR10Dataset, STL10Datasets
 from .voc import VOCDataset
 from .widerface import WiderFaceDataset
 
@@ -20,4 +21,6 @@ __all__ = [
     "CityPersonsDataset",
     "Objects365Dataset",
     "CrowdHumanDataset",
+    "CIFAR10Dataset",
+    "STL10Datasets",
 ]
