@@ -7,8 +7,8 @@ from cvpods.configs.base_config import BaseConfig
 _config_dict = dict(
     MODEL=dict(
         WEIGHTS="",
-        PIXEL_MEAN=[0.406, 0.456, 0.485],  # BGR
-        PIXEL_STD=[0.225, 0.224, 0.229],
+        PIXEL_MEAN=[0.485, 0.456, 0.406],  # RGB
+        PIXEL_STD=[0.229, 0.224, 0.225],
         BACKBONE=dict(FREEZE_AT=-1, ),  # do not freeze
         RESNETS=dict(
             NUM_CLASSES=None,
@@ -33,6 +33,9 @@ _config_dict = dict(
             # Deep Stem
             DEEP_STEM=False,
         ),
+    ),
+    INPUT=dict(
+        FORMAT="RGB",
     ),
     SOLVER=dict(
         IMS_PER_DEVICE=32,  # defalut: 8 gpus x 32 = 256

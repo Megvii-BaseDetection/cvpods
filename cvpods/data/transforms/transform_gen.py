@@ -38,7 +38,6 @@ from .transform import (  # isort:skip
     SolarizationTransform,
     LightningTransform,
     ComposeTransform,
-    TorchTransform,
     # LabSpaceTransform,
     PadTransform,
     FiveCropTransform,
@@ -208,17 +207,17 @@ class RandomFlip(TransformGen):
 
 
 @TRANSFORMS.register()
-class TorchTransformGen(TransformGen):
+class TorchTransformGen:
     """
     Wrapper transfrom of transforms in torchvision.
     It convert img (np.ndarray) to PIL image, and convert back to np.ndarray after transform.
     """
     def __init__(self, tfm):
-        super().__init__()
         self.tfm = tfm
 
-    def get_transform(self, img, annotations=None):
-        return TorchTransform(self.tfm)
+    def __call__(self, img: np.ndarray, annotations: None, **kwargs):
+        pil_image = Image.fromarray(img)
+        return np.array(self.tfm(pil_image)), annotations
 
 
 @TRANSFORMS.register()
