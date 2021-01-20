@@ -139,12 +139,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
       "COCOevalEvaluateImages",
       &COCOeval::EvaluateImages,
       "COCOeval::EvaluateImages");
-  pybind11::class_<COCOeval::InstanceAnnotation>(m, "InstanceAnnotation")
-      .def(pybind11::init<uint64_t, double, double, bool, bool>());
-  pybind11::class_<COCOeval::ImageEvaluation>(m, "ImageEvaluation")
-      .def(pybind11::init<>());
 
-  // Tree Filter v2
   m.def("rst_forward", &rst_forward, "rst forward");
   m.def("mst_forward", &mst_forward, "mst forward");
   m.def("bfs_forward", &bfs_forward, "bfs forward");
@@ -161,6 +156,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         &tree_filter_refine_backward_self_weight,
         "tree filter refine backward wrt self weight");
 
+  pybind11::class_<COCOeval::InstanceAnnotation>(m, "InstanceAnnotation")
+      .def(pybind11::init<uint64_t, double, double, bool, bool>());
+  pybind11::class_<COCOeval::ImageEvaluation>(m, "ImageEvaluation")
+      .def(pybind11::init<>());
 }
 
 } // namespace cvpods

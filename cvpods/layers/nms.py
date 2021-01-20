@@ -7,14 +7,7 @@ from torchvision.ops import nms  # BC-compat
 
 from cvpods import _C
 from cvpods.layers.rotated_boxes import pairwise_iou_rotated
-
-try:
-    from apex.amp import float_function
-except ImportError:
-    raise ImportError(
-        "Please install apex from https://www.github.com/nvidia/apex to run this example."
-    )
-
+from cvpods.utils.apex_wrapper import float_function
 
 ml_nms = _C.ml_nms
 
