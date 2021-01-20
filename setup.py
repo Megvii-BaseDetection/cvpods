@@ -141,7 +141,48 @@ if __name__ == "__main__":
         "platform for object detection and segmentation based on cvpods.",
         packages=find_packages(exclude=("configs", "tests")),
         python_requires=">=3.6",
-        ext_modules=get_extensions(),
+        install_requires=[
+            "cython",
+            "torch",
+            "torchvision",
+            # Do not add opencv here. Just like pytorch, user should install
+            # opencv themselves, preferrably by OS's package manager, or by
+            # choosing the proper pypi package name at https://github.com/skvark/opencv-python
+            "termcolor>=1.1",
+            "Pillow>=7.1",  # or use pillow-simd for better performance
+            "yacs>=0.1.6",
+            "tabulate",
+            "cloudpickle",
+            "matplotlib",
+            "tqdm>4.29.0",
+            "tensorboard",
+            "pycocotools>=2.0.2",  # corresponds to https://github.com/ppwwyyxx/cocoapi
+            "future",  # used by caffe2
+            "pydot",  # used to save caffe2 SVGs
+            "portalocker",
+            "easydict",
+            "lvis",
+            "cityscapesscripts",
+            "appdirs",
+            "seaborn",
+            "pandas",
+        ],
+        extras_require={
+            "all": [
+                "shapely",
+                "psutil",
+                "hydra-core",
+                "panopticapi @ https://github.com/cocodataset/panopticapi/archive/master.zip",
+            ],
+            "dev": [
+                "flake8==3.8.1",
+                "isort==4.3.21",
+                "black==20.8b1",
+                "flake8-bugbear",
+                "flake8-comprehensions",
+            ],
+        },
+            ext_modules=get_extensions(),
         cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
         scripts=[
             "tools/pods_train",
