@@ -151,10 +151,13 @@ def read_image(file_name, format=None):
 
     with PathManager.open(file_name, "rb") as f:
         image = Image.open(f)
-
-        # work around this bug: https://github.com/python-pillow/Pillow/issues/3973
-        image = _apply_exif_orientation(image)
-        return convert_PIL_to_numpy(image, format)
+        if format == ("RGB"):
+            image = image.convert("RGB")
+            return np.array(image)
+        else:
+            # work around this bug: https://github.com/python-pillow/Pillow/issues/3973
+            image = _apply_exif_orientation(image)
+            return convert_PIL_to_numpy(image, format)
 
 
 def check_image_size(dataset_dict, image):

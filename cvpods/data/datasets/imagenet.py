@@ -61,7 +61,16 @@ class ImageNetDataset(BaseDataset):
                 annos = [a for a in annos if a is not None]
 
             # image shape: CHW / NCHW
-            dd["image"] = torch.tensor(np.ascontiguousarray(img))
+            # TODO: fix hack
+            if img.shape[0] == 3:  # CHW
+                dd["image"] = torch.as_tensor(np.ascontiguousarray(img))
+            elif len(img.shape) == 3 and img.shape[-1] == 3:
+                dd["image"] = torch.as_tensor(
+                    np.ascontiguousarray(img.transpose(2, 0, 1)))
+            elif len(img.shape) == 4 and img.shape[-1] == 3:
+                # NHWC -> NCHW
+                dd["image"] = torch.as_tensor(
+                    np.ascontiguousarray(img.transpose(0, 3, 1, 2)))
             return dd
 
         if isinstance(images, dict):

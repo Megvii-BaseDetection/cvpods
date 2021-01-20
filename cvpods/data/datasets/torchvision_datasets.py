@@ -61,10 +61,12 @@ class CIFAR10Dataset(CIFAR10):
         images, _ = self._apply_transforms(self, image, dataset_dict)
 
         def process(dd, img):
-            if len(img.shape) == 3:
+            if img.shape[0] == 3:  # CHW
+                dd["image"] = torch.as_tensor(np.ascontiguousarray(img))
+            elif len(img.shape) == 3 and img.shape[-1] == 3:
                 dd["image"] = torch.as_tensor(
                     np.ascontiguousarray(img.transpose(2, 0, 1)))
-            elif len(img.shape) == 4:
+            elif len(img.shape) == 4 and img.shape[-1] == 3:
                 # NHWC -> NCHW
                 dd["image"] = torch.as_tensor(
                     np.ascontiguousarray(img.transpose(0, 3, 1, 2)))
@@ -134,9 +136,11 @@ class STL10Datasets(STL10):
         images, _ = self._apply_transforms(self, image, dataset_dict)
 
         def process(dd, img):
-            if len(img.shape) == 3:
+            if img.shape[0] == 3:  # CHW
+                dd["image"] = torch.as_tensor(np.ascontiguousarray(img))
+            if len(img.shape) == 3 and img.shape[-1] == 3:
                 dd["image"] = torch.as_tensor(np.ascontiguousarray(img.transpose(2, 0, 1)))
-            elif len(img.shape) == 4:
+            elif len(img.shape) == 4 and img.shape[-1] == 3:
                 # NHWC -> NCHW
                 dd["image"] = torch.as_tensor(np.ascontiguousarray(img.transpose(0, 3, 1, 2)))
 
