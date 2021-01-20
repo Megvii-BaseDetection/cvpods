@@ -76,8 +76,8 @@ at::Tensor nms_rotated_cuda(
     const at::Tensor& scores,
     float iou_threshold) {
   // using scalar_t = float;
-  AT_ASSERTM(dets.type().is_cuda(), "dets must be a CUDA tensor");
-  AT_ASSERTM(scores.type().is_cuda(), "scores must be a CUDA tensor");
+  AT_ASSERTM(dets.device().is_cuda(), "dets must be a CUDA tensor");
+  AT_ASSERTM(scores.device().is_cuda(), "scores must be a CUDA tensor");
   at::cuda::CUDAGuard device_guard(dets.device());
 
   auto order_t = std::get<1>(scores.sort(0, /* descending=*/true));

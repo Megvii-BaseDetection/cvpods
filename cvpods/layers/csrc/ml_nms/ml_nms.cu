@@ -75,7 +75,7 @@ namespace cvpods {
 // boxes is a N x 6 tensor
 at::Tensor ml_nms_cuda(const at::Tensor boxes, float nms_overlap_thresh) {
   using scalar_t = float;
-  AT_ASSERTM(boxes.type().is_cuda(), "boxes must be a CUDA tensor");
+  AT_ASSERTM(boxes.device().is_cuda(), "boxes must be a CUDA tensor");
   auto scores = boxes.select(1, 4);
   auto order_t = std::get<1>(scores.sort(0, /* descending=*/true));
   auto boxes_sorted = boxes.index_select(0, order_t);

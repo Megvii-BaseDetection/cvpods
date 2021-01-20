@@ -131,10 +131,10 @@ inline int deform_conv_forward(
     int group,
     int deformable_group,
     int im2col_step) {
-  if (input.type().is_cuda()) {
+  if (input.device().is_cuda()) {
 #ifdef WITH_CUDA
-    TORCH_CHECK(weight.type().is_cuda(), "weight tensor is not on GPU!");
-    TORCH_CHECK(offset.type().is_cuda(), "offset tensor is not on GPU!");
+    TORCH_CHECK(weight.device().is_cuda(), "weight tensor is not on GPU!");
+    TORCH_CHECK(offset.device().is_cuda(), "offset tensor is not on GPU!");
     return deform_conv_forward_cuda(
         input,
         weight,
@@ -179,11 +179,11 @@ inline int deform_conv_backward_input(
     int group,
     int deformable_group,
     int im2col_step) {
-  if (gradOutput.type().is_cuda()) {
+  if (gradOutput.device().is_cuda()) {
 #ifdef WITH_CUDA
-    TORCH_CHECK(input.type().is_cuda(), "input tensor is not on GPU!");
-    TORCH_CHECK(weight.type().is_cuda(), "weight tensor is not on GPU!");
-    TORCH_CHECK(offset.type().is_cuda(), "offset tensor is not on GPU!");
+    TORCH_CHECK(input.device().is_cuda(), "input tensor is not on GPU!");
+    TORCH_CHECK(weight.device().is_cuda(), "weight tensor is not on GPU!");
+    TORCH_CHECK(offset.device().is_cuda(), "offset tensor is not on GPU!");
     return deform_conv_backward_input_cuda(
         input,
         offset,
@@ -229,10 +229,10 @@ inline int deform_conv_backward_filter(
     int deformable_group,
     float scale,
     int im2col_step) {
-  if (gradOutput.type().is_cuda()) {
+  if (gradOutput.device().is_cuda()) {
 #ifdef WITH_CUDA
-    TORCH_CHECK(input.type().is_cuda(), "input tensor is not on GPU!");
-    TORCH_CHECK(offset.type().is_cuda(), "offset tensor is not on GPU!");
+    TORCH_CHECK(input.device().is_cuda(), "input tensor is not on GPU!");
+    TORCH_CHECK(offset.device().is_cuda(), "offset tensor is not on GPU!");
     return deform_conv_backward_parameters_cuda(
         input,
         offset,
@@ -279,11 +279,11 @@ inline void modulated_deform_conv_forward(
     const int group,
     const int deformable_group,
     const bool with_bias) {
-  if (input.type().is_cuda()) {
+  if (input.device().is_cuda()) {
 #ifdef WITH_CUDA
-    TORCH_CHECK(weight.type().is_cuda(), "weight tensor is not on GPU!");
-    TORCH_CHECK(bias.type().is_cuda(), "bias tensor is not on GPU!");
-    TORCH_CHECK(offset.type().is_cuda(), "offset tensor is not on GPU!");
+    TORCH_CHECK(weight.device().is_cuda(), "weight tensor is not on GPU!");
+    TORCH_CHECK(bias.device().is_cuda(), "bias tensor is not on GPU!");
+    TORCH_CHECK(offset.device().is_cuda(), "offset tensor is not on GPU!");
     return modulated_deform_conv_cuda_forward(
         input,
         weight,
@@ -336,12 +336,12 @@ inline void modulated_deform_conv_backward(
     int group,
     int deformable_group,
     const bool with_bias) {
-  if (grad_output.type().is_cuda()) {
+  if (grad_output.device().is_cuda()) {
 #ifdef WITH_CUDA
-    TORCH_CHECK(input.type().is_cuda(), "input tensor is not on GPU!");
-    TORCH_CHECK(weight.type().is_cuda(), "weight tensor is not on GPU!");
-    TORCH_CHECK(bias.type().is_cuda(), "bias tensor is not on GPU!");
-    TORCH_CHECK(offset.type().is_cuda(), "offset tensor is not on GPU!");
+    TORCH_CHECK(input.device().is_cuda(), "input tensor is not on GPU!");
+    TORCH_CHECK(weight.device().is_cuda(), "weight tensor is not on GPU!");
+    TORCH_CHECK(bias.device().is_cuda(), "bias tensor is not on GPU!");
+    TORCH_CHECK(offset.device().is_cuda(), "offset tensor is not on GPU!");
     return modulated_deform_conv_cuda_backward(
         input,
         weight,

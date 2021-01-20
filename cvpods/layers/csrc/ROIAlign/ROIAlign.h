@@ -59,7 +59,7 @@ inline at::Tensor ROIAlign_forward(
     const int pooled_width,
     const int sampling_ratio,
     bool aligned) {
-  if (input.type().is_cuda()) {
+  if (input.device().is_cuda()) {
 #ifdef WITH_CUDA
     return ROIAlign_forward_cuda(
         input,
@@ -95,7 +95,7 @@ inline at::Tensor ROIAlign_backward(
     const int width,
     const int sampling_ratio,
     bool aligned) {
-  if (grad.type().is_cuda()) {
+  if (grad.device().is_cuda()) {
 #ifdef WITH_CUDA
     return ROIAlign_backward_cuda(
         grad,

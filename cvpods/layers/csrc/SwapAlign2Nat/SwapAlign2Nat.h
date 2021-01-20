@@ -23,7 +23,7 @@ inline at::Tensor SwapAlign2Nat_forward(
     const at::Tensor& X,
     const int lambda_val,
     const float pad_val) {
-  if (X.type().is_cuda()) {
+  if (X.device().is_cuda()) {
 #ifdef WITH_CUDA
     return SwapAlign2Nat_forward_cuda(X, lambda_val, pad_val);
 #else
@@ -40,7 +40,7 @@ inline at::Tensor SwapAlign2Nat_backward(
     const int channel,
     const int height,
     const int width) {
-  if (gY.type().is_cuda()) {
+  if (gY.device().is_cuda()) {
 #ifdef WITH_CUDA
     return SwapAlign2Nat_backward_cuda(
         gY, lambda_val, batch_size, channel, height, width);

@@ -181,10 +181,10 @@ at::Tensor border_align_cuda_forward(
 
     AT_DISPATCH_FLOATING_TYPES(feature.scalar_type(), "BorderAlign_Forward", [&] {
 
-        scalar_t *feature_data = feature.contiguous().data<scalar_t>();
-        scalar_t *boxes_data = boxes.contiguous().data<scalar_t>();
-        scalar_t *wh_data = wh.contiguous().data<scalar_t>();
-        scalar_t *pool_data = pool_output.contiguous().data<scalar_t>();
+        scalar_t *feature_data = feature.contiguous().data_ptr<scalar_t>();
+        scalar_t *boxes_data = boxes.contiguous().data_ptr<scalar_t>();
+        scalar_t *wh_data = wh.contiguous().data_ptr<scalar_t>();
+        scalar_t *pool_data = pool_output.contiguous().data_ptr<scalar_t>();
 
         BorderAlign_Forward<scalar_t><<<grid, block, 0, stream>>>(
             output_size,
@@ -300,11 +300,11 @@ at::Tensor border_align_cuda_backward(
 
     AT_DISPATCH_FLOATING_TYPES(feature.scalar_type(), "BorderAlign_Backward", [&] {
 
-        scalar_t *gradOutput_data = gradOutput.contiguous().data<scalar_t>();
-        scalar_t *gradInput_data = gradInput.contiguous().data<scalar_t>();
-        scalar_t *feature_data = feature.contiguous().data<scalar_t>();
-        scalar_t *boxes_data = boxes.contiguous().data<scalar_t>();
-        scalar_t *wh_data = wh.contiguous().data<scalar_t>();
+        scalar_t *gradOutput_data = gradOutput.contiguous().data_ptr<scalar_t>();
+        scalar_t *gradInput_data = gradInput.contiguous().data_ptr<scalar_t>();
+        scalar_t *feature_data = feature.contiguous().data_ptr<scalar_t>();
+        scalar_t *boxes_data = boxes.contiguous().data_ptr<scalar_t>();
+        scalar_t *wh_data = wh.contiguous().data_ptr<scalar_t>();
         
         BorderAlign_Backward<scalar_t><<<grid, block, 0, stream>>>(
             output_size,
