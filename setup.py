@@ -150,7 +150,6 @@ if __name__ == "__main__":
             # choosing the proper pypi package name at https://github.com/skvark/opencv-python
             "termcolor>=1.1",
             "Pillow>=7.1",  # or use pillow-simd for better performance
-            "yacs>=0.1.6",
             "tabulate",
             "cloudpickle",
             "matplotlib",
