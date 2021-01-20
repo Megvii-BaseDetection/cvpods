@@ -24,6 +24,7 @@ from .roi_align import ROIAlign, roi_align
 from .roi_align_rotated import ROIAlignRotated, roi_align_rotated
 from .shape_spec import ShapeSpec
 from .swap_align2nat import SwapAlign2Nat, swap_align2nat
+from .tree_filter_v2 import TreeFilterV2
 from .wrappers import (
     BatchNorm2d,
     Conv2d,

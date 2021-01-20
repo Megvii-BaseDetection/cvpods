@@ -12,6 +12,10 @@
 #include "SwapAlign2Nat/SwapAlign2Nat.h"
 #include "border_align/border_align.h"
 #include "PSROIPool/psroi_pool_cuda.h"
+#include "tree_filter/refine.hpp"
+#include "tree_filter/mst.hpp"
+#include "tree_filter/rst.hpp"
+#include "tree_filter/bfs.hpp"
 
 namespace cvpods {
 
@@ -139,6 +143,24 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
       .def(pybind11::init<uint64_t, double, double, bool, bool>());
   pybind11::class_<COCOeval::ImageEvaluation>(m, "ImageEvaluation")
       .def(pybind11::init<>());
+
+  // Tree Filter v2
+  m.def("rst_forward", &rst_forward, "rst forward");
+  m.def("mst_forward", &mst_forward, "mst forward");
+  m.def("bfs_forward", &bfs_forward, "bfs forward");
+  m.def("tree_filter_refine_forward",
+        &tree_filter_refine_forward,
+        "tree filter refine forward");
+  m.def("tree_filter_refine_backward_feature",
+        &tree_filter_refine_backward_feature,
+        "tree filter refine backward wrt feature");
+  m.def("tree_filter_refine_backward_edge_weight",
+        &tree_filter_refine_backward_edge_weight,
+        "tree filter refine backward wrt edge weight");
+  m.def("tree_filter_refine_backward_self_weight",
+        &tree_filter_refine_backward_self_weight,
+        "tree filter refine backward wrt self weight");
+
 }
 
 } // namespace cvpods

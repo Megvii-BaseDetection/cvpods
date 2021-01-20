@@ -161,8 +161,6 @@ if __name__ == "__main__":
             "pydot",  # used to save caffe2 SVGs
             "portalocker",
             "easydict",
-            "lvis",
-            "cityscapesscripts",
             "appdirs",
             "seaborn",
             "pandas",
@@ -173,6 +171,8 @@ if __name__ == "__main__":
                 "psutil",
                 "hydra-core",
                 "panopticapi @ https://github.com/cocodataset/panopticapi/archive/master.zip",
+                "lvis",
+                "cityscapesscripts",
             ],
             "dev": [
                 "flake8==3.8.1",
