@@ -66,8 +66,8 @@ at::Tensor box_iou_rotated_cuda(
     const at::Tensor& boxes1,
     const at::Tensor& boxes2) {
   using scalar_t = float;
-  AT_ASSERTM(boxes1.type().is_cuda(), "boxes1 must be a CUDA tensor");
-  AT_ASSERTM(boxes2.type().is_cuda(), "boxes2 must be a CUDA tensor");
+  AT_ASSERTM(boxes1.device().is_cuda(), "boxes1 must be a CUDA tensor");
+  AT_ASSERTM(boxes2.device().is_cuda(), "boxes2 must be a CUDA tensor");
   at::cuda::CUDAGuard device_guard(boxes1.device());
 
   int num_boxes1 = boxes1.size(0);

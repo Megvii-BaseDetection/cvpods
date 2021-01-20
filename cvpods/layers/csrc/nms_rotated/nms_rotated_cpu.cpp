@@ -13,10 +13,10 @@ at::Tensor nms_rotated_cpu_kernel(
   // however, the code in this function is much shorter because
   // we delegate the IoU computation for rotated boxes to
   // the single_box_iou_rotated function in box_iou_rotated_utils.h
-  AT_ASSERTM(!dets.type().is_cuda(), "dets must be a CPU tensor");
-  AT_ASSERTM(!scores.type().is_cuda(), "scores must be a CPU tensor");
+  AT_ASSERTM(!dets.device().is_cuda(), "dets must be a CPU tensor");
+  AT_ASSERTM(!scores.device().is_cuda(), "scores must be a CPU tensor");
   AT_ASSERTM(
-      dets.type() == scores.type(), "dets should have the same type as scores");
+      dets.dtype() == scores.dtype(), "dets should have the same type as scores");
 
   if (dets.numel() == 0) {
     return at::empty({0}, dets.options().dtype(at::kLong));

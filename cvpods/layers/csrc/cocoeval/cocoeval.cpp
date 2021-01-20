@@ -79,16 +79,16 @@ void MatchDetectionsToGroundTruth(
   detection_matches.resize(num_iou_thresholds * num_detections, 0);
   detection_ignores.resize(num_iou_thresholds * num_detections, false);
   ground_truth_ignores.resize(num_ground_truth);
-  for (auto g = 0; g < num_ground_truth; ++g) {
+  for (uint64_t g = 0; g < num_ground_truth; ++g) {
     ground_truth_ignores[g] = ignores[ground_truth_sorted_indices[g]];
   }
 
-  for (auto t = 0; t < num_iou_thresholds; ++t) {
-    for (auto d = 0; d < num_detections; ++d) {
+  for (uint64_t t = 0; t < num_iou_thresholds; ++t) {
+    for (uint64_t d = 0; d < num_detections; ++d) {
       // information about best match so far (match=-1 -> unmatched)
       double best_iou = std::min(iou_thresholds[t], 1 - 1e-10);
       int64_t match = -1;
-      for (auto g = 0; g < num_ground_truth; ++g) {
+      for (uint64_t g = 0; g < num_ground_truth; ++g) {
         // if this ground truth instance is already matched and not a
         // crowd, it cannot be matched to another detection
         if (ground_truth_matches[t * num_ground_truth + g] > 0 &&
@@ -132,7 +132,7 @@ void MatchDetectionsToGroundTruth(
 
   // store detection score results
   results->detection_scores.resize(detection_sorted_indices.size());
-  for (auto d = 0; d < detection_sorted_indices.size(); ++d) {
+  for (uint64_t d = 0; d < detection_sorted_indices.size(); ++d) {
     results->detection_scores[d] =
         detection_instances[detection_sorted_indices[d]].score;
   }
@@ -140,7 +140,7 @@ void MatchDetectionsToGroundTruth(
 
 std::vector<ImageEvaluation> EvaluateImages(
     const std::vector<std::array<double, 2>>& area_ranges,
-    int max_detections,
+    uint64_t max_detections,
     const std::vector<double>& iou_thresholds,
     const ImageCategoryInstances<std::vector<double>>& image_category_ious,
     const ImageCategoryInstances<InstanceAnnotation>&
@@ -159,8 +159,8 @@ std::vector<ImageEvaluation> EvaluateImages(
 
   // Store results for each image, category, and area range combination. Results
   // for each IOU threshold are packed into the same ImageEvaluation object
-  for (auto i = 0; i < num_images; ++i) {
-    for (auto c = 0; c < num_categories; ++c) {
+  for (uint64_t i = 0; i < num_images; ++i) {
+    for (uint64_t c = 0; c < num_categories; ++c) {
       const std::vector<InstanceAnnotation>& ground_truth_instances =
           image_category_ground_truth_instances[i][c];
       const std::vector<InstanceAnnotation>& detection_instances =
@@ -172,7 +172,7 @@ std::vector<ImageEvaluation> EvaluateImages(
         detection_sorted_indices.resize(max_detections);
       }
 
-      for (auto a = 0; a < area_ranges.size(); ++a) {
+      for (uint64_t a = 0; a < area_ranges.size(); ++a) {
         SortInstancesByIgnore(
             area_ranges[a],
             ground_truth_instances,
@@ -201,7 +201,7 @@ std::vector<ImageEvaluation> EvaluateImages(
 template <typename T>
 std::vector<T> list_to_vec(const py::list& l) {
   std::vector<T> v(py::len(l));
-  for (int i = 0; i < py::len(l); ++i) {
+  for (uint i = 0; i < py::len(l); ++i) {
     v[i] = l[i].cast<T>();
   }
   return v;
@@ -242,8 +242,8 @@ int64_t BuildSortedDetectionList(
   for (auto i = 0; i < num_images; ++i) {
     const ImageEvaluation& evaluation = evaluations[evaluation_index + i];
 
-    for (auto d = 0;
-         d < evaluation.detection_scores.size() && d < max_detections;
+    for (int64_t d = 0;
+         (uint64_t)d < evaluation.detection_scores.size() && d < max_detections;
          ++d) { // detected instances
       evaluation_indices->push_back(evaluation_index + i);
       image_detection_indices->push_back(d);
@@ -349,11 +349,11 @@ void ComputePrecisionRecallCurve(
   }
 
   // Sample the per instance precision/recall list at each recall threshold
-  for (auto r = 0; r < recall_thresholds.size(); ++r) {
+  for (uint64_t r = 0; r < recall_thresholds.size(); ++r) {
     // first index in recalls >= recall_thresholds[r]
     std::vector<double>::iterator low = std::lower_bound(
         recalls->begin(), recalls->end(), recall_thresholds[r]);
-    const auto precisions_index = low - recalls->begin();
+    const uint64_t precisions_index = low - recalls->begin();
 
     const auto results_ind = precisions_out_index + r * precisions_out_stride;
     assert(results_ind < precisions_out->size());
