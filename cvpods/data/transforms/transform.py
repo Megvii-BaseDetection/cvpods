@@ -38,7 +38,6 @@ __all__ = [
     "TransformList",
     "ExtentTransform",
     "ResizeTransform",
-    "TorchTransform",
     # Transform used in ssl
     "LightningTransform",
     "GaussianBlurTransform",
@@ -323,22 +322,6 @@ class ComposeTransform(object):
 
     def __repr__(self):
         return "".join([tfm for tfm in self.transforms])
-
-
-class TorchTransform(Transform):
-    """
-    Convert a transform from torchvision into cvpods-fashion.
-    """
-    def __init__(self, tfm):
-        super().__init__()
-        self.tfm = tfm
-
-    def apply_image(self, img: np.ndarray) -> np.ndarray:
-        pil_image = Image.fromarray(img)
-        return np.array(self.tfm(pil_image))
-
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        return coords
 
 
 # TODO: Deprecated
