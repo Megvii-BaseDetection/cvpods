@@ -4,8 +4,8 @@ from copy import deepcopy
 
 import torch
 
-from cvpods.checkpoint import DetectionCheckpointer
-from cvpods.data import build_transform_gen
+from cvpods.checkpoint import DefaultCheckpointer
+from cvpods.data import build_transform_gens
 
 __all__ = ["DefaultPredictor"]
 
@@ -44,10 +44,10 @@ class DefaultPredictor:
         self.model.eval()
         self.metadata = meta
 
-        checkpointer = DetectionCheckpointer(self.model)
+        checkpointer = DefaultCheckpointer(self.model)
         checkpointer.load(cfg.MODEL.WEIGHTS)
 
-        self.transform_gen = build_transform_gen(cfg.INPUT.AUG.TEST_PIPELINES)
+        self.transform_gen = build_transform_gens(cfg.INPUT.AUG.TEST_PIPELINES)
 
         self.input_format = cfg.INPUT.FORMAT
         assert self.input_format in ["RGB", "BGR"], self.input_format

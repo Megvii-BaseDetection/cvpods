@@ -18,15 +18,15 @@ This file contains the default logic to build a dataloader for training or testi
 
 __all__ = [
     "build_dataset",
-    "build_detection_train_loader",
-    "build_detection_test_loader",
-    "build_transform_gen",
+    "build_train_loader",
+    "build_test_loader",
+    "build_transform_gens",
 ]
 
 logger = logging.getLogger(__name__)
 
 
-def build_transform_gen(pipelines):
+def build_transform_gens(pipelines):
     """
     Create a list of :class:`TransformGen` from config.
 
@@ -45,7 +45,7 @@ def build_transform_gen(pipelines):
             if "List" in aug:
                 assert "transforms" in args, "List Transforms must contain a `transforms` key"
                 sub_pipelines = args["transforms"]
-                args["transforms"] = build_transform_gen(sub_pipelines)
+                args["transforms"] = build_transform_gens(sub_pipelines)
                 tfm = TRANSFORMS.get(aug)(**args)
             else:
                 if aug == "ResizeShortestEdge":
@@ -67,28 +67,28 @@ def build_transform_gen(pipelines):
         return build(pipelines)
 
 
-def _build_single_dataset(config, dataset_name, transforms=[], is_train=True):
-    """
-    Build a single dataset according to dataset_name.
-
-    Args:
-        config (BaseConfig): config.
-        dataset_name (str): dataset_name should be of 'dataset_xxx_xxx' format,
-            so that corresponding dataset can be acquired from the first token in this argument.
-        transforms (List[TransformGen]): list of transforms configured in config file.
-        is_train (bool): whether is in training mode or not.
-    """
-    dataset_type = dataset_name.split("_")[0].upper()
-    assert dataset_type in PATH_ROUTES, "{} not found in PATH_ROUTES".format(dataset_type)
-    name = PATH_ROUTES.get(dataset_type)["dataset_type"]
-    dataset = DATASETS.get(name)(config, dataset_name, transforms=transforms, is_train=is_train)
-    return dataset
-
-
 def build_dataset(config, dataset_names, transforms=[], is_train=True):
     """
     dataset_names: List[str], in which elemements must be in format of "dataset_task_version"
     """
+
+    def _build_single_dataset(config, dataset_name, transforms=[], is_train=True):
+        """
+        Build a single dataset according to dataset_name.
+
+        Args:
+            config (BaseConfig): config.
+            dataset_name (str): dataset_name should be of 'dataset_xxx_xxx' format,
+                so that corresponding dataset can be acquired from the first token in this argument.
+            transforms (List[TransformGen]): list of transforms configured in config file.
+            is_train (bool): whether is in training mode or not.
+        """
+        dataset_type = dataset_name.split("_")[0].upper()
+        assert dataset_type in PATH_ROUTES, "{} not found in PATH_ROUTES".format(dataset_type)
+        name = PATH_ROUTES.get(dataset_type)["dataset_type"]
+        dataset = DATASETS.get(name)(config, dataset_name, transforms=transforms, is_train=is_train)
+        return dataset
+
     datasets = [
         _build_single_dataset(config, dataset_name, transforms=transforms, is_train=is_train)
         for dataset_name in dataset_names
@@ -99,7 +99,7 @@ def build_dataset(config, dataset_names, transforms=[], is_train=True):
     return dataset
 
 
-def build_detection_train_loader(cfg):
+def build_train_loader(cfg):
     """
     A data loader is created by the following steps:
     1. Use the dataset names in config to query :class:`DatasetCatalog`, and obtain a list of dicts.
@@ -125,7 +125,7 @@ def build_detection_train_loader(cfg):
 
     logger = logging.getLogger(__name__)
 
-    transform_gens = build_transform_gen(cfg.INPUT.AUG.TRAIN_PIPELINES)
+    transform_gens = build_transform_gens(cfg.INPUT.AUG.TRAIN_PIPELINES)
     logger.info(f"TransformGens used: {transform_gens} in training")
     dataset = build_dataset(
         cfg, cfg.DATASETS.TRAIN, transforms=transform_gens, is_train=True
@@ -156,9 +156,9 @@ def build_detection_train_loader(cfg):
     return data_loader
 
 
-def build_detection_test_loader(cfg):
+def build_test_loader(cfg):
     """
-    Similar to `build_detection_train_loader`.
+    Similar to `build_train_loader`.
     But this function uses the given `dataset_name` argument (instead of the names in cfg),
     and uses batch size 1.
 
@@ -169,7 +169,7 @@ def build_detection_test_loader(cfg):
         DataLoader: a torch DataLoader, that loads the given detection
         dataset, with test-time transformation and batching.
     """
-    transform_gens = build_transform_gen(cfg.INPUT.AUG.TEST_PIPELINES)
+    transform_gens = build_transform_gens(cfg.INPUT.AUG.TEST_PIPELINES)
     logger = logging.getLogger(__name__)
     logger.info(f"TransformGens used: {transform_gens} in testing")
     dataset = build_dataset(cfg,

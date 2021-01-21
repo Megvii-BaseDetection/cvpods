@@ -26,7 +26,7 @@ from collections import OrderedDict
 
 from torch.nn.parallel import DistributedDataParallel
 
-from cvpods.checkpoint import DetectionCheckpointer
+from cvpods.checkpoint import DefaultCheckpointer
 from cvpods.engine import DefaultTrainer, default_argument_parser, default_setup, launch
 from cvpods.evaluation import build_evaluator, verify_results
 from cvpods.modeling import GeneralizedRCNNWithTTA, GeneralizedRCNN, TTAWarper
@@ -159,7 +159,7 @@ def main(args):
         cfg.MODEL.WEIGHTS = current_file
         model = build_model(cfg)
 
-        DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
+        DefaultCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
             cfg.MODEL.WEIGHTS, resume=args.resume
         )
         if cfg.TEST.AUG.ENABLED:
