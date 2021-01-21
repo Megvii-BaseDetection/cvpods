@@ -23,7 +23,7 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
 RUN pip install --user tensorboard cmake   # cmake from apt-get is too old
 RUN pip install --user torch==1.7.1+cu101 torchvision==0.8.2+cu101 -f https://download.pytorch.org/whl/torch_stable.html
 
-# install detectron2
+# install cvpods 
 RUN git clone https://github.com/megvii-basedetection/cvpods cvpods_repo
 # set FORCE_CUDA because during `docker build` cuda is not accessible
 ENV FORCE_CUDA="1"
@@ -32,9 +32,5 @@ ENV FORCE_CUDA="1"
 ARG TORCH_CUDA_ARCH_LIST="Kepler;Kepler+Tesla;Maxwell;Maxwell+Tegra;Pascal;Volta;Turing"
 ENV TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST}"
 
-RUN cd cvpods_repo
+WORKDIR /home/appuser/cvpods_repo
 RUN python3 setup.py build develop --user
-
-# Set a fixed model cache directory.
-ENV FVCORE_CACHE="/tmp"
-WORKDIR /home/appuser/cvpods
