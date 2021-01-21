@@ -2,9 +2,9 @@
 import argparse
 import os
 
-from cvpods.checkpoint import DetectionCheckpointer
+from cvpods.checkpoint import DefaultCheckpointer
 from cvpods.config import get_cfg
-from cvpods.data import build_detection_test_loader
+from cvpods.data import build_test_loader
 from cvpods.evaluation import COCOEvaluator, inference_on_dataset, print_csv_format
 from cvpods.export import add_export_config, export_caffe2_model
 from cvpods.modeling import build_model
@@ -41,10 +41,10 @@ if __name__ == "__main__":
 
     # create a torch model
     torch_model = build_model(cfg)
-    DetectionCheckpointer(torch_model).resume_or_load(cfg.MODEL.WEIGHTS)
+    DefaultCheckpointer(torch_model).resume_or_load(cfg.MODEL.WEIGHTS)
 
     # get a sample data
-    data_loader = build_detection_test_loader(cfg, cfg.DATASETS.TEST[0])
+    data_loader = build_test_loader(cfg, cfg.DATASETS.TEST[0])
     first_batch = next(iter(data_loader))
 
     # convert and save caffe2 model
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # run evaluation with the converted model
     if args.run_eval:
         dataset = cfg.DATASETS.TEST[0]
-        data_loader = build_detection_test_loader(cfg, dataset)
+        data_loader = build_test_loader(cfg, dataset)
         # NOTE: hard-coded evaluator. change to the evaluator for your dataset
         evaluator = COCOEvaluator(dataset, cfg, True, args.output)
         metrics = inference_on_dataset(caffe2_model, data_loader, evaluator)

@@ -4,11 +4,10 @@
 
 
 from . import catalog as _UNUSED  # register the handler
-from .checkpoint import Checkpointer, PeriodicCheckpointer
-from .detection_checkpoint import DetectionCheckpointer
+from .checkpoint import Checkpointer, DefaultCheckpointer, PeriodicCheckpointer
 
 __all__ = [
     "Checkpointer",
     "PeriodicCheckpointer",
-    "DetectionCheckpointer",
+    "DefaultCheckpointer",
 ]

@@ -1,11 +1,11 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+import torch
+
 import copy
 import logging
 import re
 
-import torch
-
-from .checkpoint import (  # isort:skip
+from .utils import (  # isort:skip
     get_missing_parameters_message,
     get_unexpected_parameters_message,
 )

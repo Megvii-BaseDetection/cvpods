@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-import collections
-import copy
-import logging
-import os
-from collections import defaultdict
-from typing import Any
-from termcolor import colored
-
 import numpy as np
 
 import torch
@@ -16,6 +8,22 @@ import torch.nn as nn
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
 from cvpods.utils import PathManager
+from cvpods.utils.distributed import comm
+
+import copy
+import logging
+import os
+import pickle
+from typing import Any
+
+from .c2_model_loading import align_and_update_state_dicts
+from .utils import (
+    _group_checkpoint_keys,
+    _group_to_str,
+    _strip_prefix_if_present,
+    get_missing_parameters_message,
+    get_unexpected_parameters_message
+)
 
 
 class Checkpointer(object):
@@ -314,107 +322,78 @@ class PeriodicCheckpointer:
         self.checkpointer.save(name, **kwargs)
 
 
-def get_missing_parameters_message(keys: list):
+class DefaultCheckpointer(Checkpointer):
     """
-    Get a logging-friendly message to report parameter names (keys) that are in
-    the model but not found in a checkpoint.
-    Args:
-        keys (list[str]): List of keys that were not found in the checkpoint.
-    Returns:
-        str: message.
+    Same as :class:`Checkpointer`, but is able to handle models in detectron & cvpods
+    model zoo, and apply conversions for legacy models.
     """
-    groups = _group_checkpoint_keys(keys)
-    msg = "Some model parameters are not in the checkpoint:\n"
-    msg += "\n".join(
-        "  " + colored(k + _group_to_str(v), "blue") for k, v in groups.items()
-    )
-    return msg
 
+    def __init__(self, model, save_dir="", resume=False, *, save_to_disk=None, **checkpointables):
+        """
+        Args:
+            model (nn.Module): model.
+            save_dir (str): a directory to save and find checkpoints.
+            resume (bool): indicate whether to resume from latest checkpoint or start from scratch.
+            save_to_disk (bool): if True, save checkpoint to disk, otherwise
+                disable saving for this checkpointer.
+            checkpointables (object): any checkpointable objects, i.e., objects
+                that have the `state_dict()` and `load_state_dict()` method. For
+                example, it can be used like
+                `Checkpointer(model, "dir", optimizer=optimizer)`.
+        """
+        is_main_process = comm.is_main_process()
+        super().__init__(
+            model,
+            save_dir,
+            resume,
+            save_to_disk=is_main_process if save_to_disk is None else save_to_disk,
+            **checkpointables,
+        )
 
-def get_unexpected_parameters_message(keys: list):
-    """
-    Get a logging-friendly message to report parameter names (keys) that are in
-    the checkpoint but not found in the model.
-    Args:
-        keys (list[str]): List of keys that were not found in the model.
-    Returns:
-        str: message.
-    """
-    groups = _group_checkpoint_keys(keys)
-    msg = "The checkpoint contains parameters not used by the model:\n"
-    msg += "\n".join(
-        "  " + colored(k + _group_to_str(v), "magenta")
-        for k, v in groups.items()
-    )
-    return msg
+    def _load_file(self, filename):
+        """
+        Args:
+            filename (str): load checkpoint file from local or oss. checkpoint can be of type
+                pkl, pth
+        """
+        if filename.endswith(".pkl"):
+            with PathManager.open(filename, "rb") as f:
+                data = pickle.load(f, encoding="latin1")
+            if "model" in data and "__author__" in data:
+                # file is in cvpods model zoo format
+                self.logger.info("Reading a file from '{}'".format(data["__author__"]))
+                return data
+            else:
+                # assume file is from Caffe2 / Detectron1 model zoo
+                if "blobs" in data:
+                    # Detection models have "blobs", but ImageNet models don't
+                    data = data["blobs"]
+                data = {k: v for k, v in data.items() if not k.endswith("_momentum")}
+                return {"model": data, "__author__": "Caffe2", "matching_heuristics": True}
+        elif filename.endswith(".pth"):
+            if filename.startswith("s3://"):
+                with PathManager.open(filename, "rb") as f:
+                    loaded = torch.load(f, map_location=torch.device("cpu"))
+            else:
+                loaded = super()._load_file(filename)  # load native pth checkpoint
+            if "model" not in loaded:
+                loaded = {"model": loaded}
+            return loaded
 
-
-def _strip_prefix_if_present(state_dict: collections.OrderedDict, prefix: str):
-    """
-    Strip the prefix in metadata, if any.
-    Args:
-        state_dict (OrderedDict): a state-dict to be loaded to the model.
-        prefix (str): prefix.
-    """
-    keys = sorted(state_dict.keys())
-    if not all(len(key) == 0 or key.startswith(prefix) for key in keys):
-        return
-
-    for key in keys:
-        newkey = key[len(prefix):]
-        state_dict[newkey] = state_dict.pop(key)
-
-    # also strip the prefix in metadata, if any..
-    try:
-        metadata = state_dict._metadata
-    except AttributeError:
-        pass
-    else:
-        for key in list(metadata.keys()):
-            # for the metadata dict, the key can be:
-            # '': for the DDP module, which we want to remove.
-            # 'module': for the actual model.
-            # 'module.xx.xx': for the rest.
-
-            if len(key) == 0:
-                continue
-            newkey = key[len(prefix):]
-            metadata[newkey] = metadata.pop(key)
-
-
-def _group_checkpoint_keys(keys: list):
-    """
-    Group keys based on common prefixes. A prefix is the string up to the final
-    "." in each key.
-    Args:
-        keys (list[str]): list of parameter names, i.e. keys in the model
-            checkpoint dict.
-    Returns:
-        dict[list]: keys with common prefixes are grouped into lists.
-    """
-    groups = defaultdict(list)
-    for key in keys:
-        pos = key.rfind(".")
-        if pos >= 0:
-            head, tail = key[:pos], [key[pos + 1:]]
-        else:
-            head, tail = key, []
-        groups[head].extend(tail)
-    return groups
-
-
-def _group_to_str(group: list):
-    """
-    Format a group of parameter name suffixes into a loggable string.
-    Args:
-        group (list[str]): list of parameter name suffixes.
-    Returns:
-        str: formated string.
-    """
-    if len(group) == 0:
-        return ""
-
-    if len(group) == 1:
-        return "." + group[0]
-
-    return ".{" + ", ".join(group) + "}"
+    def _load_model(self, checkpoint):
+        """
+        Args:
+            checkpoint (dict): model state dict.
+        """
+        if checkpoint.get("matching_heuristics", False):
+            self._convert_ndarray_to_tensor(checkpoint["model"])
+            # convert weights by name-matching heuristics
+            model_state_dict = self.model.state_dict()
+            align_and_update_state_dicts(
+                model_state_dict,
+                checkpoint["model"],
+                c2_conversion=checkpoint.get("__author__", None) == "Caffe2",
+            )
+            checkpoint["model"] = model_state_dict
+        # for non-caffe2 models, use standard ways to load it
+        super()._load_model(checkpoint)

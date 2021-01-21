@@ -13,9 +13,9 @@ import tqdm
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
-from cvpods.checkpoint import DetectionCheckpointer
+from cvpods.checkpoint import DefaultCheckpointer
 from cvpods.config import get_cfg
-from cvpods.data import DatasetFromList, build_detection_test_loader, build_detection_train_loader
+from cvpods.data import DatasetFromList, build_test_loader, build_train_loader
 from cvpods.engine import SimpleTrainer, default_argument_parser, hooks, launch
 from cvpods.modeling import build_model
 from cvpods.solver import build_optimizer
@@ -37,7 +37,7 @@ def setup(args):
 def benchmark_data(args):
     cfg = setup(args)
 
-    dataloader = build_detection_train_loader(cfg)
+    dataloader = build_train_loader(cfg)
 
     timer = Timer()
     itr = iter(dataloader)
@@ -72,12 +72,12 @@ def benchmark_train(args):
             model, device_ids=[comm.get_local_rank()], broadcast_buffers=False
         )
     optimizer = build_optimizer(cfg, model)
-    checkpointer = DetectionCheckpointer(model, optimizer=optimizer)
+    checkpointer = DefaultCheckpointer(model, optimizer=optimizer)
     checkpointer.load(cfg.MODEL.WEIGHTS)
 
     cfg.defrost()
     cfg.DATALOADER.NUM_WORKERS = 0
-    data_loader = build_detection_train_loader(cfg)
+    data_loader = build_train_loader(cfg)
     dummy_data = list(itertools.islice(data_loader, 100))
 
     def f():
@@ -98,11 +98,11 @@ def benchmark_eval(args):
     model = build_model(cfg)
     model.eval()
     logger.info("Model:\n{}".format(model))
-    DetectionCheckpointer(model).load(cfg.MODEL.WEIGHTS)
+    DefaultCheckpointer(model).load(cfg.MODEL.WEIGHTS)
 
     cfg.defrost()
     cfg.DATALOADER.NUM_WORKERS = 0
-    data_loader = build_detection_test_loader(cfg, cfg.DATASETS.TEST[0])
+    data_loader = build_test_loader(cfg, cfg.DATASETS.TEST[0])
     dummy_data = list(itertools.islice(data_loader, 100))
 
     def f():

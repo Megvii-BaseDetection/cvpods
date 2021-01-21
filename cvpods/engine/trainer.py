@@ -13,8 +13,8 @@ import numpy as np
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
-from cvpods.checkpoint import DetectionCheckpointer
-from cvpods.data import build_detection_test_loader, build_detection_train_loader
+from cvpods.checkpoint import DefaultCheckpointer
+from cvpods.data import build_test_loader, build_train_loader
 from cvpods.evaluation import (
     DatasetEvaluator,
     inference_on_dataset,
@@ -339,7 +339,7 @@ class DefaultTrainer(SimpleTrainer):
 
     Attributes:
         scheduler:
-        checkpointer (DetectionCheckpointer):
+        checkpointer (DefaultCheckpointer):
         cfg (BaseConfig):
 
     Examples:
@@ -401,7 +401,7 @@ class DefaultTrainer(SimpleTrainer):
         optional = {}
         if cfg.TRAINER.FP16.ENABLED:
             optional["amp"] = amp
-        self.checkpointer = DetectionCheckpointer(
+        self.checkpointer = DefaultCheckpointer(
             # Assume you want to save checkpoints together with logs/statistics
             model,
             cfg.OUTPUT_DIR,
@@ -543,10 +543,10 @@ class DefaultTrainer(SimpleTrainer):
         Returns:
             iterable
 
-        It now calls :func:`cvpods.data.build_detection_train_loader`.
+        It now calls :func:`cvpods.data.build_train_loader`.
         Overwrite it if you'd like a different data loader.:w
         """
-        return build_detection_train_loader(cfg)
+        return build_train_loader(cfg)
 
     @classmethod
     def build_test_loader(cls, cfg):
@@ -554,10 +554,10 @@ class DefaultTrainer(SimpleTrainer):
         Returns:
             iterable
 
-        It now calls :func:`cvpods.data.build_detection_test_loader`.
+        It now calls :func:`cvpods.data.build_test_loader`.
         Overwrite it if you'd like a different data loader.
         """
-        return build_detection_test_loader(cfg)
+        return build_test_loader(cfg)
 
     @classmethod
     def build_evaluator(cls, cfg, dataset_name):

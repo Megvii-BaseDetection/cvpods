@@ -24,7 +24,7 @@ from colorama import Fore, Style
 
 import torch
 
-from cvpods.checkpoint import DetectionCheckpointer
+from cvpods.checkpoint import DefaultCheckpointer
 from cvpods.engine import DefaultTrainer, default_argument_parser, default_setup, hooks, launch
 from cvpods.evaluation import build_evaluator, verify_results
 from cvpods.modeling import GeneralizedRCNNWithTTA
@@ -80,7 +80,7 @@ def stage_main(args, cfg, build):
     trainer.resume_or_load(resume=args.resume)
 
     if args.eval_only:
-        DetectionCheckpointer(
+        DefaultCheckpointer(
             trainer.model, save_dir=cfg.OUTPUT_DIR, resume=args.resume).resume_or_load(
                 cfg.MODEL.WEIGHTS, resume=args.resume)
         res = Trainer.test(cfg, trainer.model)

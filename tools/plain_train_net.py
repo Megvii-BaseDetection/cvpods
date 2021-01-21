@@ -21,9 +21,9 @@ from collections import OrderedDict
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
-from cvpods.checkpoint import DetectionCheckpointer, PeriodicCheckpointer
+from cvpods.checkpoint import DefaultCheckpointer, PeriodicCheckpointer
 from cvpods.config import get_cfg
-from cvpods.data import MetadataCatalog, build_detection_test_loader, build_detection_train_loader
+from cvpods.data import MetadataCatalog, build_test_loader, build_train_loader
 from cvpods.engine import default_argument_parser, default_setup, launch
 from cvpods.evaluation import (
     CityscapesEvaluator,
@@ -91,7 +91,7 @@ def get_evaluator(cfg, dataset_name, output_folder=None):
 def do_test(cfg, model):
     results = OrderedDict()
     for dataset_name in cfg.DATASETS.TEST:
-        data_loader = build_detection_test_loader(cfg, dataset_name)
+        data_loader = build_test_loader(cfg, dataset_name)
         evaluator = get_evaluator(
             cfg, dataset_name, os.path.join(cfg.OUTPUT_DIR, "inference", dataset_name)
         )
@@ -110,7 +110,7 @@ def do_train(cfg, model, resume=False):
     optimizer = build_optimizer(cfg, model)
     scheduler = build_lr_scheduler(cfg, optimizer)
 
-    checkpointer = DetectionCheckpointer(
+    checkpointer = DefaultCheckpointer(
         model, cfg.OUTPUT_DIR, optimizer=optimizer, scheduler=scheduler
     )
     start_iter = (
@@ -134,7 +134,7 @@ def do_train(cfg, model, resume=False):
 
     # compared to "train_net.py", we do not support accurate timing and
     # precise BN here, because they are not trivial to implement
-    data_loader = build_detection_train_loader(cfg)
+    data_loader = build_train_loader(cfg)
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
         for data, iteration in zip(data_loader, range(start_iter, max_iter)):
@@ -192,7 +192,7 @@ def main(args):
 
     logger.info("Model:\n{}".format(model))
     if args.eval_only:
-        DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
+        DefaultCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
             cfg.MODEL.WEIGHTS, resume=args.resume
         )
         return do_test(cfg, model)
