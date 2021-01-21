@@ -71,7 +71,7 @@ pods_train --num-gpus 8 --num-machines N --machine-rank 0/1/.../N-1 --dist-url "
 
 ### Tutorials
 
-We provide a detailed tutorial, which covers introduction / usage / extend guides in [Tutorials](./docs/tutorials/cvpods\ tutorials.ipynb).
+We provide a detailed tutorial, which covers introduction / usage / extend guides in [Tutorials](docs/tutorials/cvpods\ tutorials.ipynb).
 
 ## Model ZOO 
 
