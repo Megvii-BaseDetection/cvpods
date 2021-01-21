@@ -21,22 +21,6 @@ Install docker-compose and nvidia-docker2, then run:
 cd docker && USER_ID=$UID docker-compose run cvpods
 ```
 
-## Use the deployment container (to test C++ examples)
-After building the base cvpods container as above, do:
-```
-# Build:
-docker build -t cvpods-deploy:v0 -f deploy.Dockerfile
-# Launch:
-docker run --gpus all -it cvpods-deploy:v0
-```
-
-#### Using a persistent cache directory
-
-You can prevent models from being re-downloaded on every run,
-by storing them in a cache directory.
-
-To do this, add `--volume=$HOME/.torch/fvcore_cache:/tmp:rw` in the run command.
-
 ## Install new dependencies
 Add the following to `Dockerfile` to make persistent changes.
 ```
