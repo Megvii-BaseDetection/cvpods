@@ -1,6 +1,6 @@
+numpy>=1.16.0
 portalocker
 termcolor
-numpy>=1.16.0
 tqdm
 docutils>=0.14
 # https://github.com/sphinx-doc/sphinx/commit/7acd3ada3f38076af7b2b5c9f3b60bb9c2587a3d
@@ -19,7 +19,6 @@ recommonmark==0.6.0
 six
 https://download.pytorch.org/whl/cpu/torch-1.5.0%2Bcpu-cp37-cp37m-linux_x86_64.whl
 https://download.pytorch.org/whl/cpu/torchvision-0.6.0%2Bcpu-cp37-cp37m-linux_x86_64.whl
-git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
 pydot
 seaborn
 pandas
@@ -29,3 +28,4 @@ psutil
 hydra-core
 lvis
 cityscapesscripts
+git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
