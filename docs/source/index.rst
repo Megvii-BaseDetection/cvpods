@@ -10,7 +10,7 @@ Welcome to CVPODS's documentation!
    :maxdepth: 2
    :caption: Contents:
     
-   modules/index
+   modules
 
 
 Indices and tables
