@@ -3,8 +3,7 @@
     analyser
     checkpoint
     configs
-    datasets
-    transforms
+    data
     engine
     evaluation
     export
