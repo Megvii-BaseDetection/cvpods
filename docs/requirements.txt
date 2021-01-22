@@ -1,6 +1,6 @@
 portalocker
 termcolor
-numpy
+numpy>=1.16.0
 tqdm
 docutils>=0.14
 # https://github.com/sphinx-doc/sphinx/commit/7acd3ada3f38076af7b2b5c9f3b60bb9c2587a3d
