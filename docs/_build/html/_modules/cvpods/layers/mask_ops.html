@@ -1,0 +1,448 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.layers.mask_ops &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.layers.mask_ops</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.layers.mask_ops</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="k">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;paste_masks_in_image&quot;</span><span class="p">]</span>
+
+
+<span class="n">BYTES_PER_FLOAT</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="c1"># TODO: This memory limit may be too much or too little. It would be better to</span>
+<span class="c1"># determine it based on available resources.</span>
+<span class="n">GPU_MEM_LIMIT</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">**</span> <span class="mi">3</span>  <span class="c1"># 1 GB memory limit</span>
+
+
+<span class="k">def</span> <span class="nf">_do_paste_mask</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">boxes</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">skip_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        masks: N, 1, H, W</span>
+<span class="sd">        boxes: N, 4</span>
+<span class="sd">        img_h, img_w (int):</span>
+<span class="sd">        skip_empty (bool): only paste masks within the region that</span>
+<span class="sd">            tightly bound all boxes, and returns the results this region only.</span>
+<span class="sd">            An important optimization for CPU.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        if skip_empty == False, a mask of shape (N, img_h, img_w)</span>
+<span class="sd">        if skip_empty == True, a mask of shape (N, h&#39;, w&#39;), and the slice</span>
+<span class="sd">            object for the corresponding region.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># On GPU, paste all masks together (up to chunk size)</span>
+    <span class="c1"># by using the entire image to sample the masks</span>
+    <span class="c1"># Compared to pasting them one by one,</span>
+    <span class="c1"># this has more operations but is faster on COCO-scale dataset.</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">masks</span><span class="o">.</span><span class="n">device</span>
+    <span class="k">if</span> <span class="n">skip_empty</span><span class="p">:</span>
+        <span class="n">x0_int</span><span class="p">,</span> <span class="n">y0_int</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">boxes</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">floor</span><span class="p">()[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span>
+        <span class="p">)</span>
+        <span class="n">x1_int</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">ceil</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">img_w</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">y1_int</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">ceil</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">img_h</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x0_int</span><span class="p">,</span> <span class="n">y0_int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">x1_int</span><span class="p">,</span> <span class="n">y1_int</span> <span class="o">=</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># each is Nx1</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="n">masks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">img_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y0_int</span><span class="p">,</span> <span class="n">y1_int</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span>
+    <span class="n">img_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x0_int</span><span class="p">,</span> <span class="n">x1_int</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span>
+    <span class="n">img_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_y</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">img_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="c1"># img_x, img_y have shapes (N, w), (N, h)</span>
+
+    <span class="n">gx</span> <span class="o">=</span> <span class="n">img_x</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">img_y</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">img_x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">gy</span> <span class="o">=</span> <span class="n">img_y</span><span class="p">[:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">img_y</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">img_x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">gx</span><span class="p">,</span> <span class="n">gy</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">img_masks</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">grid_sample</span><span class="p">(</span><span class="n">masks</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">grid</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">skip_empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">img_masks</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">y0_int</span><span class="p">,</span> <span class="n">y1_int</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="n">x0_int</span><span class="p">,</span> <span class="n">x1_int</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">img_masks</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">()</span>
+
+
+<div class="viewcode-block" id="paste_masks_in_image"><a class="viewcode-back" href="../../../modules/layers.html#cvpods.layers.paste_masks_in_image">[docs]</a><span class="k">def</span> <span class="nf">paste_masks_in_image</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">boxes</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Paste a set of masks that are of a fixed resolution (e.g., 28 x 28) into an image.</span>
+<span class="sd">    The location, height, and width for pasting each mask is determined by their</span>
+<span class="sd">    corresponding bounding boxes in boxes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        masks (tensor): Tensor of shape (Bimg, Hmask, Wmask), where Bimg is the number of</span>
+<span class="sd">            detected object instances in the image and Hmask, Wmask are the mask width and mask</span>
+<span class="sd">            height of the predicted mask (e.g., Hmask = Wmask = 28). Values are in [0, 1].</span>
+<span class="sd">        boxes (Boxes or Tensor): A Boxes of length Bimg or Tensor of shape (Bimg, 4).</span>
+<span class="sd">            boxes[i] and masks[i] correspond to the same object instance.</span>
+<span class="sd">        image_shape (tuple): height, width</span>
+<span class="sd">        threshold (float): A threshold in [0, 1] for converting the (soft) masks to</span>
+<span class="sd">            binary masks.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        img_masks (Tensor): A tensor of shape (Bimg, Himage, Wimage), where Bimg is the</span>
+<span class="sd">        number of detected object instances and Himage, Wimage are the image width</span>
+<span class="sd">        and height. img_masks[i] is a binary mask for object instance i.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">masks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">masks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;Only square mask predictions are supported&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">masks</span><span class="o">.</span><span class="n">new_empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,)</span> <span class="o">+</span> <span class="n">image_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="o">.</span><span class="n">tensor</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">boxes</span><span class="o">.</span><span class="n">device</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span> <span class="o">==</span> <span class="n">N</span><span class="p">,</span> <span class="n">boxes</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span> <span class="o">=</span> <span class="n">image_shape</span>
+
+    <span class="c1"># The actual implementation split the input into chunks,</span>
+    <span class="c1"># and paste them chunk by chunk.</span>
+    <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
+        <span class="c1"># CPU is most efficient when they are pasted one by one with skip_empty=True</span>
+        <span class="c1"># so that it performs minimal number of operations.</span>
+        <span class="n">num_chunks</span> <span class="o">=</span> <span class="n">N</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># GPU benefits from parallelism for larger chunks, but may have memory issue</span>
+        <span class="n">num_chunks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="n">img_h</span> <span class="o">*</span> <span class="n">img_w</span> <span class="o">*</span> <span class="n">BYTES_PER_FLOAT</span> <span class="o">/</span> <span class="n">GPU_MEM_LIMIT</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">num_chunks</span> <span class="o">&lt;=</span> <span class="n">N</span>
+        <span class="p">),</span> <span class="s2">&quot;Default GPU_MEM_LIMIT in mask_ops.py is too small; try increasing it&quot;</span>
+    <span class="n">chunks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span> <span class="n">num_chunks</span><span class="p">)</span>
+
+    <span class="n">img_masks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+        <span class="n">N</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span> <span class="k">if</span> <span class="n">threshold</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">uint8</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">inds</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
+        <span class="n">masks_chunk</span><span class="p">,</span> <span class="n">spatial_inds</span> <span class="o">=</span> <span class="n">_do_paste_mask</span><span class="p">(</span>
+            <span class="n">masks</span><span class="p">[</span><span class="n">inds</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">boxes</span><span class="p">[</span><span class="n">inds</span><span class="p">],</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">skip_empty</span><span class="o">=</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">threshold</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">masks_chunk</span> <span class="o">=</span> <span class="p">(</span><span class="n">masks_chunk</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># for visualization and debugging</span>
+            <span class="n">masks_chunk</span> <span class="o">=</span> <span class="p">(</span><span class="n">masks_chunk</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+        <span class="n">img_masks</span><span class="p">[(</span><span class="n">inds</span><span class="p">,)</span> <span class="o">+</span> <span class="n">spatial_inds</span><span class="p">]</span> <span class="o">=</span> <span class="n">masks_chunk</span>
+    <span class="k">return</span> <span class="n">img_masks</span></div>
+
+
+<span class="c1"># The below are the original paste function (from Detectron1) which has</span>
+<span class="c1"># larger quantization error.</span>
+<span class="c1"># It is faster on CPU, while the aligned one is faster on GPU thanks to grid_sample.</span>
+
+
+<span class="k">def</span> <span class="nf">paste_mask_in_image_old</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Paste a single mask in an image.</span>
+<span class="sd">    This is a per-box implementation of :func:`paste_masks_in_image`.</span>
+<span class="sd">    This function has larger quantization error due to incorrect pixel</span>
+<span class="sd">    modeling and is not used any more.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mask (Tensor): A tensor of shape (Hmask, Wmask) storing the mask of a single</span>
+<span class="sd">            object instance. Values are in [0, 1].</span>
+<span class="sd">        box (Tensor): A tensor of shape (4, ) storing the x0, y0, x1, y1 box corners</span>
+<span class="sd">            of the object instance.</span>
+<span class="sd">        img_h, img_w (int): Image height and width.</span>
+<span class="sd">        threshold (float): Mask binarization threshold in [0, 1].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        im_mask (Tensor):</span>
+<span class="sd">            The resized and binarized object mask pasted into the original</span>
+<span class="sd">            image plane (a tensor of shape (img_h, img_w)).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Conversion from continuous box coordinates to discrete pixel coordinates</span>
+    <span class="c1"># via truncation (cast to int32). This determines which pixels to paste the</span>
+    <span class="c1"># mask onto.</span>
+    <span class="n">box</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>  <span class="c1"># Continuous to discrete coordinate conversion</span>
+    <span class="c1"># An example (1D) box with continuous coordinates (x0=0.7, x1=4.3) will map to</span>
+    <span class="c1"># a discrete coordinates (x0=0, x1=4). Note that box is mapped to 5 = x1 - x0 + 1</span>
+    <span class="c1"># pixels (not x1 - x0 pixels).</span>
+    <span class="n">samples_w</span> <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># Number of pixel samples, *not* geometric width</span>
+    <span class="n">samples_h</span> <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># Number of pixel samples, *not* geometric height</span>
+
+    <span class="c1"># Resample the mask from it&#39;s original grid to the new samples_w x samples_h grid</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">samples_w</span><span class="p">,</span> <span class="n">samples_h</span><span class="p">),</span> <span class="n">resample</span><span class="o">=</span><span class="n">Image</span><span class="o">.</span><span class="n">BILINEAR</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">threshold</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mask</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># for visualization and debugging, we also</span>
+        <span class="c1"># allow it to return an unmodified mask</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">mask</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+    <span class="n">im_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="n">x_0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">x_1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">img_w</span><span class="p">)</span>
+    <span class="n">y_0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">y_1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">img_h</span><span class="p">)</span>
+
+    <span class="n">im_mask</span><span class="p">[</span><span class="n">y_0</span><span class="p">:</span><span class="n">y_1</span><span class="p">,</span> <span class="n">x_0</span><span class="p">:</span><span class="n">x_1</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">y_0</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span> <span class="p">(</span><span class="n">y_1</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="p">(</span><span class="n">x_0</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span> <span class="p">(</span><span class="n">x_1</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">im_mask</span>
+
+
+<span class="c1"># Our pixel modeling requires extrapolation for any continuous</span>
+<span class="c1"># coordinate &lt; 0.5 or &gt; length - 0.5. When sampling pixels on the masks,</span>
+<span class="c1"># we would like this extrapolation to be an interpolation between boundary values and zero,</span>
+<span class="c1"># instead of using absolute zero or boundary values.</span>
+<span class="c1"># Therefore `paste_mask_in_image_old` is often used with zero padding around the masks like this:</span>
+<span class="c1"># masks, scale = pad_masks(masks[:, 0, :, :], 1)</span>
+<span class="c1"># boxes = scale_boxes(boxes.tensor, scale)</span>
+
+
+<span class="k">def</span> <span class="nf">pad_masks</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">padding</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        masks (tensor): A tensor of shape (B, M, M) representing B masks.</span>
+<span class="sd">        padding (int): Number of cells to pad on all sides.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The padded masks and the scale factor of the padding size / original size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">masks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">masks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pad2</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">padding</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">M</span> <span class="o">+</span> <span class="n">pad2</span><span class="p">)</span> <span class="o">/</span> <span class="n">M</span>
+    <span class="n">padded_masks</span> <span class="o">=</span> <span class="n">masks</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">((</span><span class="n">B</span><span class="p">,</span> <span class="n">M</span> <span class="o">+</span> <span class="n">pad2</span><span class="p">,</span> <span class="n">M</span> <span class="o">+</span> <span class="n">pad2</span><span class="p">))</span>
+    <span class="n">padded_masks</span><span class="p">[:,</span> <span class="n">padding</span><span class="p">:</span><span class="o">-</span><span class="n">padding</span><span class="p">,</span> <span class="n">padding</span><span class="p">:</span><span class="o">-</span><span class="n">padding</span><span class="p">]</span> <span class="o">=</span> <span class="n">masks</span>
+    <span class="k">return</span> <span class="n">padded_masks</span><span class="p">,</span> <span class="n">scale</span>
+
+
+<span class="k">def</span> <span class="nf">scale_boxes</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        boxes (tensor): A tensor of shape (B, 4) representing B boxes with 4</span>
+<span class="sd">            coords representing the corners x0, y0, x1, y1,</span>
+<span class="sd">        scale (float): The box scaling factor.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Scaled boxes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w_half</span> <span class="o">=</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span>
+    <span class="n">h_half</span> <span class="o">=</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span>
+    <span class="n">x_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span>
+    <span class="n">y_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span>
+
+    <span class="n">w_half</span> <span class="o">*=</span> <span class="n">scale</span>
+    <span class="n">h_half</span> <span class="o">*=</span> <span class="n">scale</span>
+
+    <span class="n">scaled_boxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>
+    <span class="n">scaled_boxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_c</span> <span class="o">-</span> <span class="n">w_half</span>
+    <span class="n">scaled_boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_c</span> <span class="o">+</span> <span class="n">w_half</span>
+    <span class="n">scaled_boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_c</span> <span class="o">-</span> <span class="n">h_half</span>
+    <span class="n">scaled_boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_c</span> <span class="o">+</span> <span class="n">h_half</span>
+    <span class="k">return</span> <span class="n">scaled_boxes</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

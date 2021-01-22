@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.solver.optimizer_builder &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.solver.optimizer_builder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.solver.optimizer_builder</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="k">import</span> <span class="n">optim</span>
+
+<span class="kn">from</span> <span class="nn">cvpods.utils.registry</span> <span class="k">import</span> <span class="n">Registry</span>
+
+<span class="n">OPTIMIZER_BUILDER</span> <span class="o">=</span> <span class="n">Registry</span><span class="p">(</span><span class="s2">&quot;Optimizer builder&quot;</span><span class="p">)</span>
+
+<span class="n">NORM_MODULE_TYPES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm3d</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">SyncBatchNorm</span><span class="p">,</span>
+    <span class="c1"># NaiveSyncBatchNorm inherits from BatchNorm2d</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">GroupNorm</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm1d</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm2d</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm3d</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">LocalResponseNorm</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="OptimizerBuilder"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.OptimizerBuilder">[docs]</a><span class="nd">@OPTIMIZER_BUILDER</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">OptimizerBuilder</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OptimizerBuilder.build"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.OptimizerBuilder.build">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+
+
+<div class="viewcode-block" id="SGDBuilder"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.SGDBuilder">[docs]</a><span class="nd">@OPTIMIZER_BUILDER</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">SGDBuilder</span><span class="p">(</span><span class="n">OptimizerBuilder</span><span class="p">):</span>
+
+<div class="viewcode-block" id="SGDBuilder.build"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.SGDBuilder.build">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">lr</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BASE_LR</span><span class="p">,</span>
+            <span class="n">weight_decay</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">WEIGHT_DECAY</span><span class="p">,</span>
+            <span class="n">momentum</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">MOMENTUM</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">optimizer</span></div></div>
+
+
+<span class="nd">@OPTIMIZER_BUILDER</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">D2SGDBuilder</span><span class="p">(</span><span class="n">OptimizerBuilder</span><span class="p">):</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">memo</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">parameter</span><span class="o">.</span><span class="n">Parameter</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">(</span><span class="n">recurse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="c1"># Avoid duplicating parameters</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">memo</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">memo</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">lr</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BASE_LR</span>
+                <span class="n">weight_decay</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">WEIGHT_DECAY</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">NORM_MODULE_TYPES</span><span class="p">):</span>
+                    <span class="n">weight_decay</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">WEIGHT_DECAY_NORM</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;bias&quot;</span><span class="p">:</span>
+                    <span class="c1"># NOTE: unlike Detectron v1, we now default BIAS_LR_FACTOR to 1.0</span>
+                    <span class="c1"># and WEIGHT_DECAY_BIAS to WEIGHT_DECAY so that bias optimizer</span>
+                    <span class="c1"># hyperparameters are by default exactly the same as for regular</span>
+                    <span class="c1"># weights.</span>
+                    <span class="n">lr</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BASE_LR</span> <span class="o">*</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BIAS_LR_FACTOR</span>
+                    <span class="n">weight_decay</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">WEIGHT_DECAY</span>
+                <span class="n">params</span> <span class="o">+=</span> <span class="p">[{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">value</span><span class="p">],</span> <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="n">lr</span><span class="p">,</span> <span class="s2">&quot;weight_decay&quot;</span><span class="p">:</span> <span class="n">weight_decay</span><span class="p">}]</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span>
+            <span class="n">params</span><span class="p">,</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BASE_LR</span><span class="p">,</span>
+            <span class="n">momentum</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">MOMENTUM</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">optimizer</span>
+
+
+<div class="viewcode-block" id="AdamBuilder"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.AdamBuilder">[docs]</a><span class="nd">@OPTIMIZER_BUILDER</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">AdamBuilder</span><span class="p">(</span><span class="n">OptimizerBuilder</span><span class="p">):</span>
+
+<div class="viewcode-block" id="AdamBuilder.build"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.AdamBuilder.build">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+        <span class="n">lr</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BASE_LR</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span>
+            <span class="n">weight_decay</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">WEIGHT_DECAY</span><span class="p">,</span>
+            <span class="n">amsgrad</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">AMSGRAD</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">optimizer</span></div></div>
+
+
+<div class="viewcode-block" id="AdamWBuilder"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.AdamWBuilder">[docs]</a><span class="nd">@OPTIMIZER_BUILDER</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">AdamWBuilder</span><span class="p">(</span><span class="n">OptimizerBuilder</span><span class="p">):</span>
+
+<div class="viewcode-block" id="AdamWBuilder.build"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.AdamWBuilder.build">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+        <span class="n">lr</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BASE_LR</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+            <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span>
+            <span class="n">betas</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BETAS</span><span class="p">,</span>
+            <span class="n">weight_decay</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">WEIGHT_DECAY</span><span class="p">,</span>
+            <span class="n">amsgrad</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">AMSGRAD</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">optimizer</span></div></div>
+
+
+<div class="viewcode-block" id="SGDGateLRBuilder"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.SGDGateLRBuilder">[docs]</a><span class="nd">@OPTIMIZER_BUILDER</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">SGDGateLRBuilder</span><span class="p">(</span><span class="n">OptimizerBuilder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    SGD Gate LR optimizer builder, used for DynamicRouting in cvpods.</span>
+<span class="sd">    This optimizer will ultiply lr for gating function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SGDGateLRBuilder.build"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.SGDGateLRBuilder.build">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+        <span class="n">gate_lr_multi</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">GATE_LR_MULTI</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">memo</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">parameter</span><span class="o">.</span><span class="n">Parameter</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">(</span><span class="n">recurse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="c1"># Avoid duplicating parameters</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">memo</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">memo</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">lr</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BASE_LR</span>
+                <span class="n">weight_decay</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">WEIGHT_DECAY</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">NORM_MODULE_TYPES</span><span class="p">):</span>
+                    <span class="n">weight_decay</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">WEIGHT_DECAY_NORM</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;bias&quot;</span><span class="p">:</span>
+                    <span class="c1"># NOTE: unlike Detectron v1, we now default BIAS_LR_FACTOR to 1.0</span>
+                    <span class="c1"># and WEIGHT_DECAY_BIAS to WEIGHT_DECAY so that bias optimizer</span>
+                    <span class="c1"># hyperparameters are by default exactly the same as for regular</span>
+                    <span class="c1"># weights.</span>
+                    <span class="n">lr</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BASE_LR</span> <span class="o">*</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BIAS_LR_FACTOR</span>
+                    <span class="n">weight_decay</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">WEIGHT_DECAY</span>
+
+                <span class="k">if</span> <span class="n">gate_lr_multi</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="s2">&quot;gate_conv&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+                    <span class="n">lr</span> <span class="o">*=</span> <span class="n">gate_lr_multi</span>
+
+                <span class="n">params</span> <span class="o">+=</span> <span class="p">[{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">value</span><span class="p">],</span> <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="n">lr</span><span class="p">,</span> <span class="s2">&quot;weight_decay&quot;</span><span class="p">:</span> <span class="n">weight_decay</span><span class="p">}]</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span>
+            <span class="n">params</span><span class="p">,</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">BASE_LR</span><span class="p">,</span>
+            <span class="n">momentum</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">MOMENTUM</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">optimizer</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

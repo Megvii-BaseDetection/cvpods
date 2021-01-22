@@ -1,0 +1,426 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.solver package &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cvpods.structures package" href="structures.html" />
+    <link rel="prev" title="cvpods.model_zoo package" href="model_zoo.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/index.html">Notes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="checkpoint.html">cvpods.checkpoint package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">cvpods.configs package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html">cvpods.data package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="engine.html">cvpods.engine package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html">cvpods.evaluation package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="layers.html">cvpods.layers package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modeling.html">cvpods.modeling package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_zoo.html">cvpods.model_zoo package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">cvpods.solver package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="structures.html">cvpods.structures package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">cvpods.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="export.html">cvpods.export package</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">API Documentation</a> &raquo;</li>
+        
+      <li>cvpods.solver package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/modules/solver.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-cvpods.solver">
+<span id="cvpods-solver-package"></span><h1>cvpods.solver package<a class="headerlink" href="#module-cvpods.solver" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="cvpods.solver.build_lr_scheduler">
+<code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">build_lr_scheduler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cfg</span></em>, <em class="sig-param"><span class="n">optimizer</span><span class="p">:</span> <span class="n">torch.optim.optimizer.Optimizer</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span> &#x2192; torch.optim.lr_scheduler._LRScheduler<a class="reference internal" href="../_modules/cvpods/solver/build.html#build_lr_scheduler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.build_lr_scheduler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a LR scheduler from config.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.solver.build_optimizer">
+<code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">build_optimizer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cfg</span></em>, <em class="sig-param"><span class="n">model</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em><span class="sig-paren">)</span> &#x2192; torch.optim.optimizer.Optimizer<a class="reference internal" href="../_modules/cvpods/solver/build.html#build_optimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.build_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build an optimizer with clip and LARS wraper from config.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.AdamBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">AdamBuilder</code><a class="reference internal" href="../_modules/cvpods/solver/optimizer_builder.html#AdamBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.AdamBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">cvpods.solver.optimizer_builder.OptimizerBuilder</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.AdamBuilder.build">
+<em class="property">static </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">cfg</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/optimizer_builder.html#AdamBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.AdamBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.AdamWBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">AdamWBuilder</code><a class="reference internal" href="../_modules/cvpods/solver/optimizer_builder.html#AdamWBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.AdamWBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">cvpods.solver.optimizer_builder.OptimizerBuilder</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.AdamWBuilder.build">
+<em class="property">static </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">cfg</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/optimizer_builder.html#AdamWBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.AdamWBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.OptimizerBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">OptimizerBuilder</code><a class="reference internal" href="../_modules/cvpods/solver/optimizer_builder.html#OptimizerBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.OptimizerBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.OptimizerBuilder.build">
+<em class="property">static </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">cfg</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/optimizer_builder.html#OptimizerBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.OptimizerBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.SGDBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">SGDBuilder</code><a class="reference internal" href="../_modules/cvpods/solver/optimizer_builder.html#SGDBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.SGDBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">cvpods.solver.optimizer_builder.OptimizerBuilder</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.SGDBuilder.build">
+<em class="property">static </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">cfg</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/optimizer_builder.html#SGDBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.SGDBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.SGDGateLRBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">SGDGateLRBuilder</code><a class="reference internal" href="../_modules/cvpods/solver/optimizer_builder.html#SGDGateLRBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.SGDGateLRBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">cvpods.solver.optimizer_builder.OptimizerBuilder</span></code></p>
+<p>SGD Gate LR optimizer builder, used for DynamicRouting in cvpods.
+This optimizer will ultiply lr for gating function.</p>
+<dl class="py method">
+<dt id="cvpods.solver.SGDGateLRBuilder.build">
+<em class="property">static </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">cfg</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/optimizer_builder.html#SGDGateLRBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.SGDGateLRBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.BaseSchedulerBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">BaseSchedulerBuilder</code><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#BaseSchedulerBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.BaseSchedulerBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.BaseSchedulerBuilder.build">
+<em class="property">static </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">cfg</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#BaseSchedulerBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.BaseSchedulerBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.LambdaLRBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">LambdaLRBuilder</code><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#LambdaLRBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.LambdaLRBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">cvpods.solver.scheduler_builder.BaseSchedulerBuilder</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.LambdaLRBuilder.build">
+<em class="property">static </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">cfg</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#LambdaLRBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.LambdaLRBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.OneCycleLRBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">OneCycleLRBuilder</code><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#OneCycleLRBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.OneCycleLRBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">cvpods.solver.scheduler_builder.BaseSchedulerBuilder</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.OneCycleLRBuilder.build">
+<em class="property">static </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">cfg</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#OneCycleLRBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.OneCycleLRBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.PolyLRBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">PolyLRBuilder</code><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#PolyLRBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.PolyLRBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">cvpods.solver.scheduler_builder.BaseSchedulerBuilder</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.PolyLRBuilder.build">
+<em class="property">static </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">cfg</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#PolyLRBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.PolyLRBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.WarmupCosineLR">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">WarmupCosineLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span><span class="p">:</span> <span class="n">torch.optim.optimizer.Optimizer</span></em>, <em class="sig-param"><span class="n">max_iters</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">warmup_factor</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">warmup_iters</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">warmup_method</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'linear'</span></em>, <em class="sig-param"><span class="n">last_epoch</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">epoch_iters</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/lr_scheduler.html#WarmupCosineLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.WarmupCosineLR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler._LRScheduler</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.WarmupCosineLR.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span><span class="p">:</span> <span class="n">torch.optim.optimizer.Optimizer</span></em>, <em class="sig-param"><span class="n">max_iters</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">warmup_factor</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">warmup_iters</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">warmup_method</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'linear'</span></em>, <em class="sig-param"><span class="n">last_epoch</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">epoch_iters</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/lr_scheduler.html#WarmupCosineLR.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.WarmupCosineLR.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cosine LR with warmup</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>Optimizer</em>) – Wrapped optimizer.</p></li>
+<li><p><strong>max_iters</strong> (<em>int</em>) – max num of iters</p></li>
+<li><p><strong>warmup_factor</strong> (<em>float</em>) – warmup factor to compute lr</p></li>
+<li><p><strong>warmup_iters</strong> (<em>int</em>) – warmup iters</p></li>
+<li><p><strong>warmup_method</strong> (<em>str</em>) – warmup method in [“constant”, “linear”, “burnin”]</p></li>
+<li><p><strong>last_epoch</strong> – The index of last epoch. Default: -1.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.solver.WarmupCosineLR.get_lr">
+<code class="sig-name descname">get_lr</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>float<span class="p">]</span><a class="reference internal" href="../_modules/cvpods/solver/lr_scheduler.html#WarmupCosineLR.get_lr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.WarmupCosineLR.get_lr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.WarmupCosineLRBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">WarmupCosineLRBuilder</code><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#WarmupCosineLRBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.WarmupCosineLRBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">cvpods.solver.scheduler_builder.BaseSchedulerBuilder</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.WarmupCosineLRBuilder.build">
+<em class="property">static </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">cfg</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#WarmupCosineLRBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.WarmupCosineLRBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.WarmupMultiStepLR">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">WarmupMultiStepLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span><span class="p">:</span> <span class="n">torch.optim.optimizer.Optimizer</span></em>, <em class="sig-param"><span class="n">milestones</span><span class="p">:</span> <span class="n">List<span class="p">[</span>int<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">gamma</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">warmup_factor</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">warmup_iters</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">warmup_method</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'linear'</span></em>, <em class="sig-param"><span class="n">last_epoch</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/lr_scheduler.html#WarmupMultiStepLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.WarmupMultiStepLR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler._LRScheduler</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.WarmupMultiStepLR.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span><span class="p">:</span> <span class="n">torch.optim.optimizer.Optimizer</span></em>, <em class="sig-param"><span class="n">milestones</span><span class="p">:</span> <span class="n">List<span class="p">[</span>int<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">gamma</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">warmup_factor</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">warmup_iters</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">warmup_method</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'linear'</span></em>, <em class="sig-param"><span class="n">last_epoch</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/lr_scheduler.html#WarmupMultiStepLR.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.WarmupMultiStepLR.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multi Step LR with warmup</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – optimizer used.</p></li>
+<li><p><strong>milestones</strong> (<em>list</em><em>[</em><em>Int</em><em>]</em>) – a list of increasing integers.</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – gamma</p></li>
+<li><p><strong>warmup_factor</strong> (<em>float</em>) – lr = warmup_factor * base_lr</p></li>
+<li><p><strong>warmup_iters</strong> (<em>int</em>) – iters to warmup</p></li>
+<li><p><strong>warmup_method</strong> (<em>str</em>) – warmup method in [“constant”, “linear”, “burnin”]</p></li>
+<li><p><strong>last_epoch</strong> (<em>int</em>) – The index of last epoch. Default: -1.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.solver.WarmupMultiStepLR.get_lr">
+<code class="sig-name descname">get_lr</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>float<span class="p">]</span><a class="reference internal" href="../_modules/cvpods/solver/lr_scheduler.html#WarmupMultiStepLR.get_lr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.WarmupMultiStepLR.get_lr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.solver.WarmupMultiStepLRBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.solver.</code><code class="sig-name descname">WarmupMultiStepLRBuilder</code><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#WarmupMultiStepLRBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.WarmupMultiStepLRBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">cvpods.solver.scheduler_builder.BaseSchedulerBuilder</span></code></p>
+<dl class="py method">
+<dt id="cvpods.solver.WarmupMultiStepLRBuilder.build">
+<em class="property">static </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">cfg</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/solver/scheduler_builder.html#WarmupMultiStepLRBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.solver.WarmupMultiStepLRBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="structures.html" class="btn btn-neutral float-right" title="cvpods.structures package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="model_zoo.html" class="btn btn-neutral float-left" title="cvpods.model_zoo package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

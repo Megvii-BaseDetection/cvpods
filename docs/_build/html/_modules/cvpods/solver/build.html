@@ -1,0 +1,368 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.solver.build &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.solver.build</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.solver.build</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">cvpods.layers</span> <span class="k">import</span> <span class="n">LARC</span>
+
+<span class="kn">from</span> <span class="nn">.optimizer_builder</span> <span class="k">import</span> <span class="n">OPTIMIZER_BUILDER</span>
+<span class="kn">from</span> <span class="nn">.scheduler_builder</span> <span class="k">import</span> <span class="n">SCHEDULER_BUILDER</span>
+
+<span class="n">_GradientClipperInput</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span>
+<span class="n">_GradientClipper</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_GradientClipperInput</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">GradientClipType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">VALUE</span> <span class="o">=</span> <span class="s2">&quot;value&quot;</span>
+    <span class="n">NORM</span> <span class="o">=</span> <span class="s2">&quot;norm&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_create_gradient_clipper</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_GradientClipper</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates gradient clipping closure to clip by value or by norm,</span>
+<span class="sd">    according to the provided config.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clip_grad_norm</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">_GradientClipperInput</span><span class="p">):</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CLIP_VALUE</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">NORM_TYPE</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clip_grad_value</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">_GradientClipperInput</span><span class="p">):</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_value_</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">CLIP_VALUE</span><span class="p">)</span>
+
+    <span class="n">_GRADIENT_CLIP_TYPE_TO_CLIPPER</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">GradientClipType</span><span class="o">.</span><span class="n">VALUE</span><span class="p">:</span> <span class="n">clip_grad_value</span><span class="p">,</span>
+        <span class="n">GradientClipType</span><span class="o">.</span><span class="n">NORM</span><span class="p">:</span> <span class="n">clip_grad_norm</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">_GRADIENT_CLIP_TYPE_TO_CLIPPER</span><span class="p">[</span><span class="n">GradientClipType</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">CLIP_TYPE</span><span class="p">)]</span>
+
+
+<span class="k">def</span> <span class="nf">_generate_optimizer_class_with_gradient_clipping</span><span class="p">(</span>
+    <span class="n">optimizer_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">],</span> <span class="n">gradient_clipper</span><span class="p">:</span> <span class="n">_GradientClipper</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dynamically creates a new type that inherits the type of a given instance</span>
+<span class="sd">    and overrides the `step` method to add gradient clipping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">optimizer_wgc_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">group</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]:</span>
+                <span class="n">gradient_clipper</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="n">OptimizerWithGradientClip</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span>
+        <span class="n">optimizer_type</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;WithGradientClip&quot;</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">optimizer_type</span><span class="p">,),</span>
+        <span class="p">{</span><span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="n">optimizer_wgc_step</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">OptimizerWithGradientClip</span>
+
+
+<span class="k">def</span> <span class="nf">maybe_add_gradient_clipping</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    If gradient clipping is enabled through config options, wraps the existing</span>
+<span class="sd">    optimizer instance of some type OptimizerType to become an instance</span>
+<span class="sd">    of the new dynamically created class OptimizerTypeWithGradientClip</span>
+<span class="sd">    that inherits OptimizerType and overrides the `step` method to</span>
+<span class="sd">    include gradient clipping.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        cfg: CfgNode</span>
+<span class="sd">            configuration options</span>
+<span class="sd">        optimizer: torch.optim.Optimizer</span>
+<span class="sd">            existing optimizer instance</span>
+<span class="sd">    Return:</span>
+<span class="sd">        optimizer: torch.optim.Optimizer</span>
+<span class="sd">            either the unmodified optimizer instance (if gradient clipping is</span>
+<span class="sd">            disabled), or the same instance with adjusted __class__ to override</span>
+<span class="sd">            the `step` method and include gradient clipping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">CLIP_GRADIENTS</span><span class="o">.</span><span class="n">ENABLED</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">optimizer</span>
+    <span class="n">grad_clipper</span> <span class="o">=</span> <span class="n">_create_gradient_clipper</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">CLIP_GRADIENTS</span><span class="p">)</span>
+    <span class="n">OptimizerWithGradientClip</span> <span class="o">=</span> <span class="n">_generate_optimizer_class_with_gradient_clipping</span><span class="p">(</span>
+        <span class="nb">type</span><span class="p">(</span><span class="n">optimizer</span><span class="p">),</span> <span class="n">grad_clipper</span>
+    <span class="p">)</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">=</span> <span class="n">OptimizerWithGradientClip</span>
+    <span class="k">return</span> <span class="n">optimizer</span>
+
+
+<span class="k">def</span> <span class="nf">maybe_use_lars_optimizer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    warp optimizer with LARS, see :clsss:`cvpods.solver.lars.LARS` for more information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cfg(BaseConfig):</span>
+<span class="sd">        optimizer(Optimizer): optimizer for warp</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        optimizer(Optimizer): optimizer with LARS warped</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="p">,</span> <span class="s2">&quot;LARC&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">LARC</span><span class="o">.</span><span class="n">ENABLED</span><span class="p">:</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">LARC</span><span class="o">.</span><span class="n">EPS</span>
+        <span class="n">trust_coef</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">LARC</span><span class="o">.</span><span class="n">TRUST_COEF</span>
+        <span class="n">clip</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">LARC</span><span class="o">.</span><span class="n">CLIP</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">LARC</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">trust_coef</span><span class="p">,</span> <span class="n">clip</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">optimizer</span>
+
+
+<div class="viewcode-block" id="build_optimizer"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.build_optimizer">[docs]</a><span class="k">def</span> <span class="nf">build_optimizer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build an optimizer with clip and LARS wraper from config.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">map_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">map_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;SGD&quot;</span><span class="p">:</span> <span class="s2">&quot;SGDBuilder&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;D2SGD&quot;</span><span class="p">:</span> <span class="s2">&quot;D2SGDBuilder&quot;</span><span class="p">,</span>  <span class="c1"># Detectron2&#39;s SGD</span>
+            <span class="s2">&quot;Adam&quot;</span><span class="p">:</span> <span class="s2">&quot;AdamBuilder&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;AdamW&quot;</span><span class="p">:</span> <span class="s2">&quot;AdamWBuilder&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;SGD_GATE_LR_MULTI&quot;</span><span class="p">:</span> <span class="s2">&quot;SGDGateLRBuilder&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">map_dict</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">map_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">name</span>
+
+    <span class="n">NAME</span> <span class="o">=</span> <span class="n">map_name</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">OPTIMIZER</span><span class="o">.</span><span class="n">NAME</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">NAME</span> <span class="ow">in</span> <span class="n">OPTIMIZER_BUILDER</span><span class="p">,</span> <span class="s2">&quot;Please registry your Optimizer Builder first.&quot;</span>
+
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">OPTIMIZER_BUILDER</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">NAME</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span>
+
+    <span class="c1"># warp optimizer</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">maybe_use_lars_optimizer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">maybe_add_gradient_clipping</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">optimizer</span></div>
+
+
+<div class="viewcode-block" id="build_lr_scheduler"><a class="viewcode-back" href="../../../modules/solver.html#cvpods.solver.build_lr_scheduler">[docs]</a><span class="k">def</span> <span class="nf">build_lr_scheduler</span><span class="p">(</span>
+    <span class="n">cfg</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">_LRScheduler</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build a LR scheduler from config.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">map_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">map_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;WarmupMultiStepLR&quot;</span><span class="p">:</span> <span class="s2">&quot;WarmupMultiStepLRBuilder&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;WarmupCosineLR&quot;</span><span class="p">:</span> <span class="s2">&quot;WarmupCosineLRBuilder&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;PolyLR&quot;</span><span class="p">:</span> <span class="s2">&quot;PolyLRBuilder&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;LambdaLR&quot;</span><span class="p">:</span> <span class="s2">&quot;LambdaLRBuilder&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;OneCycleLR&quot;</span><span class="p">:</span> <span class="s2">&quot;OneCycleLRBuilder&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">map_dict</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">map_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">name</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="n">map_name</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">SOLVER</span><span class="o">.</span><span class="n">LR_SCHEDULER</span><span class="o">.</span><span class="n">NAME</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">SCHEDULER_BUILDER</span><span class="p">,</span> <span class="s2">&quot;Please registry </span><span class="si">{}</span><span class="s2"> in SCHEDULER_BUILDER&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">SCHEDULER_BUILDER</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">scheduler</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,1386 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.data.transforms.transform_gen &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.data.transforms.transform_gen</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.data.transforms.transform_gen</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved</span>
+
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">cvpods.structures</span> <span class="k">import</span> <span class="n">Boxes</span><span class="p">,</span> <span class="n">BoxMode</span><span class="p">,</span> <span class="n">pairwise_iou</span>
+
+<span class="kn">from</span> <span class="nn">..registry</span> <span class="k">import</span> <span class="n">TRANSFORMS</span>
+<span class="kn">from</span> <span class="nn">.auto_aug</span> <span class="k">import</span> <span class="n">AutoAugmentTransform</span>
+
+<span class="kn">from</span> <span class="nn">.transform</span> <span class="k">import</span> <span class="p">(</span>  <span class="c1"># isort:skip</span>
+    <span class="n">ScaleTransform</span><span class="p">,</span>
+    <span class="n">AffineTransform</span><span class="p">,</span>
+    <span class="n">BlendTransform</span><span class="p">,</span>
+    <span class="n">IoUCropTransform</span><span class="p">,</span>
+    <span class="n">CropTransform</span><span class="p">,</span>
+    <span class="n">CropPadTransform</span><span class="p">,</span>
+    <span class="n">HFlipTransform</span><span class="p">,</span>
+    <span class="n">NoOpTransform</span><span class="p">,</span>
+    <span class="n">VFlipTransform</span><span class="p">,</span>
+    <span class="n">DistortTransform</span><span class="p">,</span>
+    <span class="n">RandomSwapChannelsTransform</span><span class="p">,</span>
+    <span class="n">ExpandTransform</span><span class="p">,</span>
+    <span class="n">ExtentTransform</span><span class="p">,</span>
+    <span class="n">ResizeTransform</span><span class="p">,</span>
+    <span class="c1"># Transforms used in ssl</span>
+    <span class="n">GaussianBlurTransform</span><span class="p">,</span>
+    <span class="n">GaussianBlurConvTransform</span><span class="p">,</span>
+    <span class="n">SolarizationTransform</span><span class="p">,</span>
+    <span class="n">LightningTransform</span><span class="p">,</span>
+    <span class="n">ComposeTransform</span><span class="p">,</span>
+    <span class="c1"># LabSpaceTransform,</span>
+    <span class="n">PadTransform</span><span class="p">,</span>
+    <span class="n">FiveCropTransform</span><span class="p">,</span>
+    <span class="n">JigsawCropTransform</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Pad&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomScale&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Expand&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MinIoURandomCrop&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomSwapChannels&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CenterAffine&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomBrightness&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomContrast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomCrop&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomCropWithInstance&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomCropWithMaxAreaLimit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomCropPad&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomExtent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomFlip&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomSaturation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomLighting&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomDistortion&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Resize&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ResizeShortestEdge&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ResizeLongestEdge&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ShuffleList&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomList&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RepeatList&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TransformGen&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TorchTransformGen&quot;</span><span class="p">,</span>
+    <span class="c1"># transforms used in ssl</span>
+    <span class="s2">&quot;GaussianBlur&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GaussianBlurConv&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Solarization&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Lightning&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomFiveCrop&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AutoAugment&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;JigsawCrop&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">check_dtype</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check the image data type and dimensions to ensure that transforms can be applied on it.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        img (np.array): image to be checked.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">img</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">),</span> <span class="s2">&quot;[TransformGen] Needs an numpy array, but got a </span><span class="si">{}</span><span class="s2">!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">img</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="n">img</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span>
+    <span class="p">),</span> <span class="s2">&quot;[TransformGen] Got image of type </span><span class="si">{}</span><span class="s2">, use uint8 or floating points instead!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">img</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">img</span><span class="o">.</span><span class="n">ndim</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">img</span><span class="o">.</span><span class="n">ndim</span>
+
+
+<div class="viewcode-block" id="TransformGen"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.TransformGen">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">TransformGen</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TransformGen takes an image of type uint8 in range [0, 255], or</span>
+<span class="sd">    floating point in range [0, 1] or [0, 255] as input.</span>
+
+<span class="sd">    It creates a :class:`Transform` based on the given image, sometimes with randomness.</span>
+<span class="sd">    The transform can then be used to transform images</span>
+<span class="sd">    or other data (boxes, points, annotations, etc.) associated with it.</span>
+
+<span class="sd">    The assumption made in this class</span>
+<span class="sd">    is that the image itself is sufficient to instantiate a transform.</span>
+<span class="sd">    When this assumption is not true, you need to create the transforms by your own.</span>
+
+<span class="sd">    A list of `TransformGen` can be applied with :func:`apply_transform_gens`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">params</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;self&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TransformGen.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.TransformGen.get_transform">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transform</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)(</span><span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_rand_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Uniform float random number between low and high.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">high</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">low</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TransformGen.__repr__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.TransformGen.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Produce something like:</span>
+<span class="sd">        &quot;MyTransformGen(field1={self.field1}, field2={self.field2})&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
+            <span class="n">classname</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="n">argstr</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="n">param</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span>
+                    <span class="ow">and</span> <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="n">param</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
+                <span class="p">),</span> <span class="s2">&quot;The default __repr__ doesn&#39;t support *args or **kwargs&quot;</span>
+                <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="p">(</span>
+                    <span class="s2">&quot;Attribute </span><span class="si">{}</span><span class="s2"> not found! &quot;</span>
+                    <span class="s2">&quot;Default __repr__ only works if attributes match the constructor.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">name</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                <span class="n">default</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span>
+                <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="n">attr</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">argstr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">attr</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">(</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">classname</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">argstr</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span></div>
+
+    <span class="fm">__str__</span> <span class="o">=</span> <span class="fm">__repr__</span></div>
+
+
+<div class="viewcode-block" id="RandomFlip"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomFlip">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomFlip</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flip the image horizontally or vertically with the given probability.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RandomFlip.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomFlip.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">horizontal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">vertical</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            prob (float): probability of flip.</span>
+<span class="sd">            horizontal (boolean): whether to apply horizontal flipping</span>
+<span class="sd">            vertical (boolean): whether to apply vertical flipping</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">horizontal</span> <span class="ow">and</span> <span class="n">vertical</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot do both horiz and vert. Please use two Flip instead.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">horizontal</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">vertical</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one of horiz or vert has to be True!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RandomFlip.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomFlip.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">do</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rand_range</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob</span>
+        <span class="k">if</span> <span class="n">do</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizontal</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">HFlipTransform</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">VFlipTransform</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NoOpTransform</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="TorchTransformGen"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.TorchTransformGen">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">TorchTransformGen</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper transfrom of transforms in torchvision.</span>
+<span class="sd">    It convert img (np.ndarray) to PIL image, and convert back to np.ndarray after transform.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tfm</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tfm</span> <span class="o">=</span> <span class="n">tfm</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">pil_image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tfm</span><span class="p">(</span><span class="n">pil_image</span><span class="p">)),</span> <span class="n">annotations</span></div>
+
+
+<div class="viewcode-block" id="RandomFiveCrop"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomFiveCrop">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomFiveCrop</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Random select rand_in crops from the fixed 5 crops: center, left-top, right-top,</span>
+<span class="sd">        left-bottom, and right-bottom.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="RandomFiveCrop.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomFiveCrop.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">rand_in</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            size (int): desired crop size.</span>
+<span class="sd">            rand_in (List[int]): select crops according to indexes in rand_in, then random select</span>
+<span class="sd">                from those crops.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RandomFiveCrop.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomFiveCrop.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">FiveCropTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_in</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RandomDistortion"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomDistortion">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomDistortion</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Random distort image&#39;s hue, saturation and exposure.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RandomDistortion.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomDistortion.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hue</span><span class="p">,</span> <span class="n">saturation</span><span class="p">,</span> <span class="n">exposure</span><span class="p">,</span> <span class="n">image_format</span><span class="o">=</span><span class="s2">&quot;BGR&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        RandomDistortion Initialization.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            hue (float): value of hue</span>
+<span class="sd">            saturation (float): value of saturation</span>
+<span class="sd">            exposure (float): value of exposure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">image_format</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;RGB&quot;</span><span class="p">,</span> <span class="s2">&quot;BGR&quot;</span><span class="p">]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RandomDistortion.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomDistortion.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">DistortTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hue</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">saturation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_format</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="CenterAffine"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.CenterAffine">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">CenterAffine</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Affine Transform for CenterNet</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CenterAffine.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.CenterAffine.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boarder</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">pad_value</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">random_aug</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        output_size (w, h) shape</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="CenterAffine.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.CenterAffine.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">img_shape</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">center</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_center_and_scale</span><span class="p">(</span><span class="n">img_shape</span><span class="p">)</span>
+        <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_src_and_dst</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad_value</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_boarder</span><span class="p">(</span><span class="n">boarder</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This func may be rewirite someday</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">size</span> <span class="o">//=</span> <span class="mi">2</span>
+        <span class="k">while</span> <span class="n">size</span> <span class="o">&lt;=</span> <span class="n">boarder</span> <span class="o">//</span> <span class="n">i</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">*=</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="n">boarder</span> <span class="o">//</span> <span class="n">i</span>
+
+<div class="viewcode-block" id="CenterAffine.generate_center_and_scale"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.CenterAffine.generate_center_and_scale">[docs]</a>    <span class="k">def</span> <span class="nf">generate_center_and_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_shape</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        generate center</span>
+<span class="sd">        shpae : (h, w)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">img_shape</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">img_shape</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_aug</span><span class="p">:</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">))</span>
+            <span class="n">h_boarder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_boarder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boarder</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+            <span class="n">w_boarder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_boarder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boarder</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+            <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">w_boarder</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">width</span> <span class="o">-</span> <span class="n">w_boarder</span><span class="p">)</span>
+            <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">h_boarder</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">height</span> <span class="o">-</span> <span class="n">h_boarder</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">return</span> <span class="n">center</span><span class="p">,</span> <span class="n">scale</span></div>
+
+<div class="viewcode-block" id="CenterAffine.generate_src_and_dst"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.CenterAffine.generate_src_and_dst">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_src_and_dst</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">scale</span><span class="p">,</span> <span class="n">scale</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">src_w</span> <span class="o">=</span> <span class="n">scale</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">src_dir</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">src_w</span> <span class="o">*</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">]</span>
+        <span class="n">src</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">center</span>
+        <span class="n">src</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">src_dir</span>
+        <span class="n">src</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="p">(</span><span class="n">src_dir</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="n">src_dir</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">dst_w</span><span class="p">,</span> <span class="n">dst_h</span> <span class="o">=</span> <span class="n">output_size</span>
+        <span class="n">dst_dir</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">dst_w</span> <span class="o">*</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">]</span>
+        <span class="n">dst</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">dst_w</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">dst_h</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">]</span>
+        <span class="n">dst</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">dst</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">dst_dir</span>
+        <span class="n">dst</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">dst</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="p">(</span><span class="n">dst_dir</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="n">dst_dir</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span></div></div>
+
+
+<div class="viewcode-block" id="GaussianBlur"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.GaussianBlur">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">GaussianBlur</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gaussian blur transform.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GaussianBlur.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.GaussianBlur.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            sigma (List(float)): sigma of gaussian</span>
+<span class="sd">            p (float): probability of perform this augmentation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="GaussianBlur.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.GaussianBlur.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">GaussianBlurTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Solarization"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Solarization">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">Solarization</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+<div class="viewcode-block" id="Solarization.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Solarization.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">SolarizationTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GaussianBlurConv"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.GaussianBlurConv">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">GaussianBlurConv</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+<div class="viewcode-block" id="GaussianBlurConv.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.GaussianBlurConv.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">GaussianBlurConvTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Resize"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Resize">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">Resize</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resize image to a target size</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Resize.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Resize.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">interp</span><span class="o">=</span><span class="n">Image</span><span class="o">.</span><span class="n">BILINEAR</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            shape: (h, w) tuple or a int.</span>
+<span class="sd">            interp: PIL interpolation method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Resize.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Resize.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ResizeTransform</span><span class="p">(</span>
+            <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">interp</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ResizeLongestEdge"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.ResizeLongestEdge">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">ResizeLongestEdge</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Scale the longer edge to the given size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ResizeLongestEdge.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.ResizeLongestEdge.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">long_edge_length</span><span class="p">,</span> <span class="n">sample_style</span><span class="o">=</span><span class="s2">&quot;range&quot;</span><span class="p">,</span> <span class="n">interp</span><span class="o">=</span><span class="n">Image</span><span class="o">.</span><span class="n">BILINEAR</span><span class="p">,</span>
+                 <span class="n">jitter</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mi">32</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            long_edge_length (list[int]): If ``sample_style==&quot;range&quot;``,</span>
+<span class="sd">                a [min, max] interval from which to sample the shortest edge length.</span>
+<span class="sd">                If ``sample_style==&quot;choice&quot;``, a list of shortest edge lengths to sample from.</span>
+<span class="sd">            sample_style (str): either &quot;range&quot; or &quot;choice&quot;.</span>
+<span class="sd">            interp: PIL interpolation method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">sample_style</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;range&quot;</span><span class="p">,</span> <span class="s2">&quot;choice&quot;</span><span class="p">],</span> <span class="n">sample_style</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_range</span> <span class="o">=</span> <span class="n">sample_style</span> <span class="o">==</span> <span class="s2">&quot;range&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">long_edge_length</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">long_edge_length</span> <span class="o">=</span> <span class="p">(</span><span class="n">long_edge_length</span><span class="p">,</span> <span class="n">long_edge_length</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ResizeLongestEdge.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.ResizeLongestEdge.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_range</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">long_edge_length</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_edge_length</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">long_edge_length</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NoOpTransform</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">jitter</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">dw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jitter</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">w</span>
+            <span class="n">dh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jitter</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">h</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="nb">max</span><span class="p">(</span><span class="n">dw</span><span class="p">,</span> <span class="n">dh</span><span class="p">),</span> <span class="n">high</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">dw</span><span class="p">,</span> <span class="n">dh</span><span class="p">))</span>
+            <span class="n">size</span> <span class="o">-=</span> <span class="n">size</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">jitter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">h</span> <span class="o">&lt;</span> <span class="n">w</span><span class="p">:</span>
+            <span class="n">newh</span><span class="p">,</span> <span class="n">neww</span> <span class="o">=</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">h</span><span class="p">,</span> <span class="n">size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">newh</span><span class="p">,</span> <span class="n">neww</span> <span class="o">=</span> <span class="n">size</span><span class="p">,</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">w</span>
+
+        <span class="n">neww</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">neww</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">newh</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">newh</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ResizeTransform</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">newh</span><span class="p">,</span> <span class="n">neww</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interp</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ResizeShortestEdge"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.ResizeShortestEdge">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">ResizeShortestEdge</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Scale the shorter edge to the given size, with a limit of `max_size` on the longer edge.</span>
+<span class="sd">    If `max_size` is reached, then downscale so that the longer edge does not exceed max_size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ResizeShortestEdge.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.ResizeShortestEdge.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">short_edge_length</span><span class="p">,</span>
+        <span class="n">max_size</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span><span class="p">,</span>
+        <span class="n">sample_style</span><span class="o">=</span><span class="s2">&quot;range&quot;</span><span class="p">,</span>
+        <span class="n">interp</span><span class="o">=</span><span class="n">Image</span><span class="o">.</span><span class="n">BILINEAR</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            short_edge_length (list[int]): If ``sample_style==&quot;range&quot;``,</span>
+<span class="sd">                a [min, max] interval from which to sample the shortest edge length.</span>
+<span class="sd">                If ``sample_style==&quot;choice&quot;``, a list of shortest edge lengths to sample from.</span>
+<span class="sd">            max_size (int): maximum allowed longest edge length.</span>
+<span class="sd">            sample_style (str): either &quot;range&quot; or &quot;choice&quot;.</span>
+<span class="sd">            interp: PIL interpolation method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">sample_style</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;range&quot;</span><span class="p">,</span> <span class="s2">&quot;choice&quot;</span><span class="p">],</span> <span class="n">sample_style</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_range</span> <span class="o">=</span> <span class="n">sample_style</span> <span class="o">==</span> <span class="s2">&quot;range&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">short_edge_length</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">short_edge_length</span> <span class="o">=</span> <span class="p">(</span><span class="n">short_edge_length</span><span class="p">,</span> <span class="n">short_edge_length</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ResizeShortestEdge.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.ResizeShortestEdge.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_range</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">short_edge_length</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">short_edge_length</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">short_edge_length</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NoOpTransform</span><span class="p">()</span>
+
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">size</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="nb">min</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">h</span> <span class="o">&lt;</span> <span class="n">w</span><span class="p">:</span>
+            <span class="n">newh</span><span class="p">,</span> <span class="n">neww</span> <span class="o">=</span> <span class="n">size</span><span class="p">,</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">w</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">newh</span><span class="p">,</span> <span class="n">neww</span> <span class="o">=</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">h</span><span class="p">,</span> <span class="n">size</span>
+        <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">newh</span><span class="p">,</span> <span class="n">neww</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_size</span><span class="p">:</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_size</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">newh</span><span class="p">,</span> <span class="n">neww</span><span class="p">)</span>
+            <span class="n">newh</span> <span class="o">=</span> <span class="n">newh</span> <span class="o">*</span> <span class="n">scale</span>
+            <span class="n">neww</span> <span class="o">=</span> <span class="n">neww</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">neww</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">neww</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">newh</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">newh</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ResizeTransform</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">newh</span><span class="p">,</span> <span class="n">neww</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interp</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RandomCrop"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomCrop">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomCrop</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Randomly crop a subimage out of an image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RandomCrop.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomCrop.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crop_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">crop_size</span><span class="p">,</span> <span class="n">strict_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            crop_type (str): one of &quot;relative_range&quot;, &quot;relative&quot;, &quot;absolute&quot;.</span>
+<span class="sd">                See `config/defaults.py` for explanation.</span>
+<span class="sd">            crop_size (tuple[float]): the relative ratio or absolute pixels of</span>
+<span class="sd">                height and width</span>
+<span class="sd">            strict_mode (bool): if `True`, the target `crop_size` must be smaller than</span>
+<span class="sd">                the original image size.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">crop_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;relative_range&quot;</span><span class="p">,</span> <span class="s2">&quot;relative&quot;</span><span class="p">,</span> <span class="s2">&quot;absolute&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RandomCrop.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomCrop.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">croph</span><span class="p">,</span> <span class="n">cropw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_crop_size</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strict_mode</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">h</span> <span class="o">&gt;=</span> <span class="n">croph</span> <span class="ow">and</span> <span class="n">w</span> <span class="o">&gt;=</span> <span class="n">cropw</span><span class="p">,</span> <span class="s2">&quot;Shape computation in </span><span class="si">{}</span><span class="s2"> has bugs.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span>
+            <span class="p">)</span>
+        <span class="n">offset_range_h</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">croph</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">offset_range_w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">cropw</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">h0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">offset_range_h</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">w0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">offset_range_w</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">CropTransform</span><span class="p">(</span><span class="n">w0</span><span class="p">,</span> <span class="n">h0</span><span class="p">,</span> <span class="n">cropw</span><span class="p">,</span> <span class="n">croph</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RandomCrop.get_crop_size"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomCrop.get_crop_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_crop_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            image_size (tuple): height, width</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            crop_size (tuple): height, width in absolute pixels</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">image_size</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_type</span> <span class="o">==</span> <span class="s2">&quot;relative&quot;</span><span class="p">:</span>
+            <span class="n">ch</span><span class="p">,</span> <span class="n">cw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_size</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">ch</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">cw</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_type</span> <span class="o">==</span> <span class="s2">&quot;relative_range&quot;</span><span class="p">:</span>
+            <span class="n">crop_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">ch</span><span class="p">,</span> <span class="n">cw</span> <span class="o">=</span> <span class="n">crop_size</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">crop_size</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">ch</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">cw</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_type</span> <span class="o">==</span> <span class="s2">&quot;absolute&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Unknown crop type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_type</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="RandomCropWithInstance"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomCropWithInstance">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomCropWithInstance</span><span class="p">(</span><span class="n">RandomCrop</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make sure the cropping region contains the center of a random instance from annotations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RandomCropWithInstance.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomCropWithInstance.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">croph</span><span class="p">,</span> <span class="n">cropw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_crop_size</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strict_mode</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">h</span> <span class="o">&gt;=</span> <span class="n">croph</span> <span class="ow">and</span> <span class="n">w</span> <span class="o">&gt;=</span> <span class="n">cropw</span><span class="p">,</span> <span class="s2">&quot;Shape computation in </span><span class="si">{}</span><span class="s2"> has bugs.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span>
+            <span class="p">)</span>
+        <span class="n">offset_range_h</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">croph</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">offset_range_w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">cropw</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Make sure there is always at least one instance in the image</span>
+        <span class="k">assert</span> <span class="n">annotations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Can not get annotations infos.&quot;</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="n">BoxMode</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">instance</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">],</span> <span class="n">instance</span><span class="p">[</span><span class="s2">&quot;bbox_mode&quot;</span><span class="p">],</span> <span class="n">BoxMode</span><span class="o">.</span><span class="n">XYXY_ABS</span><span class="p">)</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span>
+        <span class="n">center_xy</span> <span class="o">=</span> <span class="p">(</span><span class="n">bbox</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+        <span class="n">offset_range_h_min</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">center_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">croph</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">offset_range_w_min</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">center_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">cropw</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">offset_range_h_max</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">offset_range_h</span><span class="p">,</span> <span class="n">center_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">offset_range_w_max</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">offset_range_w</span><span class="p">,</span> <span class="n">center_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">h0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">offset_range_h_min</span><span class="p">,</span> <span class="n">offset_range_h_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">w0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">offset_range_w_min</span><span class="p">,</span> <span class="n">offset_range_w_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">CropTransform</span><span class="p">(</span><span class="n">w0</span><span class="p">,</span> <span class="n">h0</span><span class="p">,</span> <span class="n">cropw</span><span class="p">,</span> <span class="n">croph</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RandomCropWithMaxAreaLimit"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomCropWithMaxAreaLimit">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomCropWithMaxAreaLimit</span><span class="p">(</span><span class="n">RandomCrop</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find a cropping window such that no single category occupies more than</span>
+<span class="sd">    `single_category_max_area` in `sem_seg`.</span>
+
+<span class="sd">    The function retries random cropping 10 times max.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crop_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">crop_size</span><span class="p">,</span> <span class="n">strict_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">single_category_max_area</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">ignore_value</span><span class="o">=</span><span class="mi">255</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">crop_type</span><span class="p">,</span> <span class="n">crop_size</span><span class="p">,</span> <span class="n">strict_mode</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+<div class="viewcode-block" id="RandomCropWithMaxAreaLimit.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomCropWithMaxAreaLimit.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_category_max_area</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">crop_tfm</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_transform</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="s2">&quot;sem_seg&quot;</span> <span class="ow">in</span> <span class="n">annotations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">sem_seg</span> <span class="o">=</span> <span class="n">annotations</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;sem_seg&quot;</span><span class="p">]</span>
+            <span class="n">croph</span><span class="p">,</span> <span class="n">cropw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_crop_size</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+                <span class="n">y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">croph</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">cropw</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">sem_seg_temp</span> <span class="o">=</span> <span class="n">sem_seg</span><span class="p">[</span><span class="n">y0</span><span class="p">:</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">croph</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">cropw</span><span class="p">]</span>
+                <span class="n">labels</span><span class="p">,</span> <span class="n">cnt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sem_seg_temp</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">cnt</span> <span class="o">=</span> <span class="n">cnt</span><span class="p">[</span><span class="n">labels</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_value</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cnt</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cnt</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cnt</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_category_max_area</span><span class="p">:</span>
+                    <span class="k">break</span>
+            <span class="n">crop_tfm</span> <span class="o">=</span> <span class="n">CropTransform</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">cropw</span><span class="p">,</span> <span class="n">croph</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">crop_tfm</span></div></div>
+
+
+<div class="viewcode-block" id="RandomCropPad"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomCropPad">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomCropPad</span><span class="p">(</span><span class="n">RandomCrop</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Randomly crop and pad a subimage out of an image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">crop_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">crop_size</span><span class="p">,</span>
+                 <span class="n">img_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">seg_value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">crop_type</span><span class="p">,</span> <span class="n">crop_size</span><span class="p">,</span> <span class="n">strict_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+<div class="viewcode-block" id="RandomCropPad.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomCropPad.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">croph</span><span class="p">,</span> <span class="n">cropw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_crop_size</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>
+        <span class="n">h0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">croph</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">h</span> <span class="o">&gt;=</span> <span class="n">croph</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">w0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">cropw</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">w</span> <span class="o">&gt;=</span> <span class="n">cropw</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">dh</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">croph</span><span class="p">)</span>
+        <span class="n">dw</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">cropw</span><span class="p">)</span>
+        <span class="c1"># print(w0, h0, dw, dh)</span>
+        <span class="k">return</span> <span class="n">CropPadTransform</span><span class="p">(</span><span class="n">w0</span><span class="p">,</span> <span class="n">h0</span><span class="p">,</span> <span class="n">dw</span><span class="p">,</span> <span class="n">dh</span><span class="p">,</span> <span class="n">cropw</span><span class="p">,</span> <span class="n">croph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_value</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">seg_value</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RandomExtent"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomExtent">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomExtent</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Outputs an image by cropping a random &quot;subrect&quot; of the source image.</span>
+
+<span class="sd">    The subrect can be parameterized to include pixels outside the source image,</span>
+<span class="sd">    in which case they will be set to zeros (i.e. black). The size of the output</span>
+<span class="sd">    image will vary with the size of the random subrect.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RandomExtent.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomExtent.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scale_range</span><span class="p">,</span> <span class="n">shift_range</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            scale_range (l, h): Range of input-to-output size scaling factor.</span>
+<span class="sd">            shift_range (x, y): Range of shifts of the cropped subrect. The rect</span>
+<span class="sd">                is shifted by [w / 2 * Uniform(-x, x), h / 2 * Uniform(-y, y)],</span>
+<span class="sd">                where (w, h) is the (width, height) of the input image. Set each</span>
+<span class="sd">                component to zero to crop at the image&#39;s center.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RandomExtent.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomExtent.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># Initialize src_rect to fit the input image.</span>
+        <span class="n">src_rect</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">img_w</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">img_h</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">img_w</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">img_h</span><span class="p">])</span>
+
+        <span class="c1"># Apply a random scaling to the src_rect.</span>
+        <span class="n">src_rect</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_range</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Apply a random shift to the coordinates origin.</span>
+        <span class="n">src_rect</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shift_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">img_w</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">src_rect</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shift_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">img_h</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="c1"># Map src_rect coordinates into image coordinates (center at corner).</span>
+        <span class="n">src_rect</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">img_w</span>
+        <span class="n">src_rect</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">img_h</span>
+
+        <span class="k">return</span> <span class="n">ExtentTransform</span><span class="p">(</span>
+            <span class="n">src_rect</span><span class="o">=</span><span class="p">(</span><span class="n">src_rect</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">src_rect</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">src_rect</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">src_rect</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+            <span class="n">output_size</span><span class="o">=</span><span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">src_rect</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">src_rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">src_rect</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">src_rect</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RandomContrast"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomContrast">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomContrast</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Randomly transforms image contrast.</span>
+
+<span class="sd">    Contrast intensity is uniformly sampled in (intensity_min, intensity_max).</span>
+<span class="sd">    - intensity &lt; 1 will reduce contrast</span>
+<span class="sd">    - intensity = 1 will preserve the input image</span>
+<span class="sd">    - intensity &gt; 1 will increase contrast</span>
+
+<span class="sd">    See: https://pillow.readthedocs.io/en/3.0.x/reference/ImageEnhance.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RandomContrast.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomContrast.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intensity_min</span><span class="p">,</span> <span class="n">intensity_max</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            intensity_min (float): Minimum augmentation.</span>
+<span class="sd">            intensity_max (float): Maximum augmentation.</span>
+<span class="sd">            prob (float): probability of transforms image contrast.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RandomContrast.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomContrast.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">do</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rand_range</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob</span>
+        <span class="k">if</span> <span class="n">do</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intensity_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intensity_max</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">BlendTransform</span><span class="p">(</span><span class="n">src_image</span><span class="o">=</span><span class="n">img</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">src_weight</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span> <span class="n">w</span><span class="p">,</span> <span class="n">dst_weight</span><span class="o">=</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NoOpTransform</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="RandomBrightness"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomBrightness">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomBrightness</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Randomly transforms image brightness.</span>
+
+<span class="sd">    Brightness intensity is uniformly sampled in (intensity_min, intensity_max).</span>
+<span class="sd">    - intensity &lt; 1 will reduce brightness</span>
+<span class="sd">    - intensity = 1 will preserve the input image</span>
+<span class="sd">    - intensity &gt; 1 will increase brightness</span>
+
+<span class="sd">    See: https://pillow.readthedocs.io/en/3.0.x/reference/ImageEnhance.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RandomBrightness.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomBrightness.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intensity_min</span><span class="p">,</span> <span class="n">intensity_max</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            intensity_min (float): Minimum augmentation.</span>
+<span class="sd">            intensity_max (float): Maximum augmentation.</span>
+<span class="sd">            prob (float): probability of transforms image brightness.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RandomBrightness.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomBrightness.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">do</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rand_range</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob</span>
+        <span class="k">if</span> <span class="n">do</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intensity_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intensity_max</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">BlendTransform</span><span class="p">(</span><span class="n">src_image</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">src_weight</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span> <span class="n">w</span><span class="p">,</span> <span class="n">dst_weight</span><span class="o">=</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NoOpTransform</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="RandomSaturation"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomSaturation">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomSaturation</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Randomly transforms image saturation.</span>
+
+<span class="sd">    Saturation intensity is uniformly sampled in (intensity_min, intensity_max).</span>
+<span class="sd">    - intensity &lt; 1 will reduce saturation (make the image more grayscale)</span>
+<span class="sd">    - intensity = 1 will preserve the input image</span>
+<span class="sd">    - intensity &gt; 1 will increase saturation</span>
+
+<span class="sd">    See: https://pillow.readthedocs.io/en/3.0.x/reference/ImageEnhance.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RandomSaturation.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomSaturation.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intensity_min</span><span class="p">,</span> <span class="n">intensity_max</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            intensity_min (float): Minimum augmentation (1 preserves input).</span>
+<span class="sd">            intensity_max (float): Maximum augmentation (1 preserves input).</span>
+<span class="sd">            prob (float): probability of transforms image saturation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RandomSaturation.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomSaturation.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">do</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rand_range</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob</span>
+        <span class="k">if</span> <span class="n">do</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Saturation only works on RGB images&quot;</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intensity_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intensity_max</span><span class="p">)</span>
+            <span class="n">grayscale</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">dot</span><span class="p">([</span><span class="mf">0.299</span><span class="p">,</span> <span class="mf">0.587</span><span class="p">,</span> <span class="mf">0.114</span><span class="p">])[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">BlendTransform</span><span class="p">(</span><span class="n">src_image</span><span class="o">=</span><span class="n">grayscale</span><span class="p">,</span> <span class="n">src_weight</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span> <span class="n">w</span><span class="p">,</span> <span class="n">dst_weight</span><span class="o">=</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NoOpTransform</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="RandomLighting"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomLighting">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomLighting</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Randomly transforms image color using fixed PCA over ImageNet.</span>
+
+<span class="sd">    The degree of color jittering is randomly sampled via a normal distribution,</span>
+<span class="sd">    with standard deviation given by the scale parameter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RandomLighting.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomLighting.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            scale (float): Standard deviation of principal component weighting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigen_vecs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">[</span><span class="o">-</span><span class="mf">0.5675</span><span class="p">,</span> <span class="mf">0.7192</span><span class="p">,</span> <span class="mf">0.4009</span><span class="p">],</span>
+                <span class="p">[</span><span class="o">-</span><span class="mf">0.5808</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0045</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8140</span><span class="p">],</span>
+                <span class="p">[</span><span class="o">-</span><span class="mf">0.5836</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.6948</span><span class="p">,</span> <span class="mf">0.4203</span><span class="p">],</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigen_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.2175</span><span class="p">,</span> <span class="mf">0.0188</span><span class="p">,</span> <span class="mf">0.0045</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="RandomLighting.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomLighting.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Saturation only works on RGB images&quot;</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">BlendTransform</span><span class="p">(</span>
+            <span class="n">src_image</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eigen_vecs</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">weights</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigen_vals</span><span class="p">),</span>
+            <span class="n">src_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">dst_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RandomSwapChannels"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomSwapChannels">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomSwapChannels</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Randomly swap image channels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RandomSwapChannels.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomSwapChannels.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            prob (float): probability of swap channels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RandomSwapChannels.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomSwapChannels.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">do</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rand_range</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob</span>
+        <span class="k">if</span> <span class="n">do</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">RandomSwapChannelsTransform</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NoOpTransform</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="MinIoURandomCrop"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.MinIoURandomCrop">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">MinIoURandomCrop</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Random crop the image &amp; bboxes, the cropped patches have minimum IoU</span>
+<span class="sd">    requirement with original image &amp; bboxes, the IoU threshold is randomly</span>
+<span class="sd">    selected from min_ious.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MinIoURandomCrop.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.MinIoURandomCrop.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_ious</span><span class="o">=</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">),</span> <span class="n">min_crop_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            min_ious (tuple): minimum IoU threshold for all intersections with bounding boxes</span>
+<span class="sd">            min_crop_size (float): minimum crop&#39;s size</span>
+<span class="sd">                (i.e. h,w := a*h, a*w, where a &gt;= min_crop_size).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="MinIoURandomCrop.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.MinIoURandomCrop.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            img (ndarray): of shape HxWxC(RGB). The array can be of type uint8</span>
+<span class="sd">                in range [0, 255], or floating point in range [0, 255].</span>
+<span class="sd">            annotations (list[dict[str-&gt;str]]):</span>
+<span class="sd">                Each item in the list is a bbox label of an object. The object is</span>
+<span class="sd">                    represented by a dict,</span>
+<span class="sd">                which contains:</span>
+<span class="sd">                 - bbox (list): bbox coordinates, top left and bottom right.</span>
+<span class="sd">                 - bbox_mode (str): bbox label mode, for example: `XYXY_ABS`,</span>
+<span class="sd">                    `XYWH_ABS` and so on...</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sample_mode</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">min_ious</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">boxes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">annotations</span><span class="p">:</span>
+            <span class="n">boxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">BoxMode</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">],</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;bbox_mode&quot;</span><span class="p">],</span> <span class="n">BoxMode</span><span class="o">.</span><span class="n">XYXY_ABS</span><span class="p">))</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">sample_mode</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">NoOpTransform</span><span class="p">()</span>
+
+            <span class="n">min_iou</span> <span class="o">=</span> <span class="n">mode</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+                <span class="n">new_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_crop_size</span> <span class="o">*</span> <span class="n">w</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+                <span class="n">new_h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_crop_size</span> <span class="o">*</span> <span class="n">h</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+
+                <span class="c1"># h / w in [0.5, 2]</span>
+                <span class="k">if</span> <span class="n">new_h</span> <span class="o">/</span> <span class="n">new_w</span> <span class="o">&lt;</span> <span class="mf">0.5</span> <span class="ow">or</span> <span class="n">new_h</span> <span class="o">/</span> <span class="n">new_w</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">new_w</span><span class="p">)</span>
+                <span class="n">top</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">new_h</span><span class="p">)</span>
+
+                <span class="n">patch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                    <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">left</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">top</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">left</span> <span class="o">+</span> <span class="n">new_w</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">top</span> <span class="o">+</span> <span class="n">new_h</span><span class="p">)))</span>
+
+                <span class="n">overlaps</span> <span class="o">=</span> <span class="n">pairwise_iou</span><span class="p">(</span>
+                    <span class="n">Boxes</span><span class="p">(</span><span class="n">patch</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span>
+                    <span class="n">Boxes</span><span class="p">(</span><span class="n">boxes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+                <span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">overlaps</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">min_iou</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># center of boxes should inside the crop img</span>
+                <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="p">((</span><span class="n">center</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">patch</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">center</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">patch</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="o">*</span> <span class="p">(</span><span class="n">center</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">patch</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">center</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">patch</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="k">continue</span>
+                <span class="k">return</span> <span class="n">IoUCropTransform</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">left</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">top</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">new_w</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">new_h</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="Expand"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Expand">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">Expand</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Random Expand the image &amp; bboxes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Expand.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Expand.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ratio_range</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">mean</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">prob</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            ratio_range (tuple): range of expand ratio.</span>
+<span class="sd">            mean (tuple): mean value of dataset.</span>
+<span class="sd">            prob (float): probability of applying this transformation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_ratio</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_ratio</span> <span class="o">=</span> <span class="n">ratio_range</span></div>
+
+<div class="viewcode-block" id="Expand.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Expand.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NoOpTransform</span><span class="p">()</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_ratio</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_ratio</span><span class="p">)</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">w</span> <span class="o">*</span> <span class="n">ratio</span> <span class="o">-</span> <span class="n">w</span><span class="p">))</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span> <span class="o">*</span> <span class="n">ratio</span> <span class="o">-</span> <span class="n">h</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ExpandTransform</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">ratio</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Lightning"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Lightning">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">Lightning</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lightning augmentation, used in classification.</span>
+
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">        tfm = LightningTransform(</span>
+<span class="sd">            alpha_std=0.1,</span>
+<span class="sd">            eig_val=np.array([[0.2175, 0.0188, 0.0045]]),</span>
+<span class="sd">            eig_vec=np.array([</span>
+<span class="sd">                [-0.5675, 0.7192, 0.4009],</span>
+<span class="sd">                [-0.5808, -0.0045, -0.8140],</span>
+<span class="sd">                [-0.5836, -0.6948, 0.4203]</span>
+<span class="sd">            ]),</span>
+<span class="sd">        )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha_std</span><span class="p">,</span> <span class="n">eig_val</span><span class="p">,</span> <span class="n">eig_vec</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+
+<div class="viewcode-block" id="Lightning.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Lightning.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">LightningTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_std</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eig_val</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eig_vec</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RandomScale"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomScale">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomScale</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Randomly scale the image according to the specified output size and scale ratio range.</span>
+
+<span class="sd">    This transform has the following three steps:</span>
+
+<span class="sd">        1. select a random scale factor according to the specified scale ratio range.</span>
+<span class="sd">        2. recompute the accurate scale_factor using rounded scaled image size.</span>
+<span class="sd">        3. select non-zero random offset (x, y) if scaled image is larger than output_size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RandomScale.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomScale.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">ratio_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">interp</span><span class="o">=</span><span class="s2">&quot;BILINEAR&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            output_size (tuple): image output size.</span>
+<span class="sd">            ratio_range (tuple): range of scale ratio.</span>
+<span class="sd">            interp (str): the interpolation method. Options includes:</span>
+<span class="sd">              * &quot;NEAREST&quot;</span>
+<span class="sd">              * &quot;BILINEAR&quot;</span>
+<span class="sd">              * &quot;BICUBIC&quot;</span>
+<span class="sd">              * &quot;LANCZOS&quot;</span>
+<span class="sd">              * &quot;HAMMING&quot;</span>
+<span class="sd">              * &quot;BOX&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_ratio</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_ratio</span> <span class="o">=</span> <span class="n">ratio_range</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">output_size</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span></div>
+
+<div class="viewcode-block" id="RandomScale.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomScale.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">output_h</span><span class="p">,</span> <span class="n">output_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span>
+
+        <span class="c1"># 1. Select a random scale factor.</span>
+        <span class="n">random_scale_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_ratio</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_ratio</span><span class="p">)</span>
+
+        <span class="n">scaled_size_h</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">random_scale_factor</span> <span class="o">*</span> <span class="n">output_h</span><span class="p">)</span>
+        <span class="n">scaled_size_w</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">random_scale_factor</span> <span class="o">*</span> <span class="n">output_w</span><span class="p">)</span>
+
+        <span class="c1"># 2. Recompute the accurate scale_factor using rounded scaled image size.</span>
+        <span class="n">image_scale_h</span> <span class="o">=</span> <span class="n">scaled_size_h</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">h</span>
+        <span class="n">image_scale_w</span> <span class="o">=</span> <span class="n">scaled_size_w</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">w</span>
+        <span class="n">image_scale</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">image_scale_h</span><span class="p">,</span> <span class="n">image_scale_w</span><span class="p">)</span>
+
+        <span class="c1"># 3. Select non-zero random offset (x, y) if scaled image is larger than output_size.</span>
+        <span class="n">scaled_h</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="n">image_scale</span><span class="p">)</span>
+        <span class="n">scaled_w</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="n">image_scale</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ScaleTransform</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">scaled_h</span><span class="p">,</span> <span class="n">scaled_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interp</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="AutoAugment"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.AutoAugment">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">AutoAugment</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert any of AutoAugment into a cvpods-fashion Transform such that can be configured in</span>
+<span class="sd">        config.py</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AutoAugment.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.AutoAugment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">magnitude</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">hparams</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): any type of transforms list in _RAND_TRANSFORMS.</span>
+<span class="sd">            prob (float): probability of perform current augmentation.</span>
+<span class="sd">            magnitude (int): intensity / magnitude of each augmentation.</span>
+<span class="sd">            hparams (dict): hyper-parameters required by each augmentation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="AutoAugment.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.AutoAugment.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">AutoAugmentTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Pad"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Pad">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">Pad</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pad image with `pad_value` to the specified `target_h` and `target_w`.</span>
+
+<span class="sd">    Adds `top` rows of `pad_value` on top, `left` columns of `pad_value` on the left,</span>
+<span class="sd">    and then pads the image on the bottom and right with `pad_value` until it has</span>
+<span class="sd">    dimensions `target_h`, `target_w`.</span>
+
+<span class="sd">    This op does nothing if `top` and `left` is zero and the image already has size</span>
+<span class="sd">    `target_h` by `target_w`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Pad.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Pad.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">target_h</span><span class="p">,</span> <span class="n">target_w</span><span class="p">,</span> <span class="n">pad_value</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            top (int): number of rows of `pad_value` to add on top.</span>
+<span class="sd">            left (int): number of columns of `pad_value` to add on the left.</span>
+<span class="sd">            target_h (int): height of output image.</span>
+<span class="sd">            target_w (int): width of output image.</span>
+<span class="sd">            pad_value (int): the value used to pad the image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Pad.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.Pad.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">PadTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad_value</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RandomList"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomList">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RandomList</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Random select subset of provided augmentations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="RandomList.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomList.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">choice_weights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            transforms (List[TorchTransformGen]): list of transforms need to be performed.</span>
+<span class="sd">            num_layers (int): parameters of np.random.choice.</span>
+<span class="sd">            choice_weights (optional, float): parameters of np.random.choice.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span> <span class="o">=</span> <span class="n">num_layers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">choice_weights</span> <span class="o">=</span> <span class="n">choice_weights</span></div>
+
+<div class="viewcode-block" id="RandomList.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RandomList.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">tfms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span><span class="p">,</span>
+            <span class="n">replace</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">choice_weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">choice_weights</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ComposeTransform</span><span class="p">(</span><span class="n">tfms</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ShuffleList"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.ShuffleList">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">ShuffleList</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Randomly shuffle the `transforms` order.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ShuffleList.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.ShuffleList.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transforms</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            transforms (list[TransformGen]): List of transform to be shuffled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span></div>
+
+<div class="viewcode-block" id="ShuffleList.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.ShuffleList.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ComposeTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RepeatList"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RepeatList">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">RepeatList</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Forward several times of provided transforms for a given image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="RepeatList.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RepeatList.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">repeat_times</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            transforms (list[TransformGen]): List of transform to be repeated.</span>
+<span class="sd">            repeat_times (int): number of duplicates desired.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="n">repeat_times</span></div>
+
+<div class="viewcode-block" id="RepeatList.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.RepeatList.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ComposeTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">repeat_imgs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">repeat_annotations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="p">):</span>
+            <span class="n">tmp_img</span><span class="p">,</span> <span class="n">tmp_anno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transform</span><span class="p">(</span><span class="n">img</span><span class="p">)(</span><span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">repeat_imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp_img</span><span class="p">)</span>
+            <span class="n">repeat_annotations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp_anno</span><span class="p">)</span>
+        <span class="n">repeat_imgs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">repeat_imgs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">repeat_imgs</span><span class="p">,</span> <span class="n">repeat_annotations</span></div>
+
+
+<div class="viewcode-block" id="JigsawCrop"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.JigsawCrop">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">JigsawCrop</span><span class="p">(</span><span class="n">TransformGen</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Crop an image into n_grid times n_grid crops, no overlaps.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="JigsawCrop.__init__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.JigsawCrop.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_grid</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">crop_size</span><span class="o">=</span><span class="mi">64</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            n_grid (int): crop image into n_grid x n_grid crops.</span>
+<span class="sd">            img_size (int): image scale size.</span>
+<span class="sd">            crop_size (int): crop size.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="JigsawCrop.get_transform"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.transforms.JigsawCrop.get_transform">[docs]</a>    <span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">JigsawCropTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_size</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">crops</span><span class="p">,</span> <span class="n">annos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transform</span><span class="p">(</span><span class="n">img</span><span class="p">)(</span><span class="n">img</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">crops</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">annos</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

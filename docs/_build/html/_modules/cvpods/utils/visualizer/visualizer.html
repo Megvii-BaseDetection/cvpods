@@ -1,0 +1,1336 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.utils.visualizer.visualizer &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.utils.visualizer.visualizer</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.utils.visualizer.visualizer</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved</span>
+<span class="kn">import</span> <span class="nn">colorsys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">unique</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
+<span class="kn">import</span> <span class="nn">matplotlib.colors</span> <span class="k">as</span> <span class="nn">mplc</span>
+<span class="kn">import</span> <span class="nn">matplotlib.figure</span> <span class="k">as</span> <span class="nn">mplfigure</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_agg</span> <span class="k">import</span> <span class="n">FigureCanvasAgg</span>
+<span class="kn">import</span> <span class="nn">pycocotools.mask</span> <span class="k">as</span> <span class="nn">mask_util</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">cvpods.structures</span> <span class="k">import</span> <span class="n">BitMasks</span><span class="p">,</span> <span class="n">Boxes</span><span class="p">,</span> <span class="n">BoxMode</span><span class="p">,</span> <span class="n">Keypoints</span><span class="p">,</span> <span class="n">PolygonMasks</span><span class="p">,</span> <span class="n">RotatedBoxes</span>
+
+<span class="kn">from</span> <span class="nn">.colormap</span> <span class="k">import</span> <span class="n">random_color</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ColorMode&quot;</span><span class="p">,</span> <span class="s2">&quot;VisImage&quot;</span><span class="p">,</span> <span class="s2">&quot;Visualizer&quot;</span><span class="p">]</span>
+
+
+<span class="n">_SMALL_OBJECT_AREA_THRESH</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">_LARGE_MASK_AREA_THRESH</span> <span class="o">=</span> <span class="mi">120000</span>
+<span class="n">_OFF_WHITE</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">240.0</span> <span class="o">/</span> <span class="mi">255</span><span class="p">)</span>
+<span class="n">_BLACK</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">_RED</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="n">_KEYPOINT_THRESHOLD</span> <span class="o">=</span> <span class="mf">0.05</span>
+
+
+<div class="viewcode-block" id="ColorMode"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.ColorMode">[docs]</a><span class="nd">@unique</span>
+<span class="k">class</span> <span class="nc">ColorMode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enum of different color modes to use for instance visualizations.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        IMAGE: Picks a random color for every instance and overlay segmentations with low opacity.</span>
+<span class="sd">        SEGMENTATION: Let instances of the same category have similar colors, and overlay them with</span>
+<span class="sd">            high opacity. This provides more attention on the quality of segmentation.</span>
+<span class="sd">        IMAGE_BW: same as IMAGE, but convert all areas without masks to gray-scale.</span>
+<span class="sd">            Only available for drawing per-instance mask predictions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">IMAGE</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">SEGMENTATION</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">IMAGE_BW</span> <span class="o">=</span> <span class="mi">2</span></div>
+
+
+<span class="k">class</span> <span class="nc">GenericMask</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Attribute:</span>
+<span class="sd">        polygons (list[ndarray]): list[ndarray]: polygons for this mask.</span>
+<span class="sd">            Each ndarray has format [x, y, x, y, ...]</span>
+<span class="sd">        mask (ndarray): a binary mask</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask_or_polygons</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_holes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+
+        <span class="n">m</span> <span class="o">=</span> <span class="n">mask_or_polygons</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># RLEs</span>
+            <span class="k">assert</span> <span class="s2">&quot;counts&quot;</span> <span class="ow">in</span> <span class="n">m</span> <span class="ow">and</span> <span class="s2">&quot;size&quot;</span> <span class="ow">in</span> <span class="n">m</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>  <span class="c1"># uncompressed RLEs</span>
+                <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span>
+                <span class="k">assert</span> <span class="n">h</span> <span class="o">==</span> <span class="n">height</span> <span class="ow">and</span> <span class="n">w</span> <span class="o">==</span> <span class="n">width</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">mask_util</span><span class="o">.</span><span class="n">frPyObjects</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="n">mask_util</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">m</span><span class="p">)[:,</span> <span class="p">:]</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>  <span class="c1"># list[ndarray]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">m</span><span class="p">]</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>  <span class="c1"># assumed to be a binary mask</span>
+            <span class="k">assert</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span>
+            <span class="k">assert</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;uint8&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;GenericMask cannot handle object </span><span class="si">{}</span><span class="s2"> of type &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">m</span><span class="p">)))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">polygons_to_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_holes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_to_polygons</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_holes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_holes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_holes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_to_polygons</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_has_holes</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># if original format is polygon, does not have holes</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_holes</span>
+
+    <span class="k">def</span> <span class="nf">mask_to_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+        <span class="c1"># cv2.RETR_CCOMP flag retrieves all the contours and arranges them to a 2-level</span>
+        <span class="c1"># hierarchy. External contours (boundary) of the object are placed in hierarchy-1.</span>
+        <span class="c1"># Internal contours (holes) are placed in hierarchy-2.</span>
+        <span class="c1"># cv2.CHAIN_APPROX_NONE flag gets vertices of polygons from contours.</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>  <span class="c1"># some versions of cv2 does not support incontiguous arr</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">findContours</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;uint8&quot;</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">RETR_CCOMP</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">CHAIN_APPROX_NONE</span><span class="p">)</span>
+        <span class="n">hierarchy</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">hierarchy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># empty mask</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="kc">False</span>
+        <span class="n">has_holes</span> <span class="o">=</span> <span class="p">(</span><span class="n">hierarchy</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">res</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">has_holes</span>
+
+    <span class="k">def</span> <span class="nf">polygons_to_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygons</span><span class="p">):</span>
+        <span class="n">rle</span> <span class="o">=</span> <span class="n">mask_util</span><span class="o">.</span><span class="n">frPyObjects</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="n">rle</span> <span class="o">=</span> <span class="n">mask_util</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">rle</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mask_util</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">rle</span><span class="p">)[:,</span> <span class="p">:]</span>
+
+    <span class="k">def</span> <span class="nf">area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">mask_util</span><span class="o">.</span><span class="n">frPyObjects</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">mask_util</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="n">mask_util</span><span class="o">.</span><span class="n">toBbox</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">bbox</span>
+
+
+<span class="k">class</span> <span class="nc">_PanopticPrediction</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">panoptic_seg</span><span class="p">,</span> <span class="n">segments_info</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_seg</span> <span class="o">=</span> <span class="n">panoptic_seg</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sinfo</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]:</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">segments_info</span><span class="p">}</span>  <span class="c1"># seg id -&gt; seg info</span>
+        <span class="n">segment_ids</span><span class="p">,</span> <span class="n">areas</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">panoptic_seg</span><span class="p">,</span> <span class="nb">sorted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">areas</span> <span class="o">=</span> <span class="n">areas</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">sorted_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">areas</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_seg_ids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seg_areas</span> <span class="o">=</span> <span class="n">segment_ids</span><span class="p">[</span><span class="n">sorted_idxs</span><span class="p">],</span> <span class="n">areas</span><span class="p">[</span><span class="n">sorted_idxs</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_seg_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seg_ids</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">sid</span><span class="p">,</span> <span class="n">area</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_seg_ids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seg_areas</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">sid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sinfo</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_sinfo</span><span class="p">[</span><span class="n">sid</span><span class="p">][</span><span class="s2">&quot;area&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">area</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">non_empty_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (H, W) array, a mask for all pixels that have a prediction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">empty_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seg_ids</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sinfo</span><span class="p">:</span>
+                <span class="n">empty_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">empty_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_seg</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">empty_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="p">),</span> <span class="s2">&quot;&gt;1 ids corresponds to no labels. This is currently not supported&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_seg</span> <span class="o">!=</span> <span class="n">empty_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">semantic_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">sid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seg_ids</span><span class="p">:</span>
+            <span class="n">sinfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sinfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sid</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sinfo</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">sinfo</span><span class="p">[</span><span class="s2">&quot;isthing&quot;</span><span class="p">]:</span>
+                <span class="c1"># Some pixels (e.g. id 0 in PanopticFPN) have no instance or semantic predictions.</span>
+                <span class="k">continue</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_seg</span> <span class="o">==</span> <span class="n">sid</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span> <span class="n">sinfo</span>
+
+    <span class="k">def</span> <span class="nf">instance_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">sid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seg_ids</span><span class="p">:</span>
+            <span class="n">sinfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sinfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sid</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sinfo</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sinfo</span><span class="p">[</span><span class="s2">&quot;isthing&quot;</span><span class="p">]:</span>
+                <span class="k">continue</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_seg</span> <span class="o">==</span> <span class="n">sid</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">mask</span><span class="p">,</span> <span class="n">sinfo</span>
+
+
+<span class="k">def</span> <span class="nf">_create_text_labels</span><span class="p">(</span><span class="n">classes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">class_names</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        classes (list[int] or None):</span>
+<span class="sd">        scores (list[float] or None):</span>
+<span class="sd">        class_names (list[str] or None):</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[str] or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">classes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">class_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">class_names</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">scores</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{:.0f}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scores</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{:.0f}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">s</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">scores</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">labels</span>
+
+
+<div class="viewcode-block" id="VisImage"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.VisImage">[docs]</a><span class="k">class</span> <span class="nc">VisImage</span><span class="p">:</span>
+<div class="viewcode-block" id="VisImage.__init__"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.VisImage.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            img (ndarray): an RGB image of shape (H, W, 3).</span>
+<span class="sd">            scale (float): scale the input image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="n">img</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_figure</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_setup_figure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            Same as in :meth:`__init__()`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            fig (matplotlib.pyplot.figure): top level container for all the image plot elements.</span>
+<span class="sd">            ax (matplotlib.pyplot.Axes): contains figure elements and sets the coordinate system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">mplfigure</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dpi</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">get_dpi</span><span class="p">()</span>
+        <span class="c1"># add a small 1e-2 to avoid precision lost due to matplotlib&#39;s truncation</span>
+        <span class="c1"># (https://github.com/matplotlib/matplotlib/issues/15363)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">+</span> <span class="mf">1e-2</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">,</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">+</span> <span class="mf">1e-2</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dpi</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="o">=</span> <span class="n">FigureCanvasAgg</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+        <span class="c1"># self.canvas = mpl.backends.backend_cairo.FigureCanvasCairo(fig)</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">fig</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span>
+
+<div class="viewcode-block" id="VisImage.save"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.VisImage.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            filepath (str): a string that contains the absolute path, including the file name, where</span>
+<span class="sd">                the visualized image will be saved.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">filepath</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.jpg&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">filepath</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.png&quot;</span><span class="p">):</span>
+            <span class="c1"># faster than matplotlib&#39;s imshow</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_image</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># support general formats (e.g. pdf)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VisImage.get_image"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.VisImage.get_image">[docs]</a>    <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            ndarray: the visualized image of shape (H, W, 3) (RGB) in uint8 type.</span>
+<span class="sd">              The shape is scaled w.r.t the input image using the given `scale` argument.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">canvas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span>
+        <span class="n">s</span><span class="p">,</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span> <span class="o">=</span> <span class="n">canvas</span><span class="o">.</span><span class="n">print_to_buffer</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">img</span>
+
+        <span class="c1"># buf = io.BytesIO()  # works for cairo backend</span>
+        <span class="c1"># canvas.print_rgba(buf)</span>
+        <span class="c1"># width, height = self.width, self.height</span>
+        <span class="c1"># s = buf.getvalue()</span>
+
+        <span class="n">buffer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;uint8&quot;</span><span class="p">)</span>
+
+        <span class="c1"># imshow is slow. blend manually (still quite slow)</span>
+        <span class="n">img_rgba</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">rgb</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">img_rgba</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">numexpr</span> <span class="k">as</span> <span class="nn">ne</span>  <span class="c1"># fuse them with numexpr</span>
+
+            <span class="n">visualized_image</span> <span class="o">=</span> <span class="n">ne</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="s2">&quot;img * (1 - alpha / 255.0) + rgb * (alpha / 255.0)&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mf">255.0</span>
+            <span class="n">visualized_image</span> <span class="o">=</span> <span class="n">img</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="n">rgb</span> <span class="o">*</span> <span class="n">alpha</span>
+
+        <span class="n">visualized_image</span> <span class="o">=</span> <span class="n">visualized_image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;uint8&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">visualized_image</span></div></div>
+
+
+<div class="viewcode-block" id="Visualizer"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer">[docs]</a><span class="k">class</span> <span class="nc">Visualizer</span><span class="p">:</span>
+<div class="viewcode-block" id="Visualizer.__init__"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_rgb</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">instance_mode</span><span class="o">=</span><span class="n">ColorMode</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            img_rgb: a numpy array of shape (H, W, C), where H and W correspond to</span>
+<span class="sd">                the height and width of the image respectively. C is the number of</span>
+<span class="sd">                color channels. The image is required to be in RGB format since that</span>
+<span class="sd">                is a requirement of the Matplotlib library. The image is also expected</span>
+<span class="sd">                to be in the range [0, 255].</span>
+<span class="sd">            metadata (MetadataCatalog): image metadata.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">img_rgb</span><span class="p">)</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">VisImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpu_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+
+        <span class="c1"># too small texts are useless, therefore clamp to 9</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_font_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">height</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">width</span><span class="p">)</span> <span class="o">//</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">10</span> <span class="o">//</span> <span class="n">scale</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_instance_mode</span> <span class="o">=</span> <span class="n">instance_mode</span></div>
+
+<div class="viewcode-block" id="Visualizer.draw_instance_predictions"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_instance_predictions">[docs]</a>    <span class="k">def</span> <span class="nf">draw_instance_predictions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">predictions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draw instance-level prediction results on an image.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            predictions (Instances): the output of an instance detection/segmentation</span>
+<span class="sd">                model. Following fields will be used to draw:</span>
+<span class="sd">                &quot;pred_boxes&quot;, &quot;pred_classes&quot;, &quot;scores&quot;, &quot;pred_masks&quot; (or &quot;pred_masks_rle&quot;).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with visualizations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">pred_boxes</span> <span class="k">if</span> <span class="n">predictions</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s2">&quot;pred_boxes&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">scores</span> <span class="k">if</span> <span class="n">predictions</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s2">&quot;scores&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">pred_classes</span> <span class="k">if</span> <span class="n">predictions</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s2">&quot;pred_classes&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">_create_text_labels</span><span class="p">(</span><span class="n">classes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">thing_classes</span><span class="p">)</span>
+        <span class="n">keypoints</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">pred_keypoints</span> <span class="k">if</span> <span class="n">predictions</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s2">&quot;pred_keypoints&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">predictions</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s2">&quot;pred_masks&quot;</span><span class="p">):</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">predictions</span><span class="o">.</span><span class="n">pred_masks</span><span class="p">)</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="p">[</span><span class="n">GenericMask</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">width</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instance_mode</span> <span class="o">==</span> <span class="n">ColorMode</span><span class="o">.</span><span class="n">SEGMENTATION</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">thing_colors</span><span class="p">:</span>
+            <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_jitter</span><span class="p">([</span><span class="n">x</span> <span class="o">/</span> <span class="mi">255</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">thing_colors</span><span class="p">[</span><span class="n">c</span><span class="p">]])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">classes</span>
+            <span class="p">]</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.8</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">colors</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instance_mode</span> <span class="o">==</span> <span class="n">ColorMode</span><span class="o">.</span><span class="n">IMAGE_BW</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">predictions</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s2">&quot;pred_masks&quot;</span><span class="p">),</span> <span class="s2">&quot;ColorMode.IMAGE_BW requires segmentations&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_grayscale_image</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">predictions</span><span class="o">.</span><span class="n">pred_masks</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">overlay_instances</span><span class="p">(</span>
+            <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span>
+            <span class="n">boxes</span><span class="o">=</span><span class="n">boxes</span><span class="p">,</span>
+            <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+            <span class="n">keypoints</span><span class="o">=</span><span class="n">keypoints</span><span class="p">,</span>
+            <span class="n">assigned_colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.draw_sem_seg"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_sem_seg">[docs]</a>    <span class="k">def</span> <span class="nf">draw_sem_seg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sem_seg</span><span class="p">,</span> <span class="n">area_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draw semantic segmentation predictions/labels.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sem_seg (Tensor or ndarray): the segmentation of shape (H, W).</span>
+<span class="sd">            area_threshold (int): segments with less than `area_threshold` are not drawn.</span>
+<span class="sd">            alpha (float): the larger it is, the more opaque the segmentations are.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with visualizations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sem_seg</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">sem_seg</span> <span class="o">=</span> <span class="n">sem_seg</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">labels</span><span class="p">,</span> <span class="n">areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sem_seg</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">sorted_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">areas</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">sorted_idxs</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">l</span><span class="p">:</span> <span class="n">l</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">stuff_classes</span><span class="p">),</span> <span class="n">labels</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">mask_color</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">/</span> <span class="mi">255</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">stuff_colors</span><span class="p">[</span><span class="n">label</span><span class="p">]]</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+                <span class="n">mask_color</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">binary_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">sem_seg</span> <span class="o">==</span> <span class="n">label</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">stuff_classes</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">draw_binary_mask</span><span class="p">(</span>
+                <span class="n">binary_mask</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">mask_color</span><span class="p">,</span>
+                <span class="n">edge_color</span><span class="o">=</span><span class="n">_OFF_WHITE</span><span class="p">,</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="n">area_threshold</span><span class="o">=</span><span class="n">area_threshold</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.draw_panoptic_seg_predictions"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_panoptic_seg_predictions">[docs]</a>    <span class="k">def</span> <span class="nf">draw_panoptic_seg_predictions</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">panoptic_seg</span><span class="p">,</span> <span class="n">segments_info</span><span class="p">,</span> <span class="n">area_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draw panoptic prediction results on an image.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            panoptic_seg (Tensor): of shape (height, width) where the values are ids for each</span>
+<span class="sd">                segment.</span>
+<span class="sd">            segments_info (list[dict]): Describe each segment in `panoptic_seg`.</span>
+<span class="sd">                Each dict contains keys &quot;id&quot;, &quot;category_id&quot;, &quot;isthing&quot;.</span>
+<span class="sd">            area_threshold (int): stuff segments with less than `area_threshold` are not drawn.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with visualizations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">_PanopticPrediction</span><span class="p">(</span><span class="n">panoptic_seg</span><span class="p">,</span> <span class="n">segments_info</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instance_mode</span> <span class="o">==</span> <span class="n">ColorMode</span><span class="o">.</span><span class="n">IMAGE_BW</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_grayscale_image</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">non_empty_mask</span><span class="p">())</span>
+
+        <span class="c1"># draw mask for all semantic segments first i.e. &quot;stuff&quot;</span>
+        <span class="k">for</span> <span class="n">mask</span><span class="p">,</span> <span class="n">sinfo</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">semantic_masks</span><span class="p">():</span>
+            <span class="n">category_idx</span> <span class="o">=</span> <span class="n">sinfo</span><span class="p">[</span><span class="s2">&quot;category_id&quot;</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">mask_color</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">/</span> <span class="mi">255</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">stuff_colors</span><span class="p">[</span><span class="n">category_idx</span><span class="p">]]</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="n">mask_color</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">stuff_classes</span><span class="p">[</span><span class="n">category_idx</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">draw_binary_mask</span><span class="p">(</span>
+                <span class="n">mask</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">mask_color</span><span class="p">,</span>
+                <span class="n">edge_color</span><span class="o">=</span><span class="n">_OFF_WHITE</span><span class="p">,</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="n">area_threshold</span><span class="o">=</span><span class="n">area_threshold</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># draw mask for all instances second</span>
+        <span class="n">all_instances</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">instance_masks</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_instances</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span>
+        <span class="n">masks</span><span class="p">,</span> <span class="n">sinfo</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">all_instances</span><span class="p">))</span>
+        <span class="n">category_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;category_id&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sinfo</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;score&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sinfo</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">_create_text_labels</span><span class="p">(</span><span class="n">category_ids</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">thing_classes</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">random_color</span><span class="p">(</span><span class="n">rgb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">maximum</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">category_ids</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">colors</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overlay_instances</span><span class="p">(</span><span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">assigned_colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.draw_dataset_dict"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_dataset_dict">[docs]</a>    <span class="k">def</span> <span class="nf">draw_dataset_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draw annotations/segmentaions in cvpods Dataset format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dic (dict): annotation/segmentation data of one image, in cvpods Dataset format.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with visualizations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">annos</span> <span class="o">=</span> <span class="n">dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;annotations&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">annos</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;segmentation&quot;</span> <span class="ow">in</span> <span class="n">annos</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">masks</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;segmentation&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">annos</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">masks</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s2">&quot;keypoints&quot;</span> <span class="ow">in</span> <span class="n">annos</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">keypts</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;keypoints&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">annos</span><span class="p">]</span>
+                <span class="n">keypts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">keypts</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">annos</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">keypts</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">boxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">BoxMode</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;bbox_mode&quot;</span><span class="p">],</span> <span class="n">BoxMode</span><span class="o">.</span><span class="n">XYXY_ABS</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">annos</span><span class="p">]</span>
+
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;category_id&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">annos</span><span class="p">]</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">thing_classes</span>
+            <span class="k">if</span> <span class="n">names</span><span class="p">:</span>
+                <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">]</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;|crowd&quot;</span> <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iscrowd&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">annos</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overlay_instances</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">boxes</span><span class="o">=</span><span class="n">boxes</span><span class="p">,</span> <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span> <span class="n">keypoints</span><span class="o">=</span><span class="n">keypts</span><span class="p">)</span>
+
+        <span class="n">sem_seg</span> <span class="o">=</span> <span class="n">dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sem_seg&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sem_seg</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;sem_seg_file_name&quot;</span> <span class="ow">in</span> <span class="n">dic</span><span class="p">:</span>
+            <span class="n">sem_seg</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">dic</span><span class="p">[</span><span class="s2">&quot;sem_seg_file_name&quot;</span><span class="p">],</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_GRAYSCALE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sem_seg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">draw_sem_seg</span><span class="p">(</span><span class="n">sem_seg</span><span class="p">,</span> <span class="n">area_threshold</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.overlay_instances"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.overlay_instances">[docs]</a>    <span class="k">def</span> <span class="nf">overlay_instances</span><span class="p">(</span>  <span class="c1"># noqa:C901</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">boxes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">masks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">keypoints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">assigned_colors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            boxes (Boxes, RotatedBoxes or ndarray): either a :class:`Boxes`,</span>
+<span class="sd">                or an Nx4 numpy array of XYXY_ABS format for the N objects in a single image,</span>
+<span class="sd">                or a :class:`RotatedBoxes`,</span>
+<span class="sd">                or an Nx5 numpy array of (x_center, y_center, width, height, angle_degrees) format</span>
+<span class="sd">                for the N objects in a single image,</span>
+<span class="sd">            labels (list[str]): the text to be displayed for each instance.</span>
+<span class="sd">            masks (masks-like object): Supported types are:</span>
+
+<span class="sd">                * `structures.masks.PolygonMasks`, `structures.masks.BitMasks`.</span>
+<span class="sd">                * list[list[ndarray]]: contains the segmentation masks for all objects in one image.</span>
+<span class="sd">                    The first level of the list corresponds to individual instances. The second</span>
+<span class="sd">                    level to all the polygon that compose the instance, and the third level</span>
+<span class="sd">                    to the polygon coordinates. The third level should have the format of</span>
+<span class="sd">                    [x0, y0, x1, y1, ..., xn, yn] (n &gt;= 3).</span>
+<span class="sd">                * list[ndarray]: each ndarray is a binary mask of shape (H, W).</span>
+<span class="sd">                * list[dict]: each dict is a COCO-style RLE.</span>
+<span class="sd">            keypoints (Keypoint or array like): an array-like object of shape (N, K, 3),</span>
+<span class="sd">                where the N is the number of instances and K is the number of keypoints.</span>
+<span class="sd">                The last dimension corresponds to (x, y, visibility or score).</span>
+<span class="sd">            assigned_colors (list[matplotlib.colors]): a list of colors, where each color</span>
+<span class="sd">                corresponds to each mask or box in the image. Refer to &#39;matplotlib.colors&#39;</span>
+<span class="sd">                for full list of formats that the colors are accepted in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with visualizations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_instances</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">boxes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">boxes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_boxes</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>
+            <span class="n">num_instances</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_masks</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">num_instances</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span> <span class="o">==</span> <span class="n">num_instances</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">num_instances</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">keypoints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">num_instances</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">keypoints</span><span class="p">)</span> <span class="o">==</span> <span class="n">num_instances</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">num_instances</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">keypoints</span><span class="p">)</span>
+            <span class="n">keypoints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_keypoints</span><span class="p">(</span><span class="n">keypoints</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">==</span> <span class="n">num_instances</span>
+        <span class="k">if</span> <span class="n">assigned_colors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">assigned_colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">random_color</span><span class="p">(</span><span class="n">rgb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">maximum</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_instances</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">num_instances</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span>
+        <span class="k">if</span> <span class="n">boxes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlay_rotated_instances</span><span class="p">(</span>
+                <span class="n">boxes</span><span class="o">=</span><span class="n">boxes</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">assigned_colors</span><span class="o">=</span><span class="n">assigned_colors</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Display in largest to smallest order to reduce occlusion.</span>
+        <span class="n">areas</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">boxes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">area</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">areas</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sorted_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">areas</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="c1"># Re-order overlapped instances in descending order.</span>
+            <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">sorted_idxs</span><span class="p">]</span> <span class="k">if</span> <span class="n">boxes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">sorted_idxs</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="p">[</span><span class="n">masks</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">sorted_idxs</span><span class="p">]</span> <span class="k">if</span> <span class="n">masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">assigned_colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">assigned_colors</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">sorted_idxs</span><span class="p">]</span>
+            <span class="n">keypoints</span> <span class="o">=</span> <span class="n">keypoints</span><span class="p">[</span><span class="n">sorted_idxs</span><span class="p">]</span> <span class="k">if</span> <span class="n">keypoints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_instances</span><span class="p">):</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">assigned_colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">boxes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw_box</span><span class="p">(</span><span class="n">boxes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">edge_color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">polygons</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">draw_polygon</span><span class="p">(</span><span class="n">segment</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># first get a box</span>
+                <span class="k">if</span> <span class="n">boxes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">text_pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">)</span>  <span class="c1"># if drawing boxes, put text on the box corner.</span>
+                    <span class="n">horiz_align</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span>
+                <span class="k">elif</span> <span class="n">masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">bbox</span><span class="p">()</span>
+
+                    <span class="c1"># draw text in the center (defined by median) when box is not drawn</span>
+                    <span class="c1"># median is less sensitive to outliers.</span>
+                    <span class="n">text_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">masks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">horiz_align</span> <span class="o">=</span> <span class="s2">&quot;center&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">continue</span>  <span class="c1"># drawing the box confidence for keypoints isn&#39;t very useful.</span>
+                <span class="c1"># for small objects, draw text at the side to avoid occlusion</span>
+                <span class="n">instance_area</span> <span class="o">=</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">instance_area</span> <span class="o">&lt;</span> <span class="n">_SMALL_OBJECT_AREA_THRESH</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">scale</span>
+                    <span class="ow">or</span> <span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span> <span class="o">&lt;</span> <span class="mi">40</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">scale</span>
+                <span class="p">):</span>
+                    <span class="k">if</span> <span class="n">y1</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">5</span><span class="p">:</span>
+                        <span class="n">text_pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y0</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">text_pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span>
+
+                <span class="n">height_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">height</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+                <span class="n">lighter_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change_color_brightness</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">brightness_factor</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+                <span class="n">font_size</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">height_ratio</span> <span class="o">-</span> <span class="mf">0.02</span><span class="p">)</span> <span class="o">/</span> <span class="mf">0.08</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="o">*</span> <span class="mf">0.5</span>
+                    <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_font_size</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw_text</span><span class="p">(</span>
+                    <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">text_pos</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">lighter_color</span><span class="p">,</span>
+                    <span class="n">horizontal_alignment</span><span class="o">=</span><span class="n">horiz_align</span><span class="p">,</span>
+                    <span class="n">font_size</span><span class="o">=</span><span class="n">font_size</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="c1"># draw keypoints</span>
+        <span class="k">if</span> <span class="n">keypoints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">keypoints_per_instance</span> <span class="ow">in</span> <span class="n">keypoints</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw_and_connect_keypoints</span><span class="p">(</span><span class="n">keypoints_per_instance</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.overlay_rotated_instances"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.overlay_rotated_instances">[docs]</a>    <span class="k">def</span> <span class="nf">overlay_rotated_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boxes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">assigned_colors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            boxes (ndarray): an Nx5 numpy array of</span>
+<span class="sd">                (x_center, y_center, width, height, angle_degrees) format</span>
+<span class="sd">                for the N objects in a single image.</span>
+<span class="sd">            labels (list[str]): the text to be displayed for each instance.</span>
+<span class="sd">            assigned_colors (list[matplotlib.colors]): a list of colors, where each color</span>
+<span class="sd">                corresponds to each mask or box in the image. Refer to &#39;matplotlib.colors&#39;</span>
+<span class="sd">                for full list of formats that the colors are accepted in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with visualizations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">num_instances</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">assigned_colors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">assigned_colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">random_color</span><span class="p">(</span><span class="n">rgb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">maximum</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_instances</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">num_instances</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span>
+
+        <span class="c1"># Display in largest to smallest order to reduce occlusion.</span>
+        <span class="k">if</span> <span class="n">boxes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">areas</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+
+        <span class="n">sorted_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">areas</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="c1"># Re-order overlapped instances in descending order.</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">sorted_idxs</span><span class="p">]</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">sorted_idxs</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">assigned_colors</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">sorted_idxs</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_instances</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">draw_rotated_box_with_label</span><span class="p">(</span>
+                <span class="n">boxes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">edge_color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.draw_and_connect_keypoints"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_and_connect_keypoints">[docs]</a>    <span class="k">def</span> <span class="nf">draw_and_connect_keypoints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keypoints</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draws keypoints of an instance and follows the rules for keypoint connections</span>
+<span class="sd">        to draw lines between appropriate keypoints. This follows color heuristics for</span>
+<span class="sd">        line color.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keypoints (Tensor): a tensor of shape (K, 3), where K is the number of keypoints</span>
+<span class="sd">                and the last dimension corresponds to (x, y, probability).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with visualizations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">visible</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">keypoint_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">keypoint_names</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">keypoint</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keypoints</span><span class="p">):</span>
+            <span class="c1"># draw keypoint</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">prob</span> <span class="o">=</span> <span class="n">keypoint</span>
+            <span class="k">if</span> <span class="n">prob</span> <span class="o">&gt;</span> <span class="n">_KEYPOINT_THRESHOLD</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw_circle</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">_RED</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">keypoint_names</span><span class="p">:</span>
+                    <span class="n">keypoint_name</span> <span class="o">=</span> <span class="n">keypoint_names</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+                    <span class="n">visible</span><span class="p">[</span><span class="n">keypoint_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">keypoint_connection_rules</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">kp0</span><span class="p">,</span> <span class="n">kp1</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">keypoint_connection_rules</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">kp0</span> <span class="ow">in</span> <span class="n">visible</span> <span class="ow">and</span> <span class="n">kp1</span> <span class="ow">in</span> <span class="n">visible</span><span class="p">:</span>
+                    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">visible</span><span class="p">[</span><span class="n">kp0</span><span class="p">]</span>
+                    <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">visible</span><span class="p">[</span><span class="n">kp1</span><span class="p">]</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="mf">255.0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">color</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">draw_line</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">],</span> <span class="p">[</span><span class="n">y0</span><span class="p">,</span> <span class="n">y1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+
+        <span class="c1"># draw lines from nose to mid-shoulder and mid-shoulder to mid-hip</span>
+        <span class="c1"># Note that this strategy is specific to person keypoints.</span>
+        <span class="c1"># For other keypoints, it should just do nothing</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ls_x</span><span class="p">,</span> <span class="n">ls_y</span> <span class="o">=</span> <span class="n">visible</span><span class="p">[</span><span class="s2">&quot;left_shoulder&quot;</span><span class="p">]</span>
+            <span class="n">rs_x</span><span class="p">,</span> <span class="n">rs_y</span> <span class="o">=</span> <span class="n">visible</span><span class="p">[</span><span class="s2">&quot;right_shoulder&quot;</span><span class="p">]</span>
+            <span class="n">mid_shoulder_x</span><span class="p">,</span> <span class="n">mid_shoulder_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">ls_x</span> <span class="o">+</span> <span class="n">rs_x</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">ls_y</span> <span class="o">+</span> <span class="n">rs_y</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># draw line from nose to mid-shoulder</span>
+            <span class="n">nose_x</span><span class="p">,</span> <span class="n">nose_y</span> <span class="o">=</span> <span class="n">visible</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nose&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">nose_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw_line</span><span class="p">([</span><span class="n">nose_x</span><span class="p">,</span> <span class="n">mid_shoulder_x</span><span class="p">],</span> <span class="p">[</span><span class="n">nose_y</span><span class="p">,</span> <span class="n">mid_shoulder_y</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">_RED</span><span class="p">)</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># draw line from mid-shoulder to mid-hip</span>
+                <span class="n">lh_x</span><span class="p">,</span> <span class="n">lh_y</span> <span class="o">=</span> <span class="n">visible</span><span class="p">[</span><span class="s2">&quot;left_hip&quot;</span><span class="p">]</span>
+                <span class="n">rh_x</span><span class="p">,</span> <span class="n">rh_y</span> <span class="o">=</span> <span class="n">visible</span><span class="p">[</span><span class="s2">&quot;right_hip&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mid_hip_x</span><span class="p">,</span> <span class="n">mid_hip_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">lh_x</span> <span class="o">+</span> <span class="n">rh_x</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">lh_y</span> <span class="o">+</span> <span class="n">rh_y</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw_line</span><span class="p">([</span><span class="n">mid_hip_x</span><span class="p">,</span> <span class="n">mid_shoulder_x</span><span class="p">],</span> <span class="p">[</span><span class="n">mid_hip_y</span><span class="p">,</span> <span class="n">mid_shoulder_y</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">_RED</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Primitive drawing functions:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Visualizer.draw_text"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_text">[docs]</a>    <span class="k">def</span> <span class="nf">draw_text</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">text</span><span class="p">,</span>
+        <span class="n">position</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">font_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span>
+        <span class="n">horizontal_alignment</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+        <span class="n">rotation</span><span class="o">=</span><span class="mi">0</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            text (str): class label</span>
+<span class="sd">            position (tuple): a tuple of the x and y coordinates to place text on image.</span>
+<span class="sd">            font_size (int, optional): font of the text. If not provided, a font size</span>
+<span class="sd">                proportional to the image width is calculated and used.</span>
+<span class="sd">            color: color of the text. Refer to `matplotlib.colors` for full list</span>
+<span class="sd">                of formats that are accepted.</span>
+<span class="sd">            horizontal_alignment (str): see `matplotlib.text.Text`</span>
+<span class="sd">            rotation: rotation angle in degrees CCW</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with text drawn.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">font_size</span><span class="p">:</span>
+            <span class="n">font_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_font_size</span>
+
+        <span class="c1"># since the text background is dark, we don&#39;t want the text to be dark</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">mplc</span><span class="o">.</span><span class="n">to_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">)),</span> <span class="mf">0.2</span><span class="p">)</span>
+        <span class="n">color</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">color</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">color</span><span class="p">))</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">,</span>
+            <span class="n">text</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">font_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span>
+            <span class="n">family</span><span class="o">=</span><span class="s2">&quot;sans-serif&quot;</span><span class="p">,</span>
+            <span class="n">bbox</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span> <span class="s2">&quot;pad&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span> <span class="s2">&quot;edgecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">},</span>
+            <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span>
+            <span class="n">horizontalalignment</span><span class="o">=</span><span class="n">horizontal_alignment</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+            <span class="n">zorder</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.draw_box"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_box">[docs]</a>    <span class="k">def</span> <span class="nf">draw_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">box_coord</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">edge_color</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="n">line_style</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            box_coord (tuple): a tuple containing x0, y0, x1, y1 coordinates, where x0 and y0</span>
+<span class="sd">                are the coordinates of the image&#39;s top left corner. x1 and y1 are the</span>
+<span class="sd">                coordinates of the image&#39;s bottom right corner.</span>
+<span class="sd">            alpha (float): blending efficient. Smaller values lead to more transparent masks.</span>
+<span class="sd">            edge_color: color of the outline of the box. Refer to `matplotlib.colors`</span>
+<span class="sd">                for full list of formats that are accepted.</span>
+<span class="sd">            line_style (string): the string to use to create the outline of the boxes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with box drawn.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">box_coord</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span>
+
+        <span class="n">linewidth</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_font_size</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span>
+            <span class="n">mpl</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">),</span>
+                <span class="n">width</span><span class="p">,</span>
+                <span class="n">height</span><span class="p">,</span>
+                <span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">edgecolor</span><span class="o">=</span><span class="n">edge_color</span><span class="p">,</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="n">linestyle</span><span class="o">=</span><span class="n">line_style</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.draw_rotated_box_with_label"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_rotated_box_with_label">[docs]</a>    <span class="k">def</span> <span class="nf">draw_rotated_box_with_label</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">rotated_box</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">edge_color</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="n">line_style</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            rotated_box (tuple): a tuple containing (cnt_x, cnt_y, w, h, angle),</span>
+<span class="sd">                where cnt_x and cnt_y are the center coordinates of the box.</span>
+<span class="sd">                w and h are the width and height of the box. angle represents how</span>
+<span class="sd">                many degrees the box is rotated CCW with regard to the 0-degree box.</span>
+<span class="sd">            alpha (float): blending efficient. Smaller values lead to more transparent boxes.</span>
+<span class="sd">            edge_color: color of the outline of the box. Refer to `matplotlib.colors`</span>
+<span class="sd">                for full list of formats that are accepted.</span>
+<span class="sd">            line_style (string): the string to use to create the outline of the boxes.</span>
+<span class="sd">            label (string): label for rotated box. It will not be rendered when set to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with box drawn.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cnt_x</span><span class="p">,</span> <span class="n">cnt_y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">rotated_box</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">h</span>
+        <span class="c1"># use thinner lines when the box is small</span>
+        <span class="n">linewidth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_font_size</span> <span class="o">/</span> <span class="p">(</span>
+            <span class="mi">6</span> <span class="k">if</span> <span class="n">area</span> <span class="o">&lt;</span> <span class="n">_SMALL_OBJECT_AREA_THRESH</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">scale</span> <span class="k">else</span> <span class="mi">3</span>
+        <span class="p">)</span>
+
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">angle</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">rect</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="n">w</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="n">w</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">h</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">w</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">h</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="n">w</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)]</span>
+        <span class="c1"># x: left-&gt;right ; y: top-&gt;down</span>
+        <span class="n">rotated_rect</span> <span class="o">=</span> <span class="p">[(</span><span class="n">s</span> <span class="o">*</span> <span class="n">yy</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="n">xx</span> <span class="o">+</span> <span class="n">cnt_x</span><span class="p">,</span> <span class="n">c</span> <span class="o">*</span> <span class="n">yy</span> <span class="o">-</span> <span class="n">s</span> <span class="o">*</span> <span class="n">xx</span> <span class="o">+</span> <span class="n">cnt_y</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">)</span> <span class="ow">in</span> <span class="n">rect</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">draw_line</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">rotated_rect</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">rotated_rect</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]],</span>
+                <span class="p">[</span><span class="n">rotated_rect</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">rotated_rect</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">]],</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">edge_color</span><span class="p">,</span>
+                <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">line_style</span><span class="p">,</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">text_pos</span> <span class="o">=</span> <span class="n">rotated_rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># topleft corner</span>
+
+            <span class="n">height_ratio</span> <span class="o">=</span> <span class="n">h</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">height</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+            <span class="n">label_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change_color_brightness</span><span class="p">(</span><span class="n">edge_color</span><span class="p">,</span> <span class="n">brightness_factor</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+            <span class="n">font_size</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">height_ratio</span> <span class="o">-</span> <span class="mf">0.02</span><span class="p">)</span> <span class="o">/</span> <span class="mf">0.08</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_font_size</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">draw_text</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text_pos</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">label_color</span><span class="p">,</span> <span class="n">font_size</span><span class="o">=</span><span class="n">font_size</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="n">angle</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.draw_circle"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_circle">[docs]</a>    <span class="k">def</span> <span class="nf">draw_circle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">circle_coord</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            circle_coord (list(int) or tuple(int)): contains the x and y coordinates</span>
+<span class="sd">                of the center of the circle.</span>
+<span class="sd">            color: color of the polygon. Refer to `matplotlib.colors` for a full list of</span>
+<span class="sd">                formats that are accepted.</span>
+<span class="sd">            radius (int): radius of the circle.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with box drawn.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">circle_coord</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span>
+            <span class="n">mpl</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">Circle</span><span class="p">(</span><span class="n">circle_coord</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.draw_line"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_line">[docs]</a>    <span class="k">def</span> <span class="nf">draw_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            x_data (list[int]): a list containing x values of all the points being drawn.</span>
+<span class="sd">                Length of list should match the length of y_data.</span>
+<span class="sd">            y_data (list[int]): a list containing y values of all the points being drawn.</span>
+<span class="sd">                Length of list should match the length of x_data.</span>
+<span class="sd">            color: color of the line. Refer to `matplotlib.colors` for a full list of</span>
+<span class="sd">                formats that are accepted.</span>
+<span class="sd">            linestyle: style of the line. Refer to `matplotlib.lines.Line2D`</span>
+<span class="sd">                for a full list of formats that are accepted.</span>
+<span class="sd">            linewidth (float or None): width of the line. When it&#39;s None,</span>
+<span class="sd">                a default value will be computed and used.</span>
+<span class="sd">            alpha (float): blending efficient. Smaller values lead to more transparent lines.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with line drawn.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">linewidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">linewidth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_font_size</span> <span class="o">/</span> <span class="mi">3</span>
+        <span class="n">linewidth</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">linewidth</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span>
+            <span class="n">mpl</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">(</span>
+                <span class="n">x_data</span><span class="p">,</span>
+                <span class="n">y_data</span><span class="p">,</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                <span class="n">linestyle</span><span class="o">=</span><span class="n">linestyle</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.draw_binary_mask"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_binary_mask">[docs]</a>    <span class="k">def</span> <span class="nf">draw_binary_mask</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">binary_mask</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">edge_color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">area_threshold</span><span class="o">=</span><span class="mi">4096</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            binary_mask (ndarray): numpy array of shape (H, W), where H is the image height and</span>
+<span class="sd">                W is the image width. Each value in the array is either a 0 or 1 value of uint8</span>
+<span class="sd">                type.</span>
+<span class="sd">            color: color of the mask. Refer to `matplotlib.colors` for a full list of</span>
+<span class="sd">                formats that are accepted. If None, will pick a random color.</span>
+<span class="sd">            edge_color: color of the polygon edges. Refer to `matplotlib.colors` for a</span>
+<span class="sd">                full list of formats that are accepted.</span>
+<span class="sd">            text (str): if None, will be drawn in the object&#39;s center of mass.</span>
+<span class="sd">            alpha (float): blending efficient. Smaller values lead to more transparent masks.</span>
+<span class="sd">            area_threshold (float): a connected component small than this will not be shown.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with mask drawn.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">random_color</span><span class="p">(</span><span class="n">rgb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">maximum</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">area_threshold</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">area_threshold</span> <span class="o">=</span> <span class="mi">4096</span>
+
+        <span class="n">has_valid_segment</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">binary_mask</span> <span class="o">=</span> <span class="n">binary_mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;uint8&quot;</span><span class="p">)</span>  <span class="c1"># opencv needs uint8</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">GenericMask</span><span class="p">(</span><span class="n">binary_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="n">shape2d</span> <span class="o">=</span> <span class="p">(</span><span class="n">binary_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">binary_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mask</span><span class="o">.</span><span class="n">has_holes</span><span class="p">:</span>
+            <span class="c1"># draw polygons for regular masks</span>
+            <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">mask</span><span class="o">.</span><span class="n">polygons</span><span class="p">:</span>
+                <span class="n">area</span> <span class="o">=</span> <span class="n">mask_util</span><span class="o">.</span><span class="n">area</span><span class="p">(</span><span class="n">mask_util</span><span class="o">.</span><span class="n">frPyObjects</span><span class="p">([</span><span class="n">segment</span><span class="p">],</span> <span class="n">shape2d</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shape2d</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="n">area</span> <span class="o">&lt;</span> <span class="n">area_threshold</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">has_valid_segment</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">segment</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw_polygon</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">edge_color</span><span class="o">=</span><span class="n">edge_color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rgba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape2d</span> <span class="o">+</span> <span class="p">(</span><span class="mi">4</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+            <span class="n">rgba</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+            <span class="n">rgba</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">alpha</span>
+            <span class="n">has_valid_segment</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">rgba</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">has_valid_segment</span><span class="p">:</span>
+            <span class="c1"># TODO sometimes drawn on wrong objects. the heuristics here can improve.</span>
+            <span class="n">lighter_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change_color_brightness</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">brightness_factor</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+            <span class="n">_num_cc</span><span class="p">,</span> <span class="n">cc_labels</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">centroids</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">connectedComponentsWithStats</span><span class="p">(</span><span class="n">binary_mask</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+            <span class="n">largest_component_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="c1"># draw text on the largest component, as well as other very large components.</span>
+            <span class="k">for</span> <span class="n">cid</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">_num_cc</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">cid</span> <span class="o">==</span> <span class="n">largest_component_id</span> <span class="ow">or</span> <span class="n">stats</span><span class="p">[</span><span class="n">cid</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">_LARGE_MASK_AREA_THRESH</span><span class="p">:</span>
+                    <span class="c1"># median is more stable than centroid</span>
+                    <span class="c1"># center = centroids[largest_component_id]</span>
+                    <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">((</span><span class="n">cc_labels</span> <span class="o">==</span> <span class="n">cid</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">draw_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">lighter_color</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+<div class="viewcode-block" id="Visualizer.draw_polygon"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.draw_polygon">[docs]</a>    <span class="k">def</span> <span class="nf">draw_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">edge_color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            segment: numpy array of shape Nx2, containing all the points in the polygon.</span>
+<span class="sd">            color: color of the polygon. Refer to `matplotlib.colors` for a full list of</span>
+<span class="sd">                formats that are accepted.</span>
+<span class="sd">            edge_color: color of the polygon edges. Refer to `matplotlib.colors` for a</span>
+<span class="sd">                full list of formats that are accepted. If not provided, a darker shade</span>
+<span class="sd">                of the polygon color will be used instead.</span>
+<span class="sd">            alpha (float): blending efficient. Smaller values lead to more transparent masks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): image object with polygon drawn.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">edge_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># make edge color darker than the polygon color</span>
+            <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="mf">0.8</span><span class="p">:</span>
+                <span class="n">edge_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change_color_brightness</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">brightness_factor</span><span class="o">=-</span><span class="mf">0.7</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">edge_color</span> <span class="o">=</span> <span class="n">color</span>
+        <span class="n">edge_color</span> <span class="o">=</span> <span class="n">mplc</span><span class="o">.</span><span class="n">to_rgb</span><span class="p">(</span><span class="n">edge_color</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
+
+        <span class="n">polygon</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">Polygon</span><span class="p">(</span>
+            <span class="n">segment</span><span class="p">,</span>
+            <span class="n">fill</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">facecolor</span><span class="o">=</span><span class="n">mplc</span><span class="o">.</span><span class="n">to_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">alpha</span><span class="p">,),</span>
+            <span class="n">edgecolor</span><span class="o">=</span><span class="n">edge_color</span><span class="p">,</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_font_size</span> <span class="o">//</span> <span class="mi">15</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Internal methods:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_jitter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Randomly modifies given color to produce a slightly different color than the color given.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            color (tuple[double]): a tuple of 3 elements, containing the RGB values of the color</span>
+<span class="sd">                picked. The values in the list are in the [0.0, 1.0] range.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            jittered_color (tuple[double]): a tuple of 3 elements, containing the RGB values of the</span>
+<span class="sd">                color after being jittered. The values in the list are in the [0.0, 1.0] range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">mplc</span><span class="o">.</span><span class="n">to_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+        <span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="c1"># better to do it in another color space</span>
+        <span class="n">vec</span> <span class="o">=</span> <span class="n">vec</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">vec</span> <span class="o">+</span> <span class="n">color</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_grayscale_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a grayscale version of the original image.</span>
+<span class="sd">        The colors in masked area, if given, will be kept.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">img_bw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;f4&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">img_bw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">img_bw</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">img_bw</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">img_bw</span>
+
+    <span class="k">def</span> <span class="nf">_change_color_brightness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">brightness_factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Depending on the brightness_factor, gives a lighter or darker color i.e. a color with</span>
+<span class="sd">        less or more saturation than the original color.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            color: color of the polygon. Refer to `matplotlib.colors` for a full list of</span>
+<span class="sd">                formats that are accepted.</span>
+<span class="sd">            brightness_factor (float): a value in [-1.0, 1.0] range. A lightness factor of</span>
+<span class="sd">                0 will correspond to no change, a factor in [-1.0, 0) range will result in</span>
+<span class="sd">                a darker color and a factor in (0, 1.0] range will result in a lighter color.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            modified_color (tuple[double]): a tuple containing the RGB values of the</span>
+<span class="sd">                modified color. Each value in the tuple is in the [0.0, 1.0] range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">brightness_factor</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="ow">and</span> <span class="n">brightness_factor</span> <span class="o">&lt;=</span> <span class="mf">1.0</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">mplc</span><span class="o">.</span><span class="n">to_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+        <span class="n">polygon_color</span> <span class="o">=</span> <span class="n">colorsys</span><span class="o">.</span><span class="n">rgb_to_hls</span><span class="p">(</span><span class="o">*</span><span class="n">mplc</span><span class="o">.</span><span class="n">to_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">))</span>
+        <span class="n">modified_lightness</span> <span class="o">=</span> <span class="n">polygon_color</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">brightness_factor</span> <span class="o">*</span> <span class="n">polygon_color</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">modified_lightness</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">modified_lightness</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="k">else</span> <span class="n">modified_lightness</span>
+        <span class="n">modified_lightness</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">modified_lightness</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="n">modified_lightness</span>
+        <span class="n">modified_color</span> <span class="o">=</span> <span class="n">colorsys</span><span class="o">.</span><span class="n">hls_to_rgb</span><span class="p">(</span><span class="n">polygon_color</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">modified_lightness</span><span class="p">,</span> <span class="n">polygon_color</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">modified_color</span>
+
+    <span class="k">def</span> <span class="nf">_convert_boxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boxes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert different format of boxes to an NxB array, where B = 4 or 5 is the box dimension.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">Boxes</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">RotatedBoxes</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">boxes</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_convert_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masks_or_polygons</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert different format of masks or polygons to a tuple of masks and polygons.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[GenericMask]:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">m</span> <span class="o">=</span> <span class="n">masks_or_polygons</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">PolygonMasks</span><span class="p">):</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">polygons</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">BitMasks</span><span class="p">):</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">GenericMask</span><span class="p">):</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GenericMask</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">width</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="k">def</span> <span class="nf">_convert_keypoints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keypoints</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keypoints</span><span class="p">,</span> <span class="n">Keypoints</span><span class="p">):</span>
+            <span class="n">keypoints</span> <span class="o">=</span> <span class="n">keypoints</span><span class="o">.</span><span class="n">tensor</span>
+        <span class="n">keypoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">keypoints</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">keypoints</span>
+
+<div class="viewcode-block" id="Visualizer.get_output"><a class="viewcode-back" href="../../../../modules/utils.html#cvpods.utils.visualizer.visualizer.Visualizer.get_output">[docs]</a>    <span class="k">def</span> <span class="nf">get_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            output (VisImage): the image output containing the visualizations added</span>
+<span class="sd">            to the image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

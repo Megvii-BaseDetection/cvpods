@@ -1,0 +1,244 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>&lt;no title&gt; &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="deployment.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="transformer.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/tutorials/configs.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p># Use Configs</p>
+<p>cvpods treats config as a class.
+In addition to the basic operations that access and update a config, we provide
+the following extra functionalities:</p>
+<ol class="arabic simple">
+<li><p>The config can have <cite>_BASE_</cite> field, which will load a base config first.
+Values in the base config will be overwritten in sub-configs, if there are any conflicts.
+We provided several base configs under configs directroy for standard model architectures.</p></li>
+<li><p>We provide config <cite>find</cite> and <cite>diff</cite> method, which will help you to find setting value and diff two config objects.</p></li>
+</ol>
+<p>### Use Configs</p>
+<p>Some basic usage of the <cite>Config</cite> object is shown below:
+<code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">from</span> <span class="pre">config</span> <span class="pre">import</span> <span class="pre">config</span>
+<span class="pre">config.find(&quot;weight&quot;)</span>&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">get</span> <span class="pre">all</span> <span class="pre">keys</span> <span class="pre">in</span> <span class="pre">config</span> <span class="pre">if</span> <span class="pre">it</span> <span class="pre">contains</span> <span class="pre">keyword</span> <span class="pre">&quot;weight&quot;</span>
+<span class="pre">base_config</span> <span class="pre">=</span> <span class="pre">config.__class__.__base__()</span>&#160;&#160; <span class="pre">#</span> <span class="pre">get</span> <span class="pre">base</span> <span class="pre">config</span> <span class="pre">object</span>
+<span class="pre">config.xxx</span> <span class="pre">=</span> <span class="pre">yyy</span>&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">add</span> <span class="pre">new</span> <span class="pre">configs</span> <span class="pre">for</span> <span class="pre">your</span> <span class="pre">own</span> <span class="pre">custom</span> <span class="pre">components</span>
+<span class="pre">config.diff(base_config)</span>&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">return</span> <span class="pre">a</span> <span class="pre">dict</span> <span class="pre">contains</span> <span class="pre">all</span> <span class="pre">difference</span> <span class="pre">between</span> <span class="pre">given</span> <span class="pre">config</span>
+<span class="pre">config.show_diff(base_config)</span>&#160; <span class="pre">#</span> <span class="pre">show</span> <span class="pre">difference</span>
+<span class="pre">`</span></code></p>
+<p>### Best Practice with Configs</p>
+<ol class="arabic simple">
+<li><p>Treat the configs you write as “code”: avoid copying them or duplicating them; use “_BASE_”
+instead to share common parts between configs.</p></li>
+<li><p>Keep the configs you write simple: don’t include keys that do not affect the experimental setting.</p></li>
+<li><p>Save a full config together with a trained model, and use it to run inference.
+This is more robust to changes that may happen to the config definition
+(e.g., if a default value changed).</p></li>
+</ol>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="deployment.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="transformer.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

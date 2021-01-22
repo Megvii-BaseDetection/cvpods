@@ -1,0 +1,708 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.structures.rotated_boxes &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.structures.rotated_boxes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.structures.rotated_boxes</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">cvpods.layers</span> <span class="k">import</span> <span class="n">cat</span>
+<span class="kn">from</span> <span class="nn">cvpods.layers.rotated_boxes</span> <span class="k">import</span> <span class="n">pairwise_iou_rotated</span>
+
+<span class="kn">from</span> <span class="nn">.boxes</span> <span class="k">import</span> <span class="n">Boxes</span>
+
+
+<div class="viewcode-block" id="RotatedBoxes"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes">[docs]</a><span class="k">class</span> <span class="nc">RotatedBoxes</span><span class="p">(</span><span class="n">Boxes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This structure stores a list of rotated boxes as a Nx5 torch.Tensor.</span>
+<span class="sd">    It supports some common methods about boxes</span>
+<span class="sd">    (`area`, `clip`, `nonempty`, etc),</span>
+<span class="sd">    and also behaves like a Tensor</span>
+<span class="sd">    (support indexing, `to(device)`, `.device`, and iteration over all boxes)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RotatedBoxes.__init__"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            tensor (Tensor[float]): a Nx5 matrix.  Each row is</span>
+<span class="sd">                (x_center, y_center, width, height, angle),</span>
+<span class="sd">                in which angle is represented in degrees.</span>
+<span class="sd">                While there&#39;s no strict range restriction for it,</span>
+<span class="sd">                the recommended principal range is between [-180, 180) degrees.</span>
+
+<span class="sd">        Assume we have a horizontal box B = (x_center, y_center, width, height),</span>
+<span class="sd">        where width is along the x-axis and height is along the y-axis.</span>
+<span class="sd">        The rotated box B_rot (x_center, y_center, width, height, angle)</span>
+<span class="sd">        can be seen as:</span>
+
+<span class="sd">        1. When angle == 0:</span>
+<span class="sd">           B_rot == B</span>
+<span class="sd">        2. When angle &gt; 0:</span>
+<span class="sd">           B_rot is obtained by rotating B w.r.t its center by :math:`|angle|` degrees CCW;</span>
+<span class="sd">        3. When angle &lt; 0:</span>
+<span class="sd">           B_rot is obtained by rotating B w.r.t its center by :math:`|angle|` degrees CW.</span>
+
+<span class="sd">        Mathematically, since the right-handed coordinate system for image space</span>
+<span class="sd">        is (y, x), where y is top-&gt;down and x is left-&gt;right, the 4 vertices of the</span>
+<span class="sd">        rotated rectangle :math:`(yr_i, xr_i)` (i = 1, 2, 3, 4) can be obtained from</span>
+<span class="sd">        the vertices of the horizontal rectangle (y_i, x_i) (i = 1, 2, 3, 4)</span>
+<span class="sd">        in the following way (:math:`\\theta = angle*\\pi/180` is the angle in radians,</span>
+<span class="sd">        (y_c, x_c) is the center of the rectangle):</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            yr_i = \\cos(\\theta) (y_i - y_c) - \\sin(\\theta) (x_i - x_c) + y_c,</span>
+
+<span class="sd">            xr_i = \\sin(\\theta) (y_i - y_c) + \\cos(\\theta) (x_i - x_c) + x_c,</span>
+
+<span class="sd">        which is the standard rigid-body rotation transformation.</span>
+
+<span class="sd">        Intuitively, the angle is</span>
+<span class="sd">        (1) the rotation angle from y-axis in image space</span>
+<span class="sd">        to the height vector (top-&gt;down in the box&#39;s local coordinate system)</span>
+<span class="sd">        of the box in CCW, and</span>
+<span class="sd">        (2) the rotation angle from x-axis in image space</span>
+<span class="sd">        to the width vector (left-&gt;right in the box&#39;s local coordinate system)</span>
+<span class="sd">        of the box in CCW.</span>
+
+<span class="sd">        More intuitively, consider the following horizontal box ABCD represented</span>
+<span class="sd">        in (x1, y1, x2, y2): (3, 2, 7, 4),</span>
+<span class="sd">        covering the [3, 7] x [2, 4] region of the continuous coordinate system</span>
+<span class="sd">        which looks like this:</span>
+
+<span class="sd">        .. code:: none</span>
+
+<span class="sd">            O--------&gt; x</span>
+<span class="sd">            |</span>
+<span class="sd">            |  A---B</span>
+<span class="sd">            |  |   |</span>
+<span class="sd">            |  D---C</span>
+<span class="sd">            |</span>
+<span class="sd">            v y</span>
+
+<span class="sd">        Note that each capital letter represents one 0-dimensional geometric point</span>
+<span class="sd">        instead of a &#39;square pixel&#39; here.</span>
+
+<span class="sd">        In the example above, using (x, y) to represent a point we have:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            O = (0, 0), A = (3, 2), B = (7, 2), C = (7, 4), D = (3, 4)</span>
+
+<span class="sd">        We name vector AB = vector DC as the width vector in box&#39;s local coordinate system, and</span>
+<span class="sd">        vector AD = vector BC as the height vector in box&#39;s local coordinate system. Initially,</span>
+<span class="sd">        when angle = 0 degree, they&#39;re aligned with the positive directions of x-axis and y-axis</span>
+<span class="sd">        in the image space, respectively.</span>
+
+<span class="sd">        For better illustration, we denote the center of the box as E,</span>
+
+<span class="sd">        .. code:: none</span>
+
+<span class="sd">            O--------&gt; x</span>
+<span class="sd">            |</span>
+<span class="sd">            |  A---B</span>
+<span class="sd">            |  | E |</span>
+<span class="sd">            |  D---C</span>
+<span class="sd">            |</span>
+<span class="sd">            v y</span>
+
+<span class="sd">        where the center E = ((3+7)/2, (2+4)/2) = (5, 3).</span>
+
+<span class="sd">        Also,</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            width = |AB| = |CD| = 7 - 3 = 4,</span>
+<span class="sd">            height = |AD| = |BC| = 4 - 2 = 2.</span>
+
+<span class="sd">        Therefore, the corresponding representation for the same shape in rotated box in</span>
+<span class="sd">        (x_center, y_center, width, height, angle) format is:</span>
+
+<span class="sd">        (5, 3, 4, 2, 0),</span>
+
+<span class="sd">        Now, let&#39;s consider (5, 3, 4, 2, 90), which is rotated by 90 degrees</span>
+<span class="sd">        CCW (counter-clockwise) by definition. It looks like this:</span>
+
+<span class="sd">        .. code:: none</span>
+
+<span class="sd">            O--------&gt; x</span>
+<span class="sd">            |   B-C</span>
+<span class="sd">            |   | |</span>
+<span class="sd">            |   |E|</span>
+<span class="sd">            |   | |</span>
+<span class="sd">            |   A-D</span>
+<span class="sd">            v y</span>
+
+<span class="sd">        The center E is still located at the same point (5, 3), while the vertices</span>
+<span class="sd">        ABCD are rotated by 90 degrees CCW with regard to E:</span>
+<span class="sd">        A = (4, 5), B = (4, 1), C = (6, 1), D = (6, 5)</span>
+
+<span class="sd">        Here, 90 degrees can be seen as the CCW angle to rotate from y-axis to</span>
+<span class="sd">        vector AD or vector BC (the top-&gt;down height vector in box&#39;s local coordinate system),</span>
+<span class="sd">        or the CCW angle to rotate from x-axis to vector AB or vector DC (the left-&gt;right</span>
+<span class="sd">        width vector in box&#39;s local coordinate system).</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            width = |AB| = |CD| = 5 - 1 = 4,</span>
+<span class="sd">            height = |AD| = |BC| = 6 - 4 = 2.</span>
+
+<span class="sd">        Next, how about (5, 3, 4, 2, -90), which is rotated by 90 degrees CW (clockwise)</span>
+<span class="sd">        by definition? It looks like this:</span>
+
+<span class="sd">        .. code:: none</span>
+
+<span class="sd">            O--------&gt; x</span>
+<span class="sd">            |   D-A</span>
+<span class="sd">            |   | |</span>
+<span class="sd">            |   |E|</span>
+<span class="sd">            |   | |</span>
+<span class="sd">            |   C-B</span>
+<span class="sd">            v y</span>
+
+<span class="sd">        The center E is still located at the same point (5, 3), while the vertices</span>
+<span class="sd">        ABCD are rotated by 90 degrees CW with regard to E:</span>
+<span class="sd">        A = (6, 1), B = (6, 5), C = (4, 5), D = (4, 1)</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            width = |AB| = |CD| = 5 - 1 = 4,</span>
+<span class="sd">            height = |AD| = |BC| = 6 - 4 = 2.</span>
+
+<span class="sd">        This covers exactly the same region as (5, 3, 4, 2, 90) does, and their IoU</span>
+<span class="sd">        will be 1. However, these two will generate different RoI Pooling results and</span>
+<span class="sd">        should not be treated as an identical box.</span>
+
+<span class="sd">        On the other hand, it&#39;s easy to see that (X, Y, W, H, A) is identical to</span>
+<span class="sd">        (X, Y, W, H, A+360N), for any integer N. For example (5, 3, 4, 2, 270) would be</span>
+<span class="sd">        identical to (5, 3, 4, 2, -90), because rotating the shape 270 degrees CCW is</span>
+<span class="sd">        equivalent to rotating the same shape 90 degrees CW.</span>
+
+<span class="sd">        We could rotate further to get (5, 3, 4, 2, 180), or (5, 3, 4, 2, -180):</span>
+
+<span class="sd">        .. code:: none</span>
+
+<span class="sd">            O--------&gt; x</span>
+<span class="sd">            |</span>
+<span class="sd">            |  C---D</span>
+<span class="sd">            |  | E |</span>
+<span class="sd">            |  B---A</span>
+<span class="sd">            |</span>
+<span class="sd">            v y</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            A = (7, 4), B = (3, 4), C = (3, 2), D = (7, 2),</span>
+
+<span class="sd">            width = |AB| = |CD| = 7 - 3 = 4,</span>
+<span class="sd">            height = |AD| = |BC| = 4 - 2 = 2.</span>
+
+<span class="sd">        Finally, this is a very inaccurate (heavily quantized) illustration of</span>
+<span class="sd">        how (5, 3, 4, 2, 60) looks like in case anyone wonders:</span>
+
+<span class="sd">        .. code:: none</span>
+
+<span class="sd">            O--------&gt; x</span>
+<span class="sd">            |     B\</span>
+<span class="sd">            |    /  C</span>
+<span class="sd">            |   /E /</span>
+<span class="sd">            |  A  /</span>
+<span class="sd">            |   `D</span>
+<span class="sd">            v y</span>
+
+<span class="sd">        It&#39;s still a rectangle with center of (5, 3), width of 4 and height of 2,</span>
+<span class="sd">        but its angle (and thus orientation) is somewhere between</span>
+<span class="sd">        (5, 3, 4, 2, 0) and (5, 3, 4, 2, 90).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">device</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">tensor</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">,</span> <span class="n">tensor</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span></div>
+
+<div class="viewcode-block" id="RotatedBoxes.clone"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.clone">[docs]</a>    <span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RotatedBoxes&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clone the RotatedBoxes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RotatedBoxes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">RotatedBoxes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">clone</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RotatedBoxes.to"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.to">[docs]</a>    <span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RotatedBoxes&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">RotatedBoxes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="RotatedBoxes.area"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.area">[docs]</a>    <span class="k">def</span> <span class="nf">area</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the area of all the boxes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: a vector with areas of each box.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="n">box</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">box</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">area</span></div>
+
+<div class="viewcode-block" id="RotatedBoxes.normalize_angles"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.normalize_angles">[docs]</a>    <span class="k">def</span> <span class="nf">normalize_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Restrict angles to the range of [-180, 180) degrees</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="mf">180.0</span><span class="p">)</span> <span class="o">%</span> <span class="mf">360.0</span> <span class="o">-</span> <span class="mf">180.0</span></div>
+
+<div class="viewcode-block" id="RotatedBoxes.clip"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.clip">[docs]</a>    <span class="k">def</span> <span class="nf">clip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">box_size</span><span class="p">:</span> <span class="n">Boxes</span><span class="o">.</span><span class="n">BoxSizeType</span><span class="p">,</span> <span class="n">clip_angle_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clip (in place) the boxes by limiting x coordinates to the range [0, width]</span>
+<span class="sd">        and y coordinates to the range [0, height].</span>
+
+<span class="sd">        For RRPN:</span>
+<span class="sd">        Only clip boxes that are almost horizontal with a tolerance of</span>
+<span class="sd">        clip_angle_threshold to maintain backward compatibility.</span>
+
+<span class="sd">        Rotated boxes beyond this threshold are not clipped for two reasons:</span>
+
+<span class="sd">        1. There are potentially multiple ways to clip a rotated box to make it</span>
+<span class="sd">           fit within the image.</span>
+<span class="sd">        2. It&#39;s tricky to make the entire rectangular box fit within the image</span>
+<span class="sd">           and still be able to not leave out pixels of interest.</span>
+
+<span class="sd">        Therefore we rely on ops like RoIAlignRotated to safely handle this.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            box_size (height, width): The clipping box&#39;s size.</span>
+<span class="sd">            clip_angle_threshold:</span>
+<span class="sd">                Iff. abs(normalized(angle)) &lt;= clip_angle_threshold (in degrees),</span>
+<span class="sd">                we do the clipping as horizontal boxes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">box_size</span>
+
+        <span class="c1"># normalize angles to be within (-180, 180] degrees</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalize_angles</span><span class="p">()</span>
+
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">clip_angle_threshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># convert to (x1, y1, x2, y2)</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">y2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+        <span class="c1"># clip</span>
+        <span class="n">x1</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">w</span><span class="p">)</span>
+        <span class="n">y1</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">h</span><span class="p">)</span>
+        <span class="n">x2</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">w</span><span class="p">)</span>
+        <span class="n">y2</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">h</span><span class="p">)</span>
+
+        <span class="c1"># convert back to (xc, yc, w, h)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x1</span> <span class="o">+</span> <span class="n">x2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">y1</span> <span class="o">+</span> <span class="n">y2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="c1"># make sure widths and heights do not increase due to numerical errors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RotatedBoxes.nonempty"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.nonempty">[docs]</a>    <span class="k">def</span> <span class="nf">nonempty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find boxes that are non-empty.</span>
+<span class="sd">        A box is considered empty, if either of its side is no larger than threshold.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: a binary vector which represents</span>
+<span class="sd">            whether each box is empty (False) or non-empty (True).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span>
+        <span class="n">widths</span> <span class="o">=</span> <span class="n">box</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">heights</span> <span class="o">=</span> <span class="n">box</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="p">(</span><span class="n">widths</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">heights</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">keep</span></div>
+
+<div class="viewcode-block" id="RotatedBoxes.__getitem__"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.__getitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;RotatedBoxes&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            RotatedBoxes: Create a new :class:`RotatedBoxes` by indexing.</span>
+
+<span class="sd">        The following usage are allowed:</span>
+
+<span class="sd">        1. `new_boxes = boxes[3]`: return a `RotatedBoxes` which contains only one box.</span>
+<span class="sd">        2. `new_boxes = boxes[2:10]`: return a slice of boxes.</span>
+<span class="sd">        3. `new_boxes = boxes[vector]`, where vector is a torch.ByteTensor</span>
+<span class="sd">           with `length = len(boxes)`. Nonzero elements in the vector will be selected.</span>
+
+<span class="sd">        Note that the returned RotatedBoxes might share storage with this RotatedBoxes,</span>
+<span class="sd">        subject to Pytorch&#39;s indexing semantics.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">RotatedBoxes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">item</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">b</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;Indexing on RotatedBoxes with </span><span class="si">{}</span><span class="s2"> failed to return a matrix!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">item</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">RotatedBoxes</span><span class="p">(</span><span class="n">b</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;RotatedBoxes(&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+
+<div class="viewcode-block" id="RotatedBoxes.inside_box"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.inside_box">[docs]</a>    <span class="k">def</span> <span class="nf">inside_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">box_size</span><span class="p">:</span> <span class="n">Boxes</span><span class="o">.</span><span class="n">BoxSizeType</span><span class="p">,</span> <span class="n">boundary_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            box_size (height, width): Size of the reference box covering</span>
+<span class="sd">                [0, width] x [0, height]</span>
+<span class="sd">            boundary_threshold (int): Boxes that extend beyond the reference box</span>
+<span class="sd">                boundary by more than boundary_threshold are considered &quot;outside&quot;.</span>
+
+<span class="sd">        For RRPN, it might not be necessary to call this function since it&#39;s common</span>
+<span class="sd">        for rotated box to extend to outside of the image boundaries</span>
+<span class="sd">        (the clip function only clips the near-horizontal boxes)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            a binary vector, indicating whether each box is inside the reference box.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">box_size</span>
+
+        <span class="n">cnt_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">cnt_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">half_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">half_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span><span class="p">))</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span><span class="p">))</span>
+        <span class="c1"># This basically computes the horizontal bounding rectangle of the rotated box</span>
+        <span class="n">max_rect_dx</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="n">half_w</span> <span class="o">+</span> <span class="n">s</span> <span class="o">*</span> <span class="n">half_h</span>
+        <span class="n">max_rect_dy</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="n">half_h</span> <span class="o">+</span> <span class="n">s</span> <span class="o">*</span> <span class="n">half_w</span>
+
+        <span class="n">inds_inside</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">cnt_x</span> <span class="o">-</span> <span class="n">max_rect_dx</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="n">boundary_threshold</span><span class="p">)</span>
+            <span class="o">&amp;</span> <span class="p">(</span><span class="n">cnt_y</span> <span class="o">-</span> <span class="n">max_rect_dy</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="n">boundary_threshold</span><span class="p">)</span>
+            <span class="o">&amp;</span> <span class="p">(</span><span class="n">cnt_x</span> <span class="o">+</span> <span class="n">max_rect_dx</span> <span class="o">&lt;</span> <span class="n">width</span> <span class="o">+</span> <span class="n">boundary_threshold</span><span class="p">)</span>
+            <span class="o">&amp;</span> <span class="p">(</span><span class="n">cnt_y</span> <span class="o">+</span> <span class="n">max_rect_dy</span> <span class="o">&lt;</span> <span class="n">height</span> <span class="o">+</span> <span class="n">boundary_threshold</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">inds_inside</span></div>
+
+<div class="viewcode-block" id="RotatedBoxes.get_centers"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.get_centers">[docs]</a>    <span class="k">def</span> <span class="nf">get_centers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The box centers in a Nx2 array of (x, y).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="RotatedBoxes.scale"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scale_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">scale_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Scale the rotated box with horizontal and vertical scaling factors</span>
+<span class="sd">        Note: when scale_factor_x != scale_factor_y,</span>
+<span class="sd">        the rotated box does not preserve the rectangular shape when the angle</span>
+<span class="sd">        is not a multiple of 90 degrees under resize transformation.</span>
+<span class="sd">        Instead, the shape is a parallelogram (that has skew)</span>
+<span class="sd">        Here we make an approximation by fitting a rotated rectangle to the parallelogram.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="n">scale_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="n">scale_y</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="c1"># In image space, y is top-&gt;down and x is left-&gt;right</span>
+        <span class="c1"># Consider the local coordintate system for the rotated box,</span>
+        <span class="c1"># where the box center is located at (0, 0), and the four vertices ABCD are</span>
+        <span class="c1"># A(-w / 2, -h / 2), B(w / 2, -h / 2), C(w / 2, h / 2), D(-w / 2, h / 2)</span>
+        <span class="c1"># the midpoint of the left edge AD of the rotated box E is:</span>
+        <span class="c1"># E = (A+D)/2 = (-w / 2, 0)</span>
+        <span class="c1"># the midpoint of the top edge AB of the rotated box F is:</span>
+        <span class="c1"># F(0, -h / 2)</span>
+        <span class="c1"># To get the old coordinates in the global system, apply the rotation transformation</span>
+        <span class="c1"># (Note: the right-handed coordinate system for image space is yOx):</span>
+        <span class="c1"># (old_x, old_y) = (s * y + c * x, c * y - s * x)</span>
+        <span class="c1"># E(old) = (s * 0 + c * (-w/2), c * 0 - s * (-w/2)) = (-c * w / 2, s * w / 2)</span>
+        <span class="c1"># F(old) = (s * (-h / 2) + c * 0, c * (-h / 2) - s * 0) = (-s * h / 2, -c * h / 2)</span>
+        <span class="c1"># After applying the scaling factor (sfx, sfy):</span>
+        <span class="c1"># E(new) = (-sfx * c * w / 2, sfy * s * w / 2)</span>
+        <span class="c1"># F(new) = (-sfx * s * h / 2, -sfy * c * h / 2)</span>
+        <span class="c1"># The new width after scaling tranformation becomes:</span>
+
+        <span class="c1"># w(new) = |E(new) - O| * 2</span>
+        <span class="c1">#        = sqrt[(sfx * c * w / 2)^2 + (sfy * s * w / 2)^2] * 2</span>
+        <span class="c1">#        = sqrt[(sfx * c)^2 + (sfy * s)^2] * w</span>
+        <span class="c1"># i.e., scale_factor_w = sqrt[(sfx * c)^2 + (sfy * s)^2]</span>
+        <span class="c1">#</span>
+        <span class="c1"># For example,</span>
+        <span class="c1"># when angle = 0 or 180, |c| = 1, s = 0, scale_factor_w == scale_factor_x;</span>
+        <span class="c1"># when |angle| = 90, c = 0, |s| = 1, scale_factor_w == scale_factor_y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">scale_x</span> <span class="o">*</span> <span class="n">c</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">scale_y</span> <span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># h(new) = |F(new) - O| * 2</span>
+        <span class="c1">#        = sqrt[(sfx * s * h / 2)^2 + (sfy * c * h / 2)^2] * 2</span>
+        <span class="c1">#        = sqrt[(sfx * s)^2 + (sfy * c)^2] * h</span>
+        <span class="c1"># i.e., scale_factor_h = sqrt[(sfx * s)^2 + (sfy * c)^2]</span>
+        <span class="c1">#</span>
+        <span class="c1"># For example,</span>
+        <span class="c1"># when angle = 0 or 180, |c| = 1, s = 0, scale_factor_h == scale_factor_y;</span>
+        <span class="c1"># when |angle| = 90, c = 0, |s| = 1, scale_factor_h == scale_factor_x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">*=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">scale_x</span> <span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">scale_y</span> <span class="o">*</span> <span class="n">c</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># The angle is the rotation angle from y-axis in image space to the height</span>
+        <span class="c1"># vector (top-&gt;down in the box&#39;s local coordinate system) of the box in CCW.</span>
+        <span class="c1">#</span>
+        <span class="c1"># angle(new) = angle_yOx(O - F(new))</span>
+        <span class="c1">#            = angle_yOx( (sfx * s * h / 2, sfy * c * h / 2) )</span>
+        <span class="c1">#            = atan2(sfx * s * h / 2, sfy * c * h / 2)</span>
+        <span class="c1">#            = atan2(sfx * s, sfy * c)</span>
+        <span class="c1">#</span>
+        <span class="c1"># For example,</span>
+        <span class="c1"># when sfx == sfy, angle(new) == atan2(s, c) == angle(old)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">scale_x</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span> <span class="n">scale_y</span> <span class="o">*</span> <span class="n">c</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span></div>
+
+<div class="viewcode-block" id="RotatedBoxes.cat"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.cat">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">cat</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">boxes_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;RotatedBoxes&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;RotatedBoxes&quot;</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Concatenates a list of RotatedBoxes into a single RotatedBoxes</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            boxes_list (list[RotatedBoxes])</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RotatedBoxes: the concatenated RotatedBoxes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">boxes_list</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">boxes_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">RotatedBoxes</span><span class="p">)</span> <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes_list</span><span class="p">)</span>
+
+        <span class="n">cat_boxes</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">boxes_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])(</span><span class="n">cat</span><span class="p">([</span><span class="n">b</span><span class="o">.</span><span class="n">tensor</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">boxes_list</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cat_boxes</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">device</span>
+
+<div class="viewcode-block" id="RotatedBoxes.__iter__"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.RotatedBoxes.__iter__">[docs]</a>    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yield a box as a Tensor of shape (5,) at a time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">pairwise_iou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">:</span> <span class="n">RotatedBoxes</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">:</span> <span class="n">RotatedBoxes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given two lists of rotated boxes of size N and M,</span>
+<span class="sd">    compute the IoU (intersection over union)</span>
+<span class="sd">    between __all__ N x M pairs of boxes.</span>
+<span class="sd">    The box order must be (x_center, y_center, width, height, angle).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        boxes1, boxes2 (RotatedBoxes):</span>
+<span class="sd">            two `RotatedBoxes`. Contains N &amp; M rotated boxes, respectively.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tensor: IoU, sized [N,M].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">pairwise_iou_rotated</span><span class="p">(</span><span class="n">boxes1</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="n">boxes2</span><span class="o">.</span><span class="n">tensor</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

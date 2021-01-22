@@ -1,0 +1,645 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.structures.masks &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.structures.masks</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.structures.masks</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pycocotools.mask</span> <span class="k">as</span> <span class="nn">mask_utils</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">cvpods.layers</span> <span class="k">import</span> <span class="n">cat</span>
+<span class="kn">from</span> <span class="nn">cvpods.layers.roi_align</span> <span class="k">import</span> <span class="n">ROIAlign</span>
+
+<span class="kn">from</span> <span class="nn">.boxes</span> <span class="k">import</span> <span class="n">Boxes</span>
+
+
+<span class="k">def</span> <span class="nf">polygon_area</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="c1"># Using the shoelace formula</span>
+    <span class="c1"># https://stackoverflow.com/questions/24467972/calculate-area-of-polygon-given-x-y-coordinates</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+
+
+<div class="viewcode-block" id="polygons_to_bitmask"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.polygons_to_bitmask">[docs]</a><span class="k">def</span> <span class="nf">polygons_to_bitmask</span><span class="p">(</span><span class="n">polygons</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        polygons (list[ndarray]): each array has shape (Nx2,)</span>
+<span class="sd">        height, width (int)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ndarray: a bool mask of shape (height, width)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">polygons</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;COCOAPI does not support empty polygons&quot;</span>
+    <span class="n">rles</span> <span class="o">=</span> <span class="n">mask_utils</span><span class="o">.</span><span class="n">frPyObjects</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+    <span class="n">rle</span> <span class="o">=</span> <span class="n">mask_utils</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">rles</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mask_utils</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">rle</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rasterize_polygons_within_box"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.rasterize_polygons_within_box">[docs]</a><span class="k">def</span> <span class="nf">rasterize_polygons_within_box</span><span class="p">(</span>
+    <span class="n">polygons</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">box</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask_size</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Rasterize the polygons into a mask image and</span>
+<span class="sd">    crop the mask content in the given box.</span>
+<span class="sd">    The cropped mask is resized to (mask_size, mask_size).</span>
+
+<span class="sd">    This function is used when generating training targets for mask head in Mask R-CNN.</span>
+<span class="sd">    Given original ground-truth masks for an image, new ground-truth mask</span>
+<span class="sd">    training targets in the size of `mask_size x mask_size`</span>
+<span class="sd">    must be provided for each predicted box. This function will be called to</span>
+<span class="sd">    produce such targets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        polygons (list[ndarray[float]]): a list of polygons, which represents an instance.</span>
+<span class="sd">        box: 4-element numpy array</span>
+<span class="sd">        mask_size (int):</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tensor: BoolTensor of shape (mask_size, mask_size)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># 1. Shift the polygons w.r.t the boxes</span>
+    <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">polygons</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">polygons</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">polygons</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># 2. Rescale the polygons to the new box size</span>
+    <span class="n">ratio_h</span> <span class="o">=</span> <span class="n">mask_size</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">ratio_w</span> <span class="o">=</span> <span class="n">mask_size</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ratio_h</span> <span class="o">==</span> <span class="n">ratio_w</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">polygons</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">*=</span> <span class="n">ratio_h</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">polygons</span><span class="p">:</span>
+            <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">*=</span> <span class="n">ratio_w</span>
+            <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">*=</span> <span class="n">ratio_h</span>
+
+    <span class="c1"># 3. Rasterize the polygons with coco api</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">polygons_to_bitmask</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="n">mask_size</span><span class="p">,</span> <span class="n">mask_size</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+
+<div class="viewcode-block" id="BitMasks"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.BitMasks">[docs]</a><span class="k">class</span> <span class="nc">BitMasks</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class stores the segmentation masks for all objects in one image, in</span>
+<span class="sd">    the form of bitmaps.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        tensor: bool Tensor of N,H,W, representing N instances in the image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BitMasks.__init__"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.BitMasks.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            tensor: bool Tensor of N,H,W, representing N instances in the image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">device</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="n">tensor</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span></div>
+
+<div class="viewcode-block" id="BitMasks.to"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.BitMasks.to">[docs]</a>    <span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BitMasks&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">BitMasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">device</span>
+
+<div class="viewcode-block" id="BitMasks.__getitem__"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.BitMasks.__getitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;BitMasks&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            BitMasks: Create a new :class:`BitMasks` by indexing.</span>
+
+<span class="sd">        The following usage are allowed:</span>
+
+<span class="sd">        1. `new_masks = masks[3]`: return a `BitMasks` which contains only one mask.</span>
+<span class="sd">        2. `new_masks = masks[2:10]`: return a slice of masks.</span>
+<span class="sd">        3. `new_masks = masks[vector]`, where vector is a torch.BoolTensor</span>
+<span class="sd">           with `length = len(masks)`. Nonzero elements in the vector will be selected.</span>
+
+<span class="sd">        Note that the returned object might share storage with this object,</span>
+<span class="sd">        subject to Pytorch&#39;s indexing semantics.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">BitMasks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">item</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">m</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Indexing on BitMasks with </span><span class="si">{}</span><span class="s2"> returns a tensor with shape </span><span class="si">{}</span><span class="s2">!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">item</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">BitMasks</span><span class="p">(</span><span class="n">m</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;(&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;num_instances=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="BitMasks.nonempty"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.BitMasks.nonempty">[docs]</a>    <span class="k">def</span> <span class="nf">nonempty</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find masks that are non-empty.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: a BoolTensor which represents</span>
+<span class="sd">                whether each mask is empty (False) or non-empty (True).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BitMasks.from_polygon_masks"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.BitMasks.from_polygon_masks">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_polygon_masks</span><span class="p">(</span>
+        <span class="n">polygon_masks</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;PolygonMasks&quot;</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]],</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BitMasks&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            polygon_masks (list[list[ndarray]] or PolygonMasks)</span>
+<span class="sd">            height, width (int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">polygon_masks</span><span class="p">,</span> <span class="n">PolygonMasks</span><span class="p">):</span>
+            <span class="n">polygon_masks</span> <span class="o">=</span> <span class="n">polygon_masks</span><span class="o">.</span><span class="n">polygons</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="p">[</span><span class="n">polygons_to_bitmask</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">polygon_masks</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">BitMasks</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="BitMasks.crop_and_resize"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.BitMasks.crop_and_resize">[docs]</a>    <span class="k">def</span> <span class="nf">crop_and_resize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boxes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">mask_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Crop each bitmask by the given box, and resize results to (mask_size, mask_size).</span>
+<span class="sd">        This can be used to prepare training targets for Mask R-CNN.</span>
+<span class="sd">        It has less reconstruction error compared to rasterization with polygons.</span>
+<span class="sd">        However we observe no difference in accuracy,</span>
+<span class="sd">        but BitMasks requires more memory to store all the masks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            boxes (Tensor): Nx4 tensor storing the boxes for each mask</span>
+<span class="sd">            mask_size (int): the size of the rasterized mask.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor:</span>
+<span class="sd">                A bool tensor of shape (N, mask_size, mask_size), where</span>
+<span class="sd">                N is the number of predicted boxes for this image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">device</span>
+
+        <span class="n">batch_inds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">boxes</span><span class="o">.</span><span class="n">dtype</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">rois</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">batch_inds</span><span class="p">,</span> <span class="n">boxes</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Nx5</span>
+
+        <span class="n">bit_masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">rois</span> <span class="o">=</span> <span class="n">rois</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">ROIAlign</span><span class="p">((</span><span class="n">mask_size</span><span class="p">,</span> <span class="n">mask_size</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">aligned</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">bit_masks</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">rois</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span> <span class="o">&gt;=</span> <span class="mf">0.5</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="BitMasks.get_bounding_boxes"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.BitMasks.get_bounding_boxes">[docs]</a>    <span class="k">def</span> <span class="nf">get_bounding_boxes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Boxes: tight bounding boxes around bit masks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO Make this method faster</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">),</span> <span class="mi">4</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">shift_y</span><span class="p">,</span> <span class="n">shift_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]),</span>
+                                          <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">)):</span>
+            <span class="n">bitmask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">bitmask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">row_mask</span> <span class="o">=</span> <span class="n">shift_y</span><span class="p">[</span><span class="n">bitmask</span><span class="p">]</span>
+            <span class="n">col_mask</span> <span class="o">=</span> <span class="n">shift_x</span><span class="p">[</span><span class="n">bitmask</span><span class="p">]</span>
+            <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">col_mask</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">row_mask</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">col_mask</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">row_mask</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Boxes</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BitMasks.cat"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.BitMasks.cat">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">cat</span><span class="p">(</span><span class="n">bitmasks_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;BitMasks&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;BitMasks&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Concatenates a list of BitMasks into a single BitMasks</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            bitmasks_list (list[BitMasks])</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            BitMasks: the concatenated BitMasks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bitmasks_list</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">bitmasks_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">bitmask</span><span class="p">,</span> <span class="n">BitMasks</span><span class="p">)</span> <span class="k">for</span> <span class="n">bitmask</span> <span class="ow">in</span> <span class="n">bitmasks_list</span><span class="p">)</span>
+
+        <span class="n">cat_bitmasks</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">bitmasks_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])(</span><span class="n">cat</span><span class="p">([</span><span class="n">bm</span><span class="o">.</span><span class="n">tensor</span> <span class="k">for</span> <span class="n">bm</span> <span class="ow">in</span> <span class="n">bitmasks_list</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cat_bitmasks</span></div></div>
+
+
+<div class="viewcode-block" id="PolygonMasks"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.PolygonMasks">[docs]</a><span class="k">class</span> <span class="nc">PolygonMasks</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class stores the segmentation masks for all objects in one image, in the form of polygons.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        polygons: list[list[ndarray]]. Each ndarray is a float64 vector representing a polygon.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PolygonMasks.__init__"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.PolygonMasks.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygons</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            polygons (list[list[Tensor[float]]]): The first</span>
+<span class="sd">                level of the list correspond to individual instances,</span>
+<span class="sd">                the second level to all the polygons that compose the</span>
+<span class="sd">                instance, and the third level to the polygon coordinates.</span>
+<span class="sd">                The third level Tensor should have the format of</span>
+<span class="sd">                torch.Tensor([x0, y0, x1, y1, ..., xn, yn]) (n &gt;= 3).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="p">(</span>
+            <span class="s2">&quot;Cannot create PolygonMasks: Expect a list of list of polygons per image. &quot;</span>
+            <span class="s2">&quot;Got &#39;</span><span class="si">{}</span><span class="s2">&#39; instead.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">polygons</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_make_array</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="c1"># Use float64 for higher precision, because why not?</span>
+            <span class="c1"># Always put polygons on CPU (self.to is a no-op) since they</span>
+            <span class="c1"># are supposed to be small tensors.</span>
+            <span class="c1"># May need to change this assumption if GPU placement becomes useful</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">process_polygons</span><span class="p">(</span>
+            <span class="n">polygons_per_instance</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">polygons_per_instance</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="p">(</span>
+                <span class="s2">&quot;Cannot create polygons: Expect a list of polygons per instance. &quot;</span>
+                <span class="s2">&quot;Got &#39;</span><span class="si">{}</span><span class="s2">&#39; instead.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">polygons_per_instance</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="c1"># transform the polygon to a tensor</span>
+            <span class="n">polygons_per_instance</span> <span class="o">=</span> <span class="p">[</span><span class="n">_make_array</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">polygons_per_instance</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="n">polygons_per_instance</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">6</span>
+            <span class="k">return</span> <span class="n">polygons_per_instance</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">process_polygons</span><span class="p">(</span><span class="n">polygons_per_instance</span><span class="p">)</span> <span class="k">for</span> <span class="n">polygons_per_instance</span> <span class="ow">in</span> <span class="n">polygons</span>
+        <span class="p">]</span></div>
+
+    <span class="c1"># pylint: disable=W0613</span>
+<div class="viewcode-block" id="PolygonMasks.to"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.PolygonMasks.to">[docs]</a>    <span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PolygonMasks&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">device</span>
+
+<div class="viewcode-block" id="PolygonMasks.get_bounding_boxes"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.PolygonMasks.get_bounding_boxes">[docs]</a>    <span class="k">def</span> <span class="nf">get_bounding_boxes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Boxes</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Boxes: tight bounding boxes around polygon masks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">),</span> <span class="mi">4</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">polygons_per_instance</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">):</span>
+            <span class="n">minxy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">maxxy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="n">polygons_per_instance</span><span class="p">:</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">minxy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">minxy</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+                <span class="n">maxxy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">maxxy</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">minxy</span>
+            <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">maxxy</span>
+        <span class="k">return</span> <span class="n">Boxes</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PolygonMasks.nonempty"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.PolygonMasks.nonempty">[docs]</a>    <span class="k">def</span> <span class="nf">nonempty</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find masks that are non-empty.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor:</span>
+<span class="sd">                a BoolTensor which represents whether each mask is empty (False) or not (True).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">keep</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PolygonMasks.__getitem__"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.PolygonMasks.__getitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;PolygonMasks&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Support indexing over the instances and return a `PolygonMasks` object.</span>
+<span class="sd">        `item` can be:</span>
+
+<span class="sd">        1. An integer. It will return an object with only one instance.</span>
+<span class="sd">        2. A slice. It will return an object with the selected instances.</span>
+<span class="sd">        3. A list[int]. It will return an object with the selected instances,</span>
+<span class="sd">           correpsonding to the indices in the list.</span>
+<span class="sd">        4. A vector mask of type BoolTensor, whose length is num_instances.</span>
+<span class="sd">           It will return an object with the instances whose mask is nonzero.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">selected_polygons</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">[</span><span class="n">item</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
+            <span class="n">selected_polygons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">selected_polygons</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">item</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="c1"># Polygons is a list, so we have to move the indices back to CPU.</span>
+            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">shape</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">item</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">in</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">]:</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported tensor dtype=</span><span class="si">{}</span><span class="s2"> for indexing!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+            <span class="n">selected_polygons</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">item</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">PolygonMasks</span><span class="p">(</span><span class="n">selected_polygons</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PolygonMasks.__iter__"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.PolygonMasks.__iter__">[docs]</a>    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yields:</span>
+<span class="sd">            list[ndarray]: the polygons for one instance.</span>
+<span class="sd">            Each Tensor is a float64 vector representing a polygon.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;(&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;num_instances=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PolygonMasks.crop_and_resize"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.PolygonMasks.crop_and_resize">[docs]</a>    <span class="k">def</span> <span class="nf">crop_and_resize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boxes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">mask_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Crop each mask by the given box, and resize results to (mask_size, mask_size).</span>
+<span class="sd">        This can be used to prepare training targets for Mask R-CNN.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            boxes (Tensor): Nx4 tensor storing the boxes for each mask</span>
+<span class="sd">            mask_size (int): the size of the rasterized mask.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: A bool tensor of shape (N, mask_size, mask_size), where</span>
+<span class="sd">            N is the number of predicted boxes for this image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+        <span class="n">device</span> <span class="o">=</span> <span class="n">boxes</span><span class="o">.</span><span class="n">device</span>
+        <span class="c1"># Put boxes on the CPU, as the polygon representation is not efficient GPU-wise</span>
+        <span class="c1"># (several small tensors for representing a single instance mask)</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">))</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">rasterize_polygons_within_box</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">box</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">mask_size</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">poly</span><span class="p">,</span> <span class="n">box</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">,</span> <span class="n">boxes</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        poly: list[list[float]], the polygons for one instance</span>
+<span class="sd">        box: a tensor of shape (4,)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">mask_size</span><span class="p">,</span> <span class="n">mask_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PolygonMasks.area"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.PolygonMasks.area">[docs]</a>    <span class="k">def</span> <span class="nf">area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes area of the mask.</span>
+<span class="sd">        Only works with Polygons, using the shoelace formula:</span>
+<span class="sd">        https://stackoverflow.com/questions/24467972/calculate-area-of-polygon-given-x-y-coordinates</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: a vector, area for each instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">area</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">polygons_per_instance</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">:</span>
+            <span class="n">area_per_instance</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">polygons_per_instance</span><span class="p">:</span>
+                <span class="n">area_per_instance</span> <span class="o">+=</span> <span class="n">polygon_area</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">area</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">area_per_instance</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">area</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PolygonMasks.cat"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.PolygonMasks.cat">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">cat</span><span class="p">(</span><span class="n">polymasks_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;PolygonMasks&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;PolygonMasks&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Concatenates a list of PolygonMasks into a single PolygonMasks</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            polymasks_list (list[PolygonMasks])</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            PolygonMasks: the concatenated PolygonMasks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">polymasks_list</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">polymasks_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">polymask</span><span class="p">,</span> <span class="n">PolygonMasks</span><span class="p">)</span> <span class="k">for</span> <span class="n">polymask</span> <span class="ow">in</span> <span class="n">polymasks_list</span><span class="p">)</span>
+
+        <span class="n">cat_polymasks</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">polymasks_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])(</span>
+            <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">pm</span><span class="o">.</span><span class="n">polygons</span> <span class="k">for</span> <span class="n">pm</span> <span class="ow">in</span> <span class="n">polymasks_list</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">cat_polymasks</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,581 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.configs package &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cvpods.data package" href="data.html" />
+    <link rel="prev" title="cvpods.checkpoint package" href="checkpoint.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/index.html">Notes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="checkpoint.html">cvpods.checkpoint package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">cvpods.configs package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-cvpods.configs.config_helper">cvpods.configs.config_helper module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data.html">cvpods.data package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="engine.html">cvpods.engine package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html">cvpods.evaluation package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="layers.html">cvpods.layers package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modeling.html">cvpods.modeling package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_zoo.html">cvpods.model_zoo package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="solver.html">cvpods.solver package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="structures.html">cvpods.structures package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">cvpods.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="export.html">cvpods.export package</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">API Documentation</a> &raquo;</li>
+        
+      <li>cvpods.configs package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/modules/config.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-cvpods.configs.base_config">
+<span id="cvpods-configs-package"></span><h1>cvpods.configs package<a class="headerlink" href="#module-cvpods.configs.base_config" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="cvpods.configs.base_config.ConfigDict">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.configs.base_config.</code><code class="sig-name descname">ConfigDict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/base_config.html#ConfigDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.base_config.ConfigDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></p>
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.funcname_not_in_attr">
+<code class="sig-name descname">funcname_not_in_attr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/base_config.html#ConfigDict.funcname_not_in_attr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.funcname_not_in_attr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">f</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/base_config.html#ConfigDict.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.pop">
+<code class="sig-name descname">pop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em>, <em class="sig-param"><span class="n">d</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/base_config.html#ConfigDict.pop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.pop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.merge">
+<code class="sig-name descname">merge</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/base_config.html#ConfigDict.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>merge all key and values of config as BaseConfig’s attributes.
+Note that kwargs will override values in config if they have the same keys</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> (<em>dict</em>) – custom config dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.merge_from_list">
+<code class="sig-name descname">merge_from_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cfg_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/base_config.html#ConfigDict.merge_from_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.merge_from_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge config (keys, values) in a list (e.g., from command line) into
+this CfgNode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg_list</strong> (<em>list</em>) – cfg_list must be divided exactly.</p></li>
+<li><p><strong>example</strong><strong>, </strong><strong>cfg_list =</strong><strong> [</strong><strong>'FOO.BAR'</strong><strong>, </strong><strong>0.5</strong><strong>]</strong><strong></strong> (<em>For</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.diff">
+<code class="sig-name descname">diff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cfg</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/cvpods/configs/base_config.html#ConfigDict.diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>diff given config with current config object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<a class="reference internal" href="#cvpods.configs.base_config.ConfigDict" title="cvpods.configs.base_config.ConfigDict"><em>ConfigDict</em></a>) – given config, could be any subclass of ConfigDict</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>ConfigDict</em> – contains all diff pair</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.find">
+<code class="sig-name descname">find</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">'\x1b[30m\x1b[43m'</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/cvpods/configs/base_config.html#ConfigDict.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>find a given key and its value in config</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>str</em>) – the string you want to find</p></li>
+<li><p><strong>show</strong> (<em>bool</em>) – if show is True, print find result; or return the find result</p></li>
+<li><p><strong>color</strong> (<em>str</em>) – color of <cite>key</cite>, default color is black(foreground) yellow(background)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>dict</em> – if  show is False, return dict that contains all find result</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">config</span> <span class="k">import</span> <span class="n">config</span>        <span class="c1"># suppose you are in your training dir</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;weights&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None.  Remove all items from D.<a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; a shallow copy of D<a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.copy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.fromkeys">
+<code class="sig-name descname">fromkeys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.fromkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new dict with keys from iterable and values equal to value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">k</em><span class="optional">[</span>, <em class="sig-param">d</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; D[k] if k in D, else d.  d defaults to None.<a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.items">
+<code class="sig-name descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; a set-like object providing a view on D’s items<a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.items" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.keys">
+<code class="sig-name descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; a set-like object providing a view on D’s keys<a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.popitem">
+<code class="sig-name descname">popitem</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; (k, v), remove and return some (key, value) pair as a<a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.popitem" title="Permalink to this definition">¶</a></dt>
+<dd><p>2-tuple; but raise KeyError if D is empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.setdefault">
+<code class="sig-name descname">setdefault</code><span class="sig-paren">(</span><em class="sig-param">k</em><span class="optional">[</span>, <em class="sig-param">d</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; D.get(k,d), also set D[k]=d if k not in D<a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.setdefault" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.ConfigDict.values">
+<code class="sig-name descname">values</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; an object providing a view on D’s values<a class="headerlink" href="#cvpods.configs.base_config.ConfigDict.values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.configs.base_config.BaseConfig">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.configs.base_config.</code><code class="sig-name descname">BaseConfig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/base_config.html#BaseConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.base_config.BaseConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cvpods.configs.base_config.ConfigDict" title="cvpods.configs.base_config.ConfigDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">cvpods.configs.base_config.ConfigDict</span></code></a></p>
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.link_log">
+<code class="sig-name descname">link_log</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">link_name</span><span class="o">=</span><span class="default_value">'log'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/base_config.html#BaseConfig.link_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.link_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a softlink to output dir.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>link_name</strong> (<em>str</em>) – name of softlink</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.funcname_not_in_attr">
+<code class="sig-name descname">funcname_not_in_attr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/base_config.html#BaseConfig.funcname_not_in_attr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.funcname_not_in_attr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None.  Remove all items from D.<a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; a shallow copy of D<a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.copy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.diff">
+<code class="sig-name descname">diff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cfg</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>diff given config with current config object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<a class="reference internal" href="#cvpods.configs.base_config.ConfigDict" title="cvpods.configs.base_config.ConfigDict"><em>ConfigDict</em></a>) – given config, could be any subclass of ConfigDict</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>ConfigDict</em> – contains all diff pair</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.find">
+<code class="sig-name descname">find</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">'\x1b[30m\x1b[43m'</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>find a given key and its value in config</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>str</em>) – the string you want to find</p></li>
+<li><p><strong>show</strong> (<em>bool</em>) – if show is True, print find result; or return the find result</p></li>
+<li><p><strong>color</strong> (<em>str</em>) – color of <cite>key</cite>, default color is black(foreground) yellow(background)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>dict</em> – if  show is False, return dict that contains all find result</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">config</span> <span class="k">import</span> <span class="n">config</span>        <span class="c1"># suppose you are in your training dir</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;weights&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.fromkeys">
+<code class="sig-name descname">fromkeys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.fromkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new dict with keys from iterable and values equal to value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">k</em><span class="optional">[</span>, <em class="sig-param">d</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; D[k] if k in D, else d.  d defaults to None.<a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.items">
+<code class="sig-name descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; a set-like object providing a view on D’s items<a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.items" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.keys">
+<code class="sig-name descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; a set-like object providing a view on D’s keys<a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.merge">
+<code class="sig-name descname">merge</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>merge all key and values of config as BaseConfig’s attributes.
+Note that kwargs will override values in config if they have the same keys</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> (<em>dict</em>) – custom config dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.merge_from_list">
+<code class="sig-name descname">merge_from_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cfg_list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.merge_from_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge config (keys, values) in a list (e.g., from command line) into
+this CfgNode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg_list</strong> (<em>list</em>) – cfg_list must be divided exactly.</p></li>
+<li><p><strong>example</strong><strong>, </strong><strong>cfg_list =</strong><strong> [</strong><strong>'FOO.BAR'</strong><strong>, </strong><strong>0.5</strong><strong>]</strong><strong></strong> (<em>For</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.pop">
+<code class="sig-name descname">pop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em>, <em class="sig-param"><span class="n">d</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.pop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.popitem">
+<code class="sig-name descname">popitem</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; (k, v), remove and return some (key, value) pair as a<a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.popitem" title="Permalink to this definition">¶</a></dt>
+<dd><p>2-tuple; but raise KeyError if D is empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.setdefault">
+<code class="sig-name descname">setdefault</code><span class="sig-paren">(</span><em class="sig-param">k</em><span class="optional">[</span>, <em class="sig-param">d</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; D.get(k,d), also set D[k]=d if k not in D<a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.setdefault" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.configs.base_config.BaseConfig.values">
+<code class="sig-name descname">values</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; an object providing a view on D’s values<a class="headerlink" href="#cvpods.configs.base_config.BaseConfig.values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<div class="section" id="module-cvpods.configs.config_helper">
+<span id="cvpods-configs-config-helper-module"></span><h2>cvpods.configs.config_helper module<a class="headerlink" href="#module-cvpods.configs.config_helper" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="cvpods.configs.config_helper.highlight">
+<code class="sig-prename descclassname">cvpods.configs.config_helper.</code><code class="sig-name descname">highlight</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">keyword</span></em>, <em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">'\x1b[30m\x1b[43m'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/config_helper.html#highlight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.config_helper.highlight" title="Permalink to this definition">¶</a></dt>
+<dd><p>use given color to highlight keyword in target string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>keyword</strong> (<em>str</em>) – highlight string</p></li>
+<li><p><strong>target</strong> (<em>str</em>) – target string</p></li>
+<li><p><strong>color</strong> (<em>str</em>) – string represent the color, use black foreground</p></li>
+<li><p><strong>yellow background as default</strong> (<em>and</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(str) target string with keyword highlighted</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.configs.config_helper.find_key">
+<code class="sig-prename descclassname">cvpods.configs.config_helper.</code><code class="sig-name descname">find_key</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param_dict</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">key</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/cvpods/configs/config_helper.html#find_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.config_helper.find_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>find key in dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_dict</strong> (<em>dict</em>) – </p></li>
+<li><p><strong>key</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(dict)</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">abc</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ab</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">find_key</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s2">&quot;ab&quot;</span><span class="p">)</span>
+<span class="go">{&#39;abc&#39;: 2, &#39;ab&#39;:4}</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.configs.config_helper.diff_dict">
+<code class="sig-prename descclassname">cvpods.configs.config_helper.</code><code class="sig-name descname">diff_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">src</span></em>, <em class="sig-param"><span class="n">dst</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/config_helper.html#diff_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.config_helper.diff_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>find difference between src dict and dst dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src</strong> (<em>dict</em>) – src dict</p></li>
+<li><p><strong>dst</strong> (<em>dict</em>) – dst dict</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(dict) dict contains all the difference key</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.configs.config_helper.version_update">
+<code class="sig-prename descclassname">cvpods.configs.config_helper.</code><code class="sig-name descname">version_update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/configs/config_helper.html#version_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.configs.config_helper.version_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Backward compatibility of old config’s Augmentation pipelines and Optimizer configs;
+Convert old format into new ones.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="data.html" class="btn btn-neutral float-right" title="cvpods.data package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="checkpoint.html" class="btn btn-neutral float-left" title="cvpods.checkpoint package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

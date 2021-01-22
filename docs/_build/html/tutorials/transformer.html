@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>&lt;no title&gt; &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="configs.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="evaluation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/tutorials/transformer.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p># Extend Data Augmentation</p>
+<p>Transformer in cvpods could be divided into two parts:
+1. transformers used in config pipeline, named <cite>TransformGen</cite>, such as <cite>CenterAffine</cite>
+2. transformers used for given structure, named <cite>Transform</cite>, such as <cite>AffineTransform</cite></p>
+<p>first, you should wirte a <cite>Transform</cite>, then a <cite>TransformGen</cite>. In order to use your transformer,
+add it in your train/test pipeline.</p>
+<p>### Extend Transform
+inhert <cite>Transform</cite> and override <cite>apply_image</cite>, <cite>apply_coords</cite>, <cite>apply_segmentation</cite> method.
+for example,
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
+class HFlipTransform(Transform):</p>
+<blockquote>
+<div><p>“””
+Perform horizontal flip.
+“””</p>
+<dl>
+<dt>def __init__(self, width: int):</dt><dd><p>super().__init__()
+self._set_attributes(locals())</p>
+</dd>
+<dt>def apply_image(self, img: np.ndarray) -&gt; np.ndarray:</dt><dd><p>“””
+Flip the image(s).</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>img (ndarray): of shape HxW, HxWxC, or NxHxWxC. The array can be</dt><dd><p>of type uint8 in range [0, 255], or floating point in range
+[0, 1] or [0, 255].</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>ndarray: the flipped image(s).</p>
+</dd>
+</dl>
+<p>“””
+tensor = torch.from_numpy(np.ascontiguousarray(img))
+if len(tensor.shape) == 2:</p>
+<blockquote>
+<div><p># For dimension of HxW.
+tensor = tensor.flip((-1))</p>
+</div></blockquote>
+<dl class="simple">
+<dt>elif len(tensor.shape) &gt; 2:</dt><dd><p># For dimension of HxWxC, NxHxWxC.
+tensor = tensor.flip((-2))</p>
+</dd>
+</dl>
+<p>return tensor.numpy()</p>
+</dd>
+<dt>def apply_coords(self, coords: np.ndarray) -&gt; np.ndarray:</dt><dd><p>“””
+Flip the coordinates.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>coords (ndarray): floating point array of shape Nx2. Each row is</dt><dd><p>(x, y).</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>ndarray: the flipped coordinates.</p>
+</dd>
+<dt>Note:</dt><dd><p>The inputs are floating point coordinates, not pixel indices.
+Therefore they are flipped by <cite>(W - x, H - y)</cite>, not
+<cite>(W - 1 - x, H 1 - y)</cite>.</p>
+</dd>
+</dl>
+<p>“””
+coords[:, 0] = self.width - coords[:, 0]
+return coords</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>### Extend TransformGen
+<cite>TransformGen</cite> creates a <cite>Transform</cite> based on the given image, sometimes with randomness.
+To extend TransformGen, you should inherit <cite>TransformGen</cite> and override <cite>get_transform</cite> method. For example,
+<a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>Python
+class RandomFlip(TransformGen):</p>
+<blockquote>
+<div><dl>
+<dt>def __init__(self, prob=0.5):</dt><dd><p>“””
+Args:</p>
+<blockquote>
+<div><p>prob (float): probability of flip.</p>
+</div></blockquote>
+<p>“””
+horiz, vert = True, False
+# TODO implement vertical flip when we need it
+super().__init__()</p>
+<dl>
+<dt>if horiz and vert:</dt><dd><dl class="simple">
+<dt>raise ValueError(</dt><dd><p>“Cannot do both horiz and vert. Please use two Flip instead.”</p>
+</dd>
+</dl>
+<p>)</p>
+</dd>
+<dt>if not horiz and not vert:</dt><dd><p>raise ValueError(“At least one of horiz or vert has to be True!”)</p>
+</dd>
+</dl>
+<p>self._init(locals())</p>
+</dd>
+<dt>def get_transform(self, img):</dt><dd><p>_, w = img.shape[:2]
+do = self._rand_range() &lt; self.prob
+if do:</p>
+<blockquote>
+<div><p>return HFlipTransform(w)</p>
+</div></blockquote>
+<dl class="simple">
+<dt>else:</dt><dd><p>return NoOpTransform()</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p><a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>### Use transform in config
+During train/test, use config.INPUT.AUG to define train/test pipeline, for example,
+<a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>python
+INPUT=dict(</p>
+<blockquote>
+<div><blockquote>
+<div><dl>
+<dt>AUG=dict(</dt><dd><dl class="simple">
+<dt>TRAIN_PIPELINES=[</dt><dd><p>(“ResizeShortestEdge”, dict(short_edge_length=(800,), max_size=1333, sample_style=”choice”)),
+(“RandomFlip”, dict()),</p>
+</dd>
+</dl>
+<p>],
+TEST_PIPELINES=[</p>
+<blockquote>
+<div><p>(“ResizeShortestEdge”, dict(short_edge_length=800, max_size=1333, sample_style=”choice”)),</p>
+</div></blockquote>
+<p>],</p>
+</dd>
+</dl>
+<p>)</p>
+</div></blockquote>
+<p>)</p>
+</div></blockquote>
+<p><a href="#id21"><span class="problematic" id="id22">``</span></a>`
+which means use Resize and RandomFlip augmentation in training, just resize in testing.</p>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="configs.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="evaluation.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>&lt;no title&gt; &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="contributing.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="benchmarks.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Notes</a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/notes/compatibility.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p># Compatibility with Other Libraries</p>
+<p>## Compatibility with Detectron (and maskrcnn-benchmark)</p>
+<p>cvpods addresses some legacy issues left in Detectron. As a result, their models</p>
+<p>are not compatible:
+running inference with the same model weights will produce different results in the two code bases.</p>
+<p>The major differences regarding inference are:</p>
+<ul>
+<li><p>The height and width of a box with corners (x1, y1) and (x2, y2) is now computed more naturally as
+width = x2 - x1 and height = y2 - y1;
+In Detectron, a “+ 1” was added both height and width.</p>
+<p>Note that the relevant ops in Caffe2 have [adopted this change of convention](<a class="reference external" href="https://github.com/pytorch/pytorch/pull/20550">https://github.com/pytorch/pytorch/pull/20550</a>)
+with an extra option.
+So it is still possible to run inference with a cvpods-trained model in Caffe2.</p>
+<p>The change in height/width calculations most notably changes:
+- encoding/decoding in bounding box regression.
+- non-maximum suppression. The effect here is very negligible, though.</p>
+</li>
+<li><p>RPN now uses simpler anchors with fewer quantization artifacts.</p>
+<p>In Detectron, the anchors were quantized and
+[do not have accurate areas](<a class="reference external" href="https://github.com/facebookresearch/Detectron/issues/227">https://github.com/facebookresearch/Detectron/issues/227</a>).
+In cvpods, the anchors are center-aligned to feature grid points and not quantized.</p>
+</li>
+<li><p>Classification layers have a different ordering of class labels.</p>
+<p>This involves any trainable parameter with shape (…, num_categories + 1, …).
+In cvpods, integer labels [0, K-1] correspond to the K = num_categories object categories
+and the label “K” corresponds to the special “background” category.
+In Detectron, label “0” means background, and labels [1, K] correspond to the K categories.</p>
+</li>
+<li><p>ROIAlign is implemented differently. The new implementation is [available in Caffe2](<a class="reference external" href="https://github.com/pytorch/pytorch/pull/23706">https://github.com/pytorch/pytorch/pull/23706</a>).</p>
+<ol class="arabic">
+<li><dl class="simple">
+<dt>All the ROIs are shifted by half a pixel compared to Detectron in order to create better image-feature-map alignment.</dt><dd><p>See <cite>layers/roi_align.py</cite> for details.</p>
+</dd>
+</dl>
+<p>To enable the old behavior, use <cite>ROIAlign(aligned=False)</cite>, or <cite>POOLER_TYPE=ROIAlign</cite> instead of
+<cite>ROIAlignV2</cite> (the default).</p>
+</li>
+</ol>
+<ol class="arabic simple">
+<li><p>The ROIs are not required to have a minimum size of 1.
+This will lead to tiny differences in the output, but should be negligible.</p></li>
+</ol>
+</li>
+<li><p>Mask inference function is different.</p>
+<p>In cvpods, the “paste_mask” function is different and should be more accurate than in Detectron. This change
+can improve mask AP on COCO by ~0.5% absolute.</p>
+</li>
+</ul>
+<p>There are some other differences in training as well, but they won’t affect
+model-level compatibility. The major ones are:</p>
+<ul class="simple">
+<li><p>We fixed a [bug](<a class="reference external" href="https://github.com/facebookresearch/Detectron/issues/459">https://github.com/facebookresearch/Detectron/issues/459</a>) in
+Detectron, by making <cite>RPN.POST_NMS_TOPK_TRAIN</cite> per-image, rather than per-batch.
+The fix may lead to a small accuracy drop for a few models (e.g. keypoint
+detection) and will require some parameter tuning to match the Detectron results.</p></li>
+<li><p>For simplicity, we change the default loss in bounding box regression to L1 loss, instead of smooth L1 loss.
+We have observed that this tends to slightly decrease box AP50 while improving box AP for higher
+overlap thresholds (and leading to a slight overall improvement in box AP).</p></li>
+<li><p>We interpret the coordinates in COCO bounding box and segmentation annotations
+as coordinates in range <cite>[0, width]</cite> or <cite>[0, height]</cite>. The coordinates in
+COCO keypoint annotations are interpreted as pixel indices in range <cite>[0, width - 1]</cite> or <cite>[0, height - 1]</cite>.</p></li>
+</ul>
+<p>We will later share more details and rationale behind the above mentioned issues
+about pixels, coordinates, and “+1”s.</p>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="contributing.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="benchmarks.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,255 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>&lt;no title&gt; &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="model_zoo.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="compatibility.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Notes</a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/notes/contributing.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p># Contributing to cvpods
+We want to make contributing to this project as easy and transparent as
+possible.</p>
+<p>## Issues
+We use Gitlab issues to track public bugs and questions.
+Please make sure to follow one of the
+[issue templates](<a class="reference external" href="https://git-core.megvii-inc.com/zhubenjin/cvpods/issues">https://git-core.megvii-inc.com/zhubenjin/cvpods/issues</a>)
+when reporting any issues.</p>
+<p>## Merge Requests
+We actively welcome your mr(merge requests).</p>
+<p>However, if you’re adding any significant features, please
+make sure to have a corresponding issue to discuss your motivation and proposals,
+before sending a PR. We do not always accept new features, and we take the following
+factors into consideration:</p>
+<p>1. Whether the same feature can be achieved without modifying cvpods.
+cvpods is designed so that you can implement many extensions from the outside, e.g.
+those in [playground](<a class="reference external" href="https://git-core.megvii-inc.com/zhubenjin/cvpods_playground">https://git-core.megvii-inc.com/zhubenjin/cvpods_playground</a>).
+If some part is not as extensible, you can also bring up the issue to make it more extensible.
+2. Whether the feature is potentially useful to a large audience, or only to a small portion of users.
+3. Whether the proposed solution has a good design / interface.
+4. Whether the proposed solution adds extra mental/practical overhead to users who don’t</p>
+<blockquote>
+<div><p>need such feature.</p>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li><p>Whether the proposed solution breaks existing APIs.</p></li>
+</ol>
+<p>When sending a MR, please do:</p>
+<ol class="arabic simple">
+<li><p>create your branch from branch <cite>megvii</cite>.</p></li>
+<li><p>If you’ve added code that should be tested, add tests.</p></li>
+<li><p>If APIs are changed, update the documentation.</p></li>
+<li><p>Ensure the test suite passes.</p></li>
+<li><p>Make sure your code lints.</p></li>
+<li><p>If a PR contains multiple orthogonal changes, split it to several PRs.</p></li>
+<li><p>If you haven’t already, complete the Contributor License Agreement (“CLA”).</p></li>
+</ol>
+<p>## License
+By contributing to cvpods, you agree that your contributions will be licensed
+under the LICENSE file in the root directory of this source tree.</p>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="model_zoo.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="compatibility.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

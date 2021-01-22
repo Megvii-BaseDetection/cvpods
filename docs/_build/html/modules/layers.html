@@ -1,0 +1,1542 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.layers package &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cvpods.modeling package" href="modeling.html" />
+    <link rel="prev" title="cvpods.evaluation package" href="evaluation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/index.html">Notes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="checkpoint.html">cvpods.checkpoint package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">cvpods.configs package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html">cvpods.data package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="engine.html">cvpods.engine package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html">cvpods.evaluation package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">cvpods.layers package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modeling.html">cvpods.modeling package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model_zoo.html">cvpods.model_zoo package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="solver.html">cvpods.solver package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="structures.html">cvpods.structures package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">cvpods.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="export.html">cvpods.export package</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">API Documentation</a> &raquo;</li>
+        
+      <li>cvpods.layers package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/modules/layers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-cvpods.layers">
+<span id="cvpods-layers-package"></span><h1>cvpods.layers package<a class="headerlink" href="#module-cvpods.layers" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="cvpods.layers.MemoryEfficientSwish">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">MemoryEfficientSwish</code><a class="reference internal" href="../_modules/cvpods/layers/activation_funcs.html#MemoryEfficientSwish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.MemoryEfficientSwish" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="py method">
+<dt id="cvpods.layers.MemoryEfficientSwish.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/activation_funcs.html#MemoryEfficientSwish.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.MemoryEfficientSwish.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.MemoryEfficientSwish.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.MemoryEfficientSwish.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.Swish">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">Swish</code><a class="reference internal" href="../_modules/cvpods/layers/activation_funcs.html#Swish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.Swish" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>Implement the Swish activation function.
+See: <a class="reference external" href="https://arxiv.org/abs/1710.05941">https://arxiv.org/abs/1710.05941</a> for more details.</p>
+<dl class="py method">
+<dt id="cvpods.layers.Swish.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/activation_funcs.html#Swish.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.Swish.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Swish.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Swish.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.FrozenBatchNorm2d">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">FrozenBatchNorm2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_features</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-05</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/batch_norm.html#FrozenBatchNorm2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.FrozenBatchNorm2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>BatchNorm2d where the batch statistics and the affine parameters are fixed.</p>
+<p>It contains non-trainable buffers called
+“weight” and “bias”, “running_mean”, “running_var”,
+initialized to perform identity transformation.</p>
+<p>The pre-trained backbone models from Caffe2 only contain “weight” and “bias”,
+which are computed from the original four parameters of BN.
+The affine transform <cite>x * weight + bias</cite> will perform the equivalent
+computation of <cite>(x - running_mean) / sqrt(running_var) * weight + bias</cite>.
+When loading a backbone model from Caffe2, “running_mean” and “running_var”
+will be left unchanged as identity transformation.</p>
+<p>Other pre-trained backbone models may contain all 4 parameters.</p>
+<p>The forward is implemented by <cite>F.batch_norm(…, training=False)</cite>.</p>
+<dl class="py method">
+<dt id="cvpods.layers.FrozenBatchNorm2d.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/batch_norm.html#FrozenBatchNorm2d.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.FrozenBatchNorm2d.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.FrozenBatchNorm2d.convert_frozen_batchnorm">
+<em class="property">classmethod </em><code class="sig-name descname">convert_frozen_batchnorm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/batch_norm.html#FrozenBatchNorm2d.convert_frozen_batchnorm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.FrozenBatchNorm2d.convert_frozen_batchnorm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert BatchNorm/SyncBatchNorm in module into FrozenBatchNorm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>module</strong> (<em>torch.nn.Module</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>If module is BatchNorm/SyncBatchNorm, returns a new module.
+Otherwise, in-place convert module and return it.</p>
+</dd>
+</dl>
+<p>Similar to convert_sync_batchnorm in
+<a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/batchnorm.py">https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/batchnorm.py</a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.FrozenBatchNorm2d.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.FrozenBatchNorm2d.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.NaiveSyncBatchNorm">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">NaiveSyncBatchNorm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_features</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">momentum</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">affine</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">track_running_stats</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/batch_norm.html#NaiveSyncBatchNorm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.NaiveSyncBatchNorm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.batchnorm.BatchNorm2d</span></code></p>
+<p><cite>torch.nn.SyncBatchNorm</cite> has known unknown bugs.
+It produces significantly worse AP (and sometimes goes NaN)
+when the batch size on each worker is quite different
+(e.g., when scale augmentation is used, or when it is applied to mask head).</p>
+<p>Use this implementation before <cite>nn.SyncBatchNorm</cite> is fixed.
+It is slower than <cite>nn.SyncBatchNorm</cite>.</p>
+<dl class="py method">
+<dt id="cvpods.layers.NaiveSyncBatchNorm.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/batch_norm.html#NaiveSyncBatchNorm.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.NaiveSyncBatchNorm.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.NaiveSyncBatchNorm.affine">
+<code class="sig-name descname">affine</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.NaiveSyncBatchNorm.affine" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.NaiveSyncBatchNorm.eps">
+<code class="sig-name descname">eps</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.NaiveSyncBatchNorm.eps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.NaiveSyncBatchNorm.momentum">
+<code class="sig-name descname">momentum</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.NaiveSyncBatchNorm.momentum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.NaiveSyncBatchNorm.num_features">
+<code class="sig-name descname">num_features</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.NaiveSyncBatchNorm.num_features" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.NaiveSyncBatchNorm.track_running_stats">
+<code class="sig-name descname">track_running_stats</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.NaiveSyncBatchNorm.track_running_stats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.get_activation">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">get_activation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">activation</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/batch_norm.html#get_activation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.get_activation" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>norm</strong> (<em>str</em><em> or </em><em>callable</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>nn.Module or None</em> – the normalization layer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.get_norm">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">get_norm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">norm</span></em>, <em class="sig-param"><span class="n">out_channels</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/batch_norm.html#get_norm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.get_norm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>norm</strong> (<em>str</em><em> or </em><em>callable</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>nn.Module or None</em> – the normalization layer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.DeformConv">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">DeformConv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">deformable_groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">activation</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv.html#DeformConv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.DeformConv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="py method">
+<dt id="cvpods.layers.DeformConv.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">deformable_groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">activation</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv.html#DeformConv.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.DeformConv.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deformable convolution.</p>
+<p>Arguments are similar to <code class="xref py py-class docutils literal notranslate"><span class="pre">Conv2D</span></code>. Extra arguments:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>deformable_groups</strong> (<em>int</em>) – number of groups used in deformable convolution.</p></li>
+<li><p><strong>norm</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – a normalization layer</p></li>
+<li><p><strong>activation</strong> (<em>callable</em><em>(</em><em>Tensor</em><em>) </em><em>-&gt; Tensor</em>) – a callable activation function</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.DeformConv.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">offset</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv.html#DeformConv.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.DeformConv.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.DeformConv.extra_repr">
+<code class="sig-name descname">extra_repr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv.html#DeformConv.extra_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.DeformConv.extra_repr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.DeformConv.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.DeformConv.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.ModulatedDeformConv">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">ModulatedDeformConv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">deformable_groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">activation</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv.html#ModulatedDeformConv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ModulatedDeformConv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="py method">
+<dt id="cvpods.layers.ModulatedDeformConv.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">deformable_groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">activation</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv.html#ModulatedDeformConv.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ModulatedDeformConv.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modulated deformable convolution.</p>
+<p>Arguments are similar to <code class="xref py py-class docutils literal notranslate"><span class="pre">Conv2D</span></code>. Extra arguments:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>deformable_groups</strong> (<em>int</em>) – number of groups used in deformable convolution.</p></li>
+<li><p><strong>norm</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – a normalization layer</p></li>
+<li><p><strong>activation</strong> (<em>callable</em><em>(</em><em>Tensor</em><em>) </em><em>-&gt; Tensor</em>) – a callable activation function</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.ModulatedDeformConv.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">offset</span></em>, <em class="sig-param"><span class="n">mask</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv.html#ModulatedDeformConv.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ModulatedDeformConv.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.ModulatedDeformConv.extra_repr">
+<code class="sig-name descname">extra_repr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv.html#ModulatedDeformConv.extra_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ModulatedDeformConv.extra_repr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ModulatedDeformConv.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ModulatedDeformConv.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.DeformConvWithOff">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">DeformConvWithOff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">deformable_groups</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv_with_off.html#DeformConvWithOff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.DeformConvWithOff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="py method">
+<dt id="cvpods.layers.DeformConvWithOff.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv_with_off.html#DeformConvWithOff.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.DeformConvWithOff.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.DeformConvWithOff.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.DeformConvWithOff.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.ModulatedDeformConvWithOff">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">ModulatedDeformConvWithOff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">deformable_groups</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv_with_off.html#ModulatedDeformConvWithOff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ModulatedDeformConvWithOff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="py method">
+<dt id="cvpods.layers.ModulatedDeformConvWithOff.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/deform_conv_with_off.html#ModulatedDeformConvWithOff.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ModulatedDeformConvWithOff.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ModulatedDeformConvWithOff.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ModulatedDeformConvWithOff.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.LARC">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">LARC</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-08</span></em>, <em class="sig-param"><span class="n">trust_coef</span><span class="o">=</span><span class="default_value">0.02</span></em>, <em class="sig-param"><span class="n">clip</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/larc.html#LARC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.LARC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p><a class="reference internal" href="#cvpods.layers.LARC" title="cvpods.layers.LARC"><code class="xref py py-class docutils literal notranslate"><span class="pre">LARC</span></code></a> is a pytorch implementation of both the scaling and clipping variants of LARC,
+in which the ratio between gradient and parameter magnitudes is used to calculate an adaptive
+local learning rate for each individual parameter. The algorithm is designed to improve
+convergence of large batch training.</p>
+<p>See <a class="reference external" href="https://arxiv.org/abs/1708.03888">https://arxiv.org/abs/1708.03888</a> for calculation of the local learning rate.
+In practice it modifies the gradients of parameters as a proxy for modifying the learning rate
+of the parameters. This design allows it to be used as a wrapper around any torch Optimizer.
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">model</span> <span class="pre">=</span> <span class="pre">...</span>
+<span class="pre">optim</span> <span class="pre">=</span> <span class="pre">torch.optim.Adam(model.parameters(),</span> <span class="pre">lr=...)</span>
+<span class="pre">optim</span> <span class="pre">=</span> <span class="pre">LARC(optim)</span>
+<span class="pre">`</span></code>
+It can even be used in conjunction with apex.fp16_utils.FP16_optimizer.
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">model</span> <span class="pre">=</span> <span class="pre">...</span>
+<span class="pre">optim</span> <span class="pre">=</span> <span class="pre">torch.optim.Adam(model.parameters(),</span> <span class="pre">lr=...)</span>
+<span class="pre">optim</span> <span class="pre">=</span> <span class="pre">LARC(optim)</span>
+<span class="pre">optim</span> <span class="pre">=</span> <span class="pre">apex.fp16_utils.FP16_Optimizer(optim)</span>
+<span class="pre">`</span></code>
+:param optimizer: Pytorch optimizer to wrap and modify learning rate for.
+:param trust_coefficient: Trust coefficient for calculating the lr.</p>
+<blockquote>
+<div><p>See <a class="reference external" href="https://arxiv.org/abs/1708.03888">https://arxiv.org/abs/1708.03888</a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>clip</strong> – Decides between clipping or scaling mode of LARC. If <cite>clip=True</cite> the learning rate
+is set to <cite>min(optimizer_lr, local_lr)</cite> for each parameter. If <cite>clip=False</cite> the learning
+rate is set to <cite>local_lr*optimizer_lr</cite>.</p></li>
+<li><p><strong>eps</strong> – epsilon kludge to help with numerical stability while calculating adaptive_lr</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="cvpods.layers.LARC.state">
+<em class="property">property </em><code class="sig-name descname">state</code><a class="headerlink" href="#cvpods.layers.LARC.state" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.LARC.param_groups">
+<em class="property">property </em><code class="sig-name descname">param_groups</code><a class="headerlink" href="#cvpods.layers.LARC.param_groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.LARC.state_dict">
+<code class="sig-name descname">state_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/larc.html#LARC.state_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.LARC.state_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.LARC.load_state_dict">
+<code class="sig-name descname">load_state_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state_dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/larc.html#LARC.load_state_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.LARC.load_state_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.LARC.zero_grad">
+<code class="sig-name descname">zero_grad</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/larc.html#LARC.zero_grad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.LARC.zero_grad" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.LARC.add_param_group">
+<code class="sig-name descname">add_param_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param_group</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/larc.html#LARC.add_param_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.LARC.add_param_group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.LARC.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/larc.html#LARC.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.LARC.step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.paste_masks_in_image">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">paste_masks_in_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">masks</span></em>, <em class="sig-param"><span class="n">boxes</span></em>, <em class="sig-param"><span class="n">image_shape</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">0.5</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/mask_ops.html#paste_masks_in_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.paste_masks_in_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Paste a set of masks that are of a fixed resolution (e.g., 28 x 28) into an image.
+The location, height, and width for pasting each mask is determined by their
+corresponding bounding boxes in boxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>masks</strong> (<em>tensor</em>) – Tensor of shape (Bimg, Hmask, Wmask), where Bimg is the number of
+detected object instances in the image and Hmask, Wmask are the mask width and mask
+height of the predicted mask (e.g., Hmask = Wmask = 28). Values are in [0, 1].</p></li>
+<li><p><strong>boxes</strong> (<a class="reference internal" href="structures.html#cvpods.structures.Boxes" title="cvpods.structures.Boxes"><em>Boxes</em></a><em> or </em><em>Tensor</em>) – A Boxes of length Bimg or Tensor of shape (Bimg, 4).
+boxes[i] and masks[i] correspond to the same object instance.</p></li>
+<li><p><strong>image_shape</strong> (<em>tuple</em>) – height, width</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – A threshold in [0, 1] for converting the (soft) masks to
+binary masks.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>img_masks (Tensor)</em> – A tensor of shape (Bimg, Himage, Wimage), where Bimg is the
+number of detected object instances and Himage, Wimage are the image width
+and height. img_masks[i] is a binary mask for object instance i.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.batched_nms">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">batched_nms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes</span></em>, <em class="sig-param"><span class="n">scores</span></em>, <em class="sig-param"><span class="n">idxs</span></em>, <em class="sig-param"><span class="n">iou_threshold</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/nms.html#batched_nms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.batched_nms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as torchvision.ops.boxes.batched_nms, but safer.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.batched_nms_rotated">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">batched_nms_rotated</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes</span></em>, <em class="sig-param"><span class="n">scores</span></em>, <em class="sig-param"><span class="n">idxs</span></em>, <em class="sig-param"><span class="n">iou_threshold</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/nms.html#batched_nms_rotated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.batched_nms_rotated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs non-maximum suppression in a batched fashion.</p>
+<p>Each index value correspond to a category, and NMS
+will not be applied between elements of different categories.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>boxes</strong> (<em>Tensor</em><em>[</em><em>N</em><em>, </em><em>5</em><em>]</em>) – boxes where NMS will be performed. They
+are expected to be in (x_ctr, y_ctr, width, height, angle_degrees) format</p></li>
+<li><p><strong>scores</strong> (<em>Tensor</em><em>[</em><em>N</em><em>]</em>) – scores for each one of the boxes</p></li>
+<li><p><strong>idxs</strong> (<em>Tensor</em><em>[</em><em>N</em><em>]</em>) – indices of the categories for each one of the boxes.</p></li>
+<li><p><strong>iou_threshold</strong> (<em>float</em>) – discards all overlapping boxes
+with IoU &lt; iou_threshold</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>Tensor</em> –     int64 tensor with the indices of the elements that have been kept
+by NMS, sorted in decreasing order of scores</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.batched_softnms">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">batched_softnms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes</span></em>, <em class="sig-param"><span class="n">scores</span></em>, <em class="sig-param"><span class="n">idxs</span></em>, <em class="sig-param"><span class="n">iou_threshold</span></em>, <em class="sig-param"><span class="n">score_threshold</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">soft_mode</span><span class="o">=</span><span class="default_value">'gaussian'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/nms.html#batched_softnms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.batched_softnms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.batched_softnms_rotated">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">batched_softnms_rotated</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes</span></em>, <em class="sig-param"><span class="n">scores</span></em>, <em class="sig-param"><span class="n">idxs</span></em>, <em class="sig-param"><span class="n">iou_threshold</span></em>, <em class="sig-param"><span class="n">score_threshold</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">soft_mode</span><span class="o">=</span><span class="default_value">'gaussian'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/nms.html#batched_softnms_rotated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.batched_softnms_rotated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.cluster_nms">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">cluster_nms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes</span></em>, <em class="sig-param"><span class="n">scores</span></em>, <em class="sig-param"><span class="n">iou_threshold</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/nms.html#cluster_nms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.cluster_nms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.generalized_batched_nms">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">generalized_batched_nms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes</span></em>, <em class="sig-param"><span class="n">scores</span></em>, <em class="sig-param"><span class="n">idxs</span></em>, <em class="sig-param"><span class="n">iou_threshold</span></em>, <em class="sig-param"><span class="n">score_threshold</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">nms_type</span><span class="o">=</span><span class="default_value">'normal'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/nms.html#generalized_batched_nms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.generalized_batched_nms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.matrix_nms">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">matrix_nms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">seg_masks</span></em>, <em class="sig-param"><span class="n">cate_labels</span></em>, <em class="sig-param"><span class="n">cate_scores</span></em>, <em class="sig-param"><span class="n">kernel</span><span class="o">=</span><span class="default_value">'gaussian'</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">2.0</span></em>, <em class="sig-param"><span class="n">sum_masks</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/nms.html#matrix_nms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.matrix_nms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix NMS for multi-class masks.
+See: <a class="reference external" href="https://arxiv.org/pdf/2003.10152.pdf">https://arxiv.org/pdf/2003.10152.pdf</a> for more details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seg_masks</strong> (<em>Tensor</em>) – shape: [N, H, W], binary masks.</p></li>
+<li><p><strong>cate_labels</strong> (<em>Tensor</em>) – shepe: [N], mask labels in descending order.</p></li>
+<li><p><strong>cate_scores</strong> (<em>Tensor</em>) – shape [N], mask scores in descending order.</p></li>
+<li><p><strong>kernel</strong> (<em>str</em>) – ‘linear’ or ‘gaussian’.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em>) – std in gaussian method.</p></li>
+<li><p><strong>sum_masks</strong> (<em>Tensor</em>) – The sum of seg_masks.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>Tensor</em> – cate_scores_update, tensors of shape [N].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.nms">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">nms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes</span><span class="p">:</span> <span class="n">torch.Tensor</span></em>, <em class="sig-param"><span class="n">scores</span><span class="p">:</span> <span class="n">torch.Tensor</span></em>, <em class="sig-param"><span class="n">iou_threshold</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="../_modules/torchvision/ops/boxes.html#nms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.nms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs non-maximum suppression (NMS) on the boxes according
+to their intersection-over-union (IoU).</p>
+<p>NMS iteratively removes lower scoring boxes which have an
+IoU greater than iou_threshold with another (higher scoring)
+box.</p>
+<p>If multiple boxes have the exact same score and satisfy the IoU
+criterion with respect to a reference box, the selected box is
+not guaranteed to be the same between CPU and GPU. This is similar
+to the behavior of argsort in PyTorch when repeated values are present.</p>
+<dl class="simple">
+<dt>boxes<span class="classifier">Tensor[N, 4])</span></dt><dd><p>boxes to perform NMS on. They
+are expected to be in (x1, y1, x2, y2) format</p>
+</dd>
+<dt>scores<span class="classifier">Tensor[N]</span></dt><dd><p>scores for each one of the boxes</p>
+</dd>
+<dt>iou_threshold<span class="classifier">float</span></dt><dd><p>discards all overlapping
+boxes with IoU &gt; iou_threshold</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>keep<span class="classifier">Tensor</span></dt><dd><p>int64 tensor with the indices
+of the elements that have been kept
+by NMS, sorted in decreasing order of scores</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.nms_rotated">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">nms_rotated</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes</span></em>, <em class="sig-param"><span class="n">scores</span></em>, <em class="sig-param"><span class="n">iou_threshold</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/nms.html#nms_rotated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.nms_rotated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs non-maximum suppression (NMS) on the rotated boxes according
+to their intersection-over-union (IoU).</p>
+<p>Rotated NMS iteratively removes lower scoring rotated boxes which have an
+IoU greater than iou_threshold with another (higher scoring) rotated box.</p>
+<p>Note that RotatedBox (5, 3, 4, 2, -90) covers exactly the same region as
+RotatedBox (5, 3, 4, 2, 90) does, and their IoU will be 1. However, they
+can be representing completely different objects in certain tasks, e.g., OCR.</p>
+<p>As for the question of whether rotated-NMS should treat them as faraway boxes
+even though their IOU is 1, it depends on the application and/or ground truth annotation.</p>
+<p>As an extreme example, consider a single character v and the square box around it.</p>
+<p>If the angle is 0 degree, the object (text) would be read as ‘v’;</p>
+<p>If the angle is 90 degrees, the object (text) would become ‘&gt;’;</p>
+<p>If the angle is 180 degrees, the object (text) would become ‘^’;</p>
+<p>If the angle is 270/-90 degrees, the object (text) would become ‘&lt;’</p>
+<p>All of these cases have IoU of 1 to each other, and rotated NMS that only
+uses IoU as criterion would only keep one of them with the highest score -
+which, practically, still makes sense in most cases because typically
+only one of theses orientations is the correct one. Also, it does not matter
+as much if the box is only used to classify the object (instead of transcribing
+them with a sequential OCR recognition model) later.</p>
+<p>On the other hand, when we use IoU to filter proposals that are close to the
+ground truth during training, we should definitely take the angle into account if
+we know the ground truth is labeled with the strictly correct orientation (as in,
+upside-down words are annotated with -180 degrees even though they can be covered
+with a 0/90/-90 degree box, etc.)</p>
+<p>The way the original dataset is annotated also matters. For example, if the dataset
+is a 4-point polygon dataset that does not enforce ordering of vertices/orientation,
+we can estimate a minimum rotated bounding box to this polygon, but there’s no way
+we can tell the correct angle with 100% confidence (as shown above, there could be 4 different
+rotated boxes, with angles differed by 90 degrees to each other, covering the exactly
+same region). In that case we have to just use IoU to determine the box
+proximity (as many detection benchmarks (even for text) do) unless there’re other
+assumptions we can make (like width is always larger than height, or the object is not
+rotated by more than 90 degrees CCW/CW, etc.)</p>
+<p>In summary, not considering angles in rotated NMS seems to be a good option for now,
+but we should be aware of its implications.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>boxes</strong> (<em>Tensor</em><em>[</em><em>N</em><em>, </em><em>5</em><em>]</em>) – Rotated boxes to perform NMS on. They are expected to be in
+(x_center, y_center, width, height, angle_degrees) format.</p></li>
+<li><p><strong>scores</strong> (<em>Tensor</em><em>[</em><em>N</em><em>]</em>) – Scores for each one of the rotated boxes</p></li>
+<li><p><strong>iou_threshold</strong> (<em>float</em>) – Discards all overlapping rotated boxes with IoU &lt; iou_threshold</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>keep (Tensor)</em> – int64 tensor with the indices of the elements that have been kept
+by Rotated NMS, sorted in decreasing order of scores</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.softnms">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">softnms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes</span></em>, <em class="sig-param"><span class="n">scores</span></em>, <em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">score_threshold</span></em>, <em class="sig-param"><span class="n">soft_mode</span><span class="o">=</span><span class="default_value">'gaussian'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/nms.html#softnms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.softnms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.softnms_rotated">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">softnms_rotated</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes</span></em>, <em class="sig-param"><span class="n">scores</span></em>, <em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">score_threshold</span></em>, <em class="sig-param"><span class="n">soft_mode</span><span class="o">=</span><span class="default_value">'gaussian'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/nms.html#softnms_rotated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.softnms_rotated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.ROIAlign">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">ROIAlign</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_size</span></em>, <em class="sig-param"><span class="n">spatial_scale</span></em>, <em class="sig-param"><span class="n">sampling_ratio</span></em>, <em class="sig-param"><span class="n">aligned</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/roi_align.html#ROIAlign"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ROIAlign" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="py method">
+<dt id="cvpods.layers.ROIAlign.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_size</span></em>, <em class="sig-param"><span class="n">spatial_scale</span></em>, <em class="sig-param"><span class="n">sampling_ratio</span></em>, <em class="sig-param"><span class="n">aligned</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/roi_align.html#ROIAlign.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ROIAlign.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_size</strong> (<em>tuple</em>) – h, w</p></li>
+<li><p><strong>spatial_scale</strong> (<em>float</em>) – scale the input boxes by this number</p></li>
+<li><p><strong>sampling_ratio</strong> (<em>int</em>) – number of inputs samples to take for each output
+sample. 0 to take samples densely.</p></li>
+<li><p><strong>aligned</strong> (<em>bool</em>) – if False, use the legacy implementation in
+Detectron. If True, align the results more perfectly.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The meaning of aligned=True:</p>
+<p>Given a continuous coordinate c, its two neighboring pixel indices (in our
+pixel model) are computed by floor(c - 0.5) and ceil(c - 0.5). For example,
+c=1.3 has pixel neighbors with discrete indices [0] and [1] (which are sampled
+from the underlying signal at continuous coordinates 0.5 and 1.5). But the original
+roi_align (aligned=False) does not subtract the 0.5 when computing neighboring
+pixel indices and therefore it uses pixels with a slightly incorrect alignment
+(relative to our pixel model) when performing bilinear interpolation.</p>
+<p>With <cite>aligned=True</cite>,
+we first appropriately scale the ROI and then shift it by -0.5
+prior to calling roi_align. This produces the correct neighbors; see
+cvpods/tests/test_roi_align.py for verification.</p>
+<p>The difference does not make a difference to the model’s performance if
+ROIAlign is used together with conv layers.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.ROIAlign.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em>, <em class="sig-param"><span class="n">rois</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/roi_align.html#ROIAlign.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ROIAlign.forward" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> – NCHW images</p></li>
+<li><p><strong>rois</strong> – Bx5 boxes. First column is the index into N. The other 4 columns are xyxy.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ROIAlign.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ROIAlign.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.roi_align">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">roi_align</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cvpods.layers.roi_align" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.ROIAlignRotated">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">ROIAlignRotated</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_size</span></em>, <em class="sig-param"><span class="n">spatial_scale</span></em>, <em class="sig-param"><span class="n">sampling_ratio</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/roi_align_rotated.html#ROIAlignRotated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ROIAlignRotated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="py method">
+<dt id="cvpods.layers.ROIAlignRotated.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_size</span></em>, <em class="sig-param"><span class="n">spatial_scale</span></em>, <em class="sig-param"><span class="n">sampling_ratio</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/roi_align_rotated.html#ROIAlignRotated.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ROIAlignRotated.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_size</strong> (<em>tuple</em>) – h, w</p></li>
+<li><p><strong>spatial_scale</strong> (<em>float</em>) – scale the input boxes by this number</p></li>
+<li><p><strong>sampling_ratio</strong> (<em>int</em>) – number of inputs samples to take for each output
+sample. 0 to take samples densely.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>ROIAlignRotated supports continuous coordinate by default:
+Given a continuous coordinate c, its two neighboring pixel indices (in our
+pixel model) are computed by floor(c - 0.5) and ceil(c - 0.5). For example,
+c=1.3 has pixel neighbors with discrete indices [0] and [1] (which are sampled
+from the underlying signal at continuous coordinates 0.5 and 1.5).</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.ROIAlignRotated.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em>, <em class="sig-param"><span class="n">rois</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/roi_align_rotated.html#ROIAlignRotated.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ROIAlignRotated.forward" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> – NCHW images</p></li>
+<li><p><strong>rois</strong> – Bx6 boxes. First column is the index into N.
+The other 5 columns are (x_ctr, y_ctr, width, height, angle_degrees).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ROIAlignRotated.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ROIAlignRotated.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.roi_align_rotated">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">roi_align_rotated</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cvpods.layers.roi_align_rotated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.ShapeSpec">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">ShapeSpec</code><a class="reference internal" href="../_modules/cvpods/layers/shape_spec.html#ShapeSpec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ShapeSpec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">cvpods.layers.shape_spec._ShapeSpec</span></code></p>
+<p>A simple structure that contains basic shape specification about a tensor.
+It is often used as the auxiliary inputs/outputs of models,
+to obtain the shape inference ability among pytorch modules.</p>
+<dl class="py attribute">
+<dt id="cvpods.layers.ShapeSpec.channels">
+<code class="sig-name descname">channels</code><a class="headerlink" href="#cvpods.layers.ShapeSpec.channels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ShapeSpec.height">
+<code class="sig-name descname">height</code><a class="headerlink" href="#cvpods.layers.ShapeSpec.height" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ShapeSpec.width">
+<code class="sig-name descname">width</code><a class="headerlink" href="#cvpods.layers.ShapeSpec.width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ShapeSpec.stride">
+<code class="sig-name descname">stride</code><a class="headerlink" href="#cvpods.layers.ShapeSpec.stride" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.SwapAlign2Nat">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">SwapAlign2Nat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lambda_val</span></em>, <em class="sig-param"><span class="n">pad_val</span><span class="o">=</span><span class="default_value">- 6.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/swap_align2nat.html#SwapAlign2Nat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.SwapAlign2Nat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>The op <cite>SwapAlign2Nat</cite> described in <a class="reference external" href="https://arxiv.org/abs/1903.12174">https://arxiv.org/abs/1903.12174</a>.
+Given an input tensor that predicts masks of shape (N, C=VxU, H, W),
+apply the op, it will return masks of shape (N, V’xU’, H’, W’) where
+the unit lengths of (V, U) and (H, W) are swapped, and the mask representation
+is transformed from aligned to natural.
+:param lambda_val: the relative unit length ratio between (V, U) and (H, W),
+:type lambda_val: int
+:param as we always have larger unit lengths for:
+:type as we always have larger unit lengths for: V, U) than (H, W
+:param lambda_val is always &gt;= 1.:
+:param pad_val: padding value for the values falling outside of the input
+:type pad_val: float
+:param tensor, default set to -6 as sigmoid:
+:type tensor, default set to -6 as sigmoid: -6
+:param that is no masks outside of the tensor.:</p>
+<dl class="py method">
+<dt id="cvpods.layers.SwapAlign2Nat.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/swap_align2nat.html#SwapAlign2Nat.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.SwapAlign2Nat.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.SwapAlign2Nat.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.SwapAlign2Nat.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.swap_align2nat">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">swap_align2nat</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cvpods.layers.swap_align2nat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.TreeFilterV2">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">TreeFilterV2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">guide_channels</span></em>, <em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">embed_channels</span></em>, <em class="sig-param"><span class="n">num_groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-08</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/tree_filter_v2.html#TreeFilterV2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.TreeFilterV2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="py attribute">
+<dt id="cvpods.layers.TreeFilterV2.num_groups">
+<code class="sig-name descname">num_groups</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.TreeFilterV2.num_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Embedding Layers</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.TreeFilterV2.gamma">
+<code class="sig-name descname">gamma</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.TreeFilterV2.gamma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Core of Tree Filter</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.TreeFilterV2.tree_filter_layer">
+<code class="sig-name descname">tree_filter_layer</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.TreeFilterV2.tree_filter_layer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters init</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.TreeFilterV2.reset_parameter">
+<code class="sig-name descname">reset_parameter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/tree_filter_v2.html#TreeFilterV2.reset_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.TreeFilterV2.reset_parameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.TreeFilterV2.split_groups">
+<code class="sig-name descname">split_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/tree_filter_v2.html#TreeFilterV2.split_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.TreeFilterV2.split_groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.TreeFilterV2.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.TreeFilterV2.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.TreeFilterV2.expand_groups">
+<code class="sig-name descname">expand_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/tree_filter_v2.html#TreeFilterV2.expand_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.TreeFilterV2.expand_groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.TreeFilterV2.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">feature</span></em>, <em class="sig-param"><span class="n">guide</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/tree_filter_v2.html#TreeFilterV2.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.TreeFilterV2.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.BatchNorm2d">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">BatchNorm2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_features</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">momentum</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">affine</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">track_running_stats</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/torch/nn/modules/batchnorm.html#BatchNorm2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.BatchNorm2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.batchnorm._BatchNorm</span></code></p>
+<p>Applies Batch Normalization over a 4D input (a mini-batch of 2D inputs
+with additional channel dimension) as described in the paper
+<a class="reference external" href="https://arxiv.org/abs/1502.03167">Batch Normalization: Accelerating Deep Network Training by Reducing
+Internal Covariate Shift</a> .</p>
+<div class="math notranslate nohighlight">
+\[y = \frac{x - \mathrm{E}[x]}{ \sqrt{\mathrm{Var}[x] + \epsilon}} * \gamma + \beta\]</div>
+<p>The mean and standard-deviation are calculated per-dimension over
+the mini-batches and <span class="math notranslate nohighlight">\(\gamma\)</span> and <span class="math notranslate nohighlight">\(\beta\)</span> are learnable parameter vectors
+of size <cite>C</cite> (where <cite>C</cite> is the input size). By default, the elements of <span class="math notranslate nohighlight">\(\gamma\)</span> are set
+to 1 and the elements of <span class="math notranslate nohighlight">\(\beta\)</span> are set to 0. The standard-deviation is calculated
+via the biased estimator, equivalent to <cite>torch.var(input, unbiased=False)</cite>.</p>
+<p>Also by default, during training this layer keeps running estimates of its
+computed mean and variance, which are then used for normalization during
+evaluation. The running estimates are kept with a default <a class="reference internal" href="#cvpods.layers.BatchNorm2d.momentum" title="cvpods.layers.BatchNorm2d.momentum"><code class="xref py py-attr docutils literal notranslate"><span class="pre">momentum</span></code></a>
+of 0.1.</p>
+<p>If <a class="reference internal" href="#cvpods.layers.BatchNorm2d.track_running_stats" title="cvpods.layers.BatchNorm2d.track_running_stats"><code class="xref py py-attr docutils literal notranslate"><span class="pre">track_running_stats</span></code></a> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, this layer then does not
+keep running estimates, and batch statistics are instead used during
+evaluation time as well.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This <a class="reference internal" href="#cvpods.layers.BatchNorm2d.momentum" title="cvpods.layers.BatchNorm2d.momentum"><code class="xref py py-attr docutils literal notranslate"><span class="pre">momentum</span></code></a> argument is different from one used in optimizer
+classes and the conventional notion of momentum. Mathematically, the
+update rule for running statistics here is
+<span class="math notranslate nohighlight">\(\hat{x}_\text{new} = (1 - \text{momentum}) \times \hat{x} + \text{momentum} \times x_t\)</span>,
+where <span class="math notranslate nohighlight">\(\hat{x}\)</span> is the estimated statistic and <span class="math notranslate nohighlight">\(x_t\)</span> is the
+new observed value.</p>
+</div>
+<p>Because the Batch Normalization is done over the <cite>C</cite> dimension, computing statistics
+on <cite>(N, H, W)</cite> slices, it’s common terminology to call this Spatial Batch Normalization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_features</strong> – <span class="math notranslate nohighlight">\(C\)</span> from an expected input of size
+<span class="math notranslate nohighlight">\((N, C, H, W)\)</span></p></li>
+<li><p><strong>eps</strong> – a value added to the denominator for numerical stability.
+Default: 1e-5</p></li>
+<li><p><strong>momentum</strong> – the value used for the running_mean and running_var
+computation. Can be set to <code class="docutils literal notranslate"><span class="pre">None</span></code> for cumulative moving average
+(i.e. simple average). Default: 0.1</p></li>
+<li><p><strong>affine</strong> – a boolean value that when set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, this module has
+learnable affine parameters. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><strong>track_running_stats</strong> – a boolean value that when set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, this
+module tracks the running mean and variance, and when set to <code class="docutils literal notranslate"><span class="pre">False</span></code>,
+this module does not track such statistics, and initializes statistics
+buffers <code class="xref py py-attr docutils literal notranslate"><span class="pre">running_mean</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">running_var</span></code> as <code class="docutils literal notranslate"><span class="pre">None</span></code>.
+When these buffers are <code class="docutils literal notranslate"><span class="pre">None</span></code>, this module always uses batch statistics.
+in both training and eval modes. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>Input: <span class="math notranslate nohighlight">\((N, C, H, W)\)</span></p></li>
+<li><p>Output: <span class="math notranslate nohighlight">\((N, C, H, W)\)</span> (same shape as input)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># With Learnable Parameters</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Without Learnable Parameters</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">45</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">m</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt id="cvpods.layers.BatchNorm2d.affine">
+<code class="sig-name descname">affine</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.BatchNorm2d.affine" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.BatchNorm2d.eps">
+<code class="sig-name descname">eps</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.BatchNorm2d.eps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.BatchNorm2d.momentum">
+<code class="sig-name descname">momentum</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.BatchNorm2d.momentum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.BatchNorm2d.num_features">
+<code class="sig-name descname">num_features</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.BatchNorm2d.num_features" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.BatchNorm2d.track_running_stats">
+<code class="sig-name descname">track_running_stats</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.BatchNorm2d.track_running_stats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.Conv2d">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">Conv2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#Conv2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.Conv2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.conv.Conv2d</span></code></p>
+<p>A wrapper around <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Conv2d</span></code> to support empty inputs and more features.</p>
+<dl class="py method">
+<dt id="cvpods.layers.Conv2d.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#Conv2d.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.Conv2d.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extra keyword arguments supported in addition to those in <cite>torch.nn.Conv2d</cite>:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>norm</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – a normalization layer</p></li>
+<li><p><strong>activation</strong> (<em>callable</em><em>(</em><em>Tensor</em><em>) </em><em>-&gt; Tensor</em>) – a callable activation function</p></li>
+</ul>
+</dd>
+</dl>
+<p>It assumes that norm layer is used before activation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.Conv2d.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#Conv2d.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.Conv2d.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2d.bias">
+<code class="sig-name descname">bias</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2d.bias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2d.dilation">
+<code class="sig-name descname">dilation</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2d.dilation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2d.groups">
+<code class="sig-name descname">groups</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2d.groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2d.kernel_size">
+<code class="sig-name descname">kernel_size</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2d.kernel_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2d.out_channels">
+<code class="sig-name descname">out_channels</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2d.out_channels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2d.output_padding">
+<code class="sig-name descname">output_padding</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2d.output_padding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2d.padding">
+<code class="sig-name descname">padding</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2d.padding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2d.padding_mode">
+<code class="sig-name descname">padding_mode</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2d.padding_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2d.stride">
+<code class="sig-name descname">stride</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2d.stride" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2d.transposed">
+<code class="sig-name descname">transposed</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2d.transposed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2d.weight">
+<code class="sig-name descname">weight</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2d.weight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.Conv2dSamePadding">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">Conv2dSamePadding</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#Conv2dSamePadding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.conv.Conv2d</span></code></p>
+<p>A wrapper around <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Conv2d</span></code> to support “SAME” padding mode and more features.</p>
+<dl class="py method">
+<dt id="cvpods.layers.Conv2dSamePadding.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#Conv2dSamePadding.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extra keyword arguments supported in addition to those in <cite>torch.nn.Conv2d</cite>:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>norm</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – a normalization layer</p></li>
+<li><p><strong>activation</strong> (<em>callable</em><em>(</em><em>Tensor</em><em>) </em><em>-&gt; Tensor</em>) – a callable activation function</p></li>
+</ul>
+</dd>
+</dl>
+<p>It assumes that norm layer is used before activation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2dSamePadding.stride">
+<code class="sig-name descname">stride</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.stride" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2dSamePadding.kernel_size">
+<code class="sig-name descname">kernel_size</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.kernel_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2dSamePadding.dilation">
+<code class="sig-name descname">dilation</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.dilation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.Conv2dSamePadding.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#Conv2dSamePadding.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2dSamePadding.bias">
+<code class="sig-name descname">bias</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.bias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2dSamePadding.groups">
+<code class="sig-name descname">groups</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2dSamePadding.out_channels">
+<code class="sig-name descname">out_channels</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.out_channels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2dSamePadding.output_padding">
+<code class="sig-name descname">output_padding</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.output_padding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2dSamePadding.padding">
+<code class="sig-name descname">padding</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.padding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2dSamePadding.padding_mode">
+<code class="sig-name descname">padding_mode</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.padding_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2dSamePadding.transposed">
+<code class="sig-name descname">transposed</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.transposed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.Conv2dSamePadding.weight">
+<code class="sig-name descname">weight</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.Conv2dSamePadding.weight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.ConvTranspose2d">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">ConvTranspose2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">out_channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">kernel_size</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>T<span class="p">, </span>Tuple<span class="p">[</span>T<span class="p">, </span>T<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">stride</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>T<span class="p">, </span>Tuple<span class="p">[</span>T<span class="p">, </span>T<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>T<span class="p">, </span>Tuple<span class="p">[</span>T<span class="p">, </span>T<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">output_padding</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>T<span class="p">, </span>Tuple<span class="p">[</span>T<span class="p">, </span>T<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">groups</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding_mode</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'zeros'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/torch/nn/modules/conv.html#ConvTranspose2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ConvTranspose2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.conv._ConvTransposeNd</span></code></p>
+<p>Applies a 2D transposed convolution operator over an input image
+composed of several input planes.</p>
+<p>This module can be seen as the gradient of Conv2d with respect to its input.
+It is also known as a fractionally-strided convolution or
+a deconvolution (although it is not an actual deconvolution operation).</p>
+<p>This module supports <span class="xref std std-ref">TensorFloat32</span>.</p>
+<ul>
+<li><p><a class="reference internal" href="#cvpods.layers.ConvTranspose2d.stride" title="cvpods.layers.ConvTranspose2d.stride"><code class="xref py py-attr docutils literal notranslate"><span class="pre">stride</span></code></a> controls the stride for the cross-correlation.</p></li>
+<li><p><a class="reference internal" href="#cvpods.layers.ConvTranspose2d.padding" title="cvpods.layers.ConvTranspose2d.padding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">padding</span></code></a> controls the amount of implicit zero-paddings on both
+sides for <code class="docutils literal notranslate"><span class="pre">dilation</span> <span class="pre">*</span> <span class="pre">(kernel_size</span> <span class="pre">-</span> <span class="pre">1)</span> <span class="pre">-</span> <span class="pre">padding</span></code> number of points. See note
+below for details.</p></li>
+<li><p><a class="reference internal" href="#cvpods.layers.ConvTranspose2d.output_padding" title="cvpods.layers.ConvTranspose2d.output_padding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">output_padding</span></code></a> controls the additional size added to one side
+of the output shape. See note below for details.</p></li>
+<li><p><a class="reference internal" href="#cvpods.layers.ConvTranspose2d.dilation" title="cvpods.layers.ConvTranspose2d.dilation"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dilation</span></code></a> controls the spacing between the kernel points; also known as the à trous algorithm.
+It is harder to describe, but this <a class="reference external" href="https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md">link</a> has a nice visualization of what <a class="reference internal" href="#cvpods.layers.ConvTranspose2d.dilation" title="cvpods.layers.ConvTranspose2d.dilation"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dilation</span></code></a> does.</p></li>
+<li><p><a class="reference internal" href="#cvpods.layers.ConvTranspose2d.groups" title="cvpods.layers.ConvTranspose2d.groups"><code class="xref py py-attr docutils literal notranslate"><span class="pre">groups</span></code></a> controls the connections between inputs and outputs.
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">in_channels</span></code> and <a class="reference internal" href="#cvpods.layers.ConvTranspose2d.out_channels" title="cvpods.layers.ConvTranspose2d.out_channels"><code class="xref py py-attr docutils literal notranslate"><span class="pre">out_channels</span></code></a> must both be divisible by
+<a class="reference internal" href="#cvpods.layers.ConvTranspose2d.groups" title="cvpods.layers.ConvTranspose2d.groups"><code class="xref py py-attr docutils literal notranslate"><span class="pre">groups</span></code></a>. For example,</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>At groups=1, all inputs are convolved to all outputs.</p></li>
+<li><p>At groups=2, the operation becomes equivalent to having two conv
+layers side by side, each seeing half the input channels,
+and producing half the output channels, and both subsequently
+concatenated.</p></li>
+<li><p>At groups= <code class="xref py py-attr docutils literal notranslate"><span class="pre">in_channels</span></code>, each input channel is convolved with
+its own set of filters (of size
+<span class="math notranslate nohighlight">\(\left\lfloor\frac{out\_channels}{in\_channels}\right\rfloor\)</span>).</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>The parameters <a class="reference internal" href="#cvpods.layers.ConvTranspose2d.kernel_size" title="cvpods.layers.ConvTranspose2d.kernel_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">kernel_size</span></code></a>, <a class="reference internal" href="#cvpods.layers.ConvTranspose2d.stride" title="cvpods.layers.ConvTranspose2d.stride"><code class="xref py py-attr docutils literal notranslate"><span class="pre">stride</span></code></a>, <a class="reference internal" href="#cvpods.layers.ConvTranspose2d.padding" title="cvpods.layers.ConvTranspose2d.padding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">padding</span></code></a>, <a class="reference internal" href="#cvpods.layers.ConvTranspose2d.output_padding" title="cvpods.layers.ConvTranspose2d.output_padding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">output_padding</span></code></a>
+can either be:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>a single <code class="docutils literal notranslate"><span class="pre">int</span></code> – in which case the same value is used for the height and width dimensions</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">tuple</span></code> of two ints – in which case, the first <cite>int</cite> is used for the height dimension,
+and the second <cite>int</cite> for the width dimension</p></li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Depending of the size of your kernel, several (of the last)
+columns of the input might be lost, because it is a valid <a class="reference external" href="https://en.wikipedia.org/wiki/Cross-correlation">cross-correlation</a>,
+and not a full <a class="reference external" href="https://en.wikipedia.org/wiki/Cross-correlation">cross-correlation</a>.
+It is up to the user to add proper padding.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <a class="reference internal" href="#cvpods.layers.ConvTranspose2d.padding" title="cvpods.layers.ConvTranspose2d.padding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">padding</span></code></a> argument effectively adds <code class="docutils literal notranslate"><span class="pre">dilation</span> <span class="pre">*</span> <span class="pre">(kernel_size</span> <span class="pre">-</span> <span class="pre">1)</span> <span class="pre">-</span> <span class="pre">padding</span></code>
+amount of zero padding to both sizes of the input. This is set so that
+when a <code class="xref py py-class docutils literal notranslate"><span class="pre">Conv2d</span></code> and a <code class="xref py py-class docutils literal notranslate"><span class="pre">ConvTranspose2d</span></code>
+are initialized with same parameters, they are inverses of each other in
+regard to the input and output shapes. However, when <code class="docutils literal notranslate"><span class="pre">stride</span> <span class="pre">&gt;</span> <span class="pre">1</span></code>,
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Conv2d</span></code> maps multiple input shapes to the same output
+shape. <a class="reference internal" href="#cvpods.layers.ConvTranspose2d.output_padding" title="cvpods.layers.ConvTranspose2d.output_padding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">output_padding</span></code></a> is provided to resolve this ambiguity by
+effectively increasing the calculated output shape on one side. Note
+that <a class="reference internal" href="#cvpods.layers.ConvTranspose2d.output_padding" title="cvpods.layers.ConvTranspose2d.output_padding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">output_padding</span></code></a> is only used to find output shape, but does
+not actually add zero-padding to output.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In some circumstances when using the CUDA backend with CuDNN, this operator
+may select a nondeterministic algorithm to increase performance. If this is
+undesirable, you can try to make the operation deterministic (potentially at
+a performance cost) by setting <code class="docutils literal notranslate"><span class="pre">torch.backends.cudnn.deterministic</span> <span class="pre">=</span>
+<span class="pre">True</span></code>.
+Please see the notes on <span class="xref std std-doc">/notes/randomness</span> for background.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em>) – Number of channels produced by the convolution</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Stride of the convolution. Default: 1</p></li>
+<li><p><strong>padding</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">dilation</span> <span class="pre">*</span> <span class="pre">(kernel_size</span> <span class="pre">-</span> <span class="pre">1)</span> <span class="pre">-</span> <span class="pre">padding</span></code> zero-padding
+will be added to both sides of each dimension in the input. Default: 0</p></li>
+<li><p><strong>output_padding</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Additional size added to one side
+of each dimension in the output shape. Default: 0</p></li>
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of blocked connections from input channels to output channels. Default: 1</p></li>
+<li><p><strong>bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, adds a learnable bias to the output. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><strong>dilation</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Spacing between kernel elements. Default: 1</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>Input: <span class="math notranslate nohighlight">\((N, C_{in}, H_{in}, W_{in})\)</span></p></li>
+<li><p>Output: <span class="math notranslate nohighlight">\((N, C_{out}, H_{out}, W_{out})\)</span> where</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[H_{out} = (H_{in} - 1) \times \text{stride}[0] - 2 \times \text{padding}[0] + \text{dilation}[0]
+          \times (\text{kernel\_size}[0] - 1) + \text{output\_padding}[0] + 1\]</div>
+<div class="math notranslate nohighlight">
+\[W_{out} = (W_{in} - 1) \times \text{stride}[1] - 2 \times \text{padding}[1] + \text{dilation}[1]
+          \times (\text{kernel\_size}[1] - 1) + \text{output\_padding}[1] + 1\]</div>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="cvpods.layers.ConvTranspose2d.weight">
+<code class="sig-name descname">weight</code><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>the learnable weights of the module of shape
+<span class="math notranslate nohighlight">\((\text{in\_channels}, \frac{\text{out\_channels}}{\text{groups}},\)</span>
+<span class="math notranslate nohighlight">\(\text{kernel\_size[0]}, \text{kernel\_size[1]})\)</span>.
+The values of these weights are sampled from
+<span class="math notranslate nohighlight">\(\mathcal{U}(-\sqrt{k}, \sqrt{k})\)</span> where
+<span class="math notranslate nohighlight">\(k = \frac{groups}{C_\text{out} * \prod_{i=0}^{1}\text{kernel\_size}[i]}\)</span></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ConvTranspose2d.bias">
+<code class="sig-name descname">bias</code><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.bias" title="Permalink to this definition">¶</a></dt>
+<dd><p>the learnable bias of the module of shape (out_channels)
+If <a class="reference internal" href="#id0" title="cvpods.layers.ConvTranspose2d.bias"><code class="xref py py-attr docutils literal notranslate"><span class="pre">bias</span></code></a> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the values of these weights are
+sampled from <span class="math notranslate nohighlight">\(\mathcal{U}(-\sqrt{k}, \sqrt{k})\)</span> where
+<span class="math notranslate nohighlight">\(k = \frac{groups}{C_\text{out} * \prod_{i=0}^{1}\text{kernel\_size}[i]}\)</span></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># With square kernels and equal stride</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># non-square kernels and unequal stride and with padding</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">stride</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">m</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># exact output size can be also specified as an argument</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">downsample</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">upsample</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">h</span> <span class="o">=</span> <span class="n">downsample</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">h</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+<span class="go">torch.Size([1, 16, 6, 6])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">upsample</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">output_size</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+<span class="go">torch.Size([1, 16, 12, 12])</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt id="id0">
+<code class="sig-name descname">bias</code><em class="property"> = None</em><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ConvTranspose2d.dilation">
+<code class="sig-name descname">dilation</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.dilation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ConvTranspose2d.groups">
+<code class="sig-name descname">groups</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ConvTranspose2d.kernel_size">
+<code class="sig-name descname">kernel_size</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.kernel_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ConvTranspose2d.out_channels">
+<code class="sig-name descname">out_channels</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.out_channels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ConvTranspose2d.output_padding">
+<code class="sig-name descname">output_padding</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.output_padding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ConvTranspose2d.padding">
+<code class="sig-name descname">padding</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.padding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ConvTranspose2d.padding_mode">
+<code class="sig-name descname">padding_mode</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.padding_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ConvTranspose2d.stride">
+<code class="sig-name descname">stride</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.stride" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.ConvTranspose2d.transposed">
+<code class="sig-name descname">transposed</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.transposed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id1">
+<code class="sig-name descname">weight</code><em class="property"> = None</em><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.ConvTranspose2d.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span><span class="p">:</span> <span class="n">torch.Tensor</span></em>, <em class="sig-param"><span class="n">output_size</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="../_modules/torch/nn/modules/conv.html#ConvTranspose2d.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.ConvTranspose2d.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.MaxPool2dSamePadding">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">MaxPool2dSamePadding</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#MaxPool2dSamePadding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.MaxPool2dSamePadding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.pooling.MaxPool2d</span></code></p>
+<p>A wrapper around <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.MaxPool2d</span></code> to support “SAME” padding mode and more features.</p>
+<p>See: <a class="reference external" href="https://github.com/pytorch/pytorch/issues/3867">https://github.com/pytorch/pytorch/issues/3867</a></p>
+<dl class="py attribute">
+<dt id="cvpods.layers.MaxPool2dSamePadding.stride">
+<code class="sig-name descname">stride</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.MaxPool2dSamePadding.stride" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.MaxPool2dSamePadding.kernel_size">
+<code class="sig-name descname">kernel_size</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.MaxPool2dSamePadding.kernel_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.MaxPool2dSamePadding.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#MaxPool2dSamePadding.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.MaxPool2dSamePadding.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.MaxPool2dSamePadding.dilation">
+<code class="sig-name descname">dilation</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.MaxPool2dSamePadding.dilation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.MaxPool2dSamePadding.padding">
+<code class="sig-name descname">padding</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.MaxPool2dSamePadding.padding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cvpods.layers.SeparableConvBlock">
+<em class="property">class </em><code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">SeparableConvBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">activation</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#SeparableConvBlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.SeparableConvBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>Depthwise seperable convolution block.</p>
+<dl class="py method">
+<dt id="cvpods.layers.SeparableConvBlock.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">activation</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#SeparableConvBlock.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.SeparableConvBlock.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>int</em>) – the number of input tensor channels.</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em>) – the number of output tensor channels.</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em>) – the kernel size.</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em> or </em><em>tuple</em><em> or </em><em>list</em>) – the stride.</p></li>
+<li><p><strong>bias</strong> (<em>bool</em>) – if <cite>True</cite>, the pointwise conv applies bias.</p></li>
+<li><p><strong>apply_bn</strong> (<em>bool</em>) – if <cite>True</cite>, apply BN layer after conv layer.</p></li>
+<li><p><strong>norm</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – a normalization layer</p></li>
+<li><p><strong>activation</strong> (<em>callable</em><em>(</em><em>Tensor</em><em>) </em><em>-&gt; Tensor</em>) – a callable activation function</p></li>
+</ul>
+</dd>
+</dl>
+<p>It assumes that norm layer is used before activation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="cvpods.layers.SeparableConvBlock.training">
+<code class="sig-name descname">training</code><em class="property"> = None</em><a class="headerlink" href="#cvpods.layers.SeparableConvBlock.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="cvpods.layers.SeparableConvBlock.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inputs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#SeparableConvBlock.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.SeparableConvBlock.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.cat">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">cat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tensors</span></em>, <em class="sig-param"><span class="n">dim</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#cat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.cat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Efficient version of torch.cat that avoids a copy if there is only a single element in a list</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="cvpods.layers.interpolate">
+<code class="sig-prename descclassname">cvpods.layers.</code><code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em>, <em class="sig-param"><span class="n">size</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'nearest'</span></em>, <em class="sig-param"><span class="n">align_corners</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cvpods/layers/wrappers.html#interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cvpods.layers.interpolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper around <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.functional.interpolate()</span></code> to support zero-size tensor.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="modeling.html" class="btn btn-neutral float-right" title="cvpods.modeling package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="evaluation.html" class="btn btn-neutral float-left" title="cvpods.evaluation package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

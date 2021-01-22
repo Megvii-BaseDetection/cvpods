@@ -1,0 +1,363 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.data.datasets.torchvision_datasets &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.data.datasets.torchvision_datasets</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.data.datasets.torchvision_datasets</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">osp</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torchvision.datasets</span> <span class="k">import</span> <span class="n">CIFAR10</span><span class="p">,</span> <span class="n">STL10</span>
+
+<span class="kn">import</span> <span class="nn">cvpods</span>
+<span class="kn">from</span> <span class="nn">cvpods.data.base_dataset</span> <span class="k">import</span> <span class="n">BaseDataset</span>
+<span class="kn">from</span> <span class="nn">cvpods.data.registry</span> <span class="k">import</span> <span class="n">DATASETS</span><span class="p">,</span> <span class="n">PATH_ROUTES</span>
+
+<span class="n">_PREDEFINED_SPLITS_CIFAR10</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;dataset_type&quot;</span><span class="p">:</span> <span class="s2">&quot;CIFAR10Dataset&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;evaluator_type&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cifar10&quot;</span><span class="p">:</span> <span class="s2">&quot;classification&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;cifar10&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;cifar10_train&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;cifar10&quot;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;cifar10_test&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;cifar10&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">),</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+<span class="n">PATH_ROUTES</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">_PREDEFINED_SPLITS_CIFAR10</span><span class="p">,</span> <span class="s2">&quot;CIFAR10&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CIFAR10Dataset"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.datasets.CIFAR10Dataset">[docs]</a><span class="nd">@DATASETS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">CIFAR10Dataset</span><span class="p">(</span><span class="n">CIFAR10</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">is_train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">misc</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+        <span class="n">image_root</span><span class="p">,</span> <span class="n">split</span> <span class="o">=</span> <span class="n">_PREDEFINED_SPLITS_CIFAR10</span><span class="p">[</span><span class="s2">&quot;cifar10&quot;</span><span class="p">][</span><span class="n">dataset_name</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_root</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">cvpods</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;datasets&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_train</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">split</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">split</span> <span class="o">==</span> <span class="s2">&quot;test&quot;</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">CIFAR10Dataset</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">root</span><span class="o">=</span><span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="n">image_root</span><span class="p">),</span>
+            <span class="n">train</span><span class="o">=</span><span class="n">is_train</span><span class="p">,</span>
+            <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aspect_ratios</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_transforms</span> <span class="o">=</span> <span class="n">BaseDataset</span><span class="o">.</span><span class="n">_apply_transforms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;evaluator_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;classification&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="n">image</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">dataset_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;image_id&quot;</span><span class="p">:</span> <span class="n">index</span><span class="p">,</span> <span class="s2">&quot;category_id&quot;</span><span class="p">:</span> <span class="n">target</span><span class="p">}</span>
+
+        <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="c1"># flip channels if needed for RGB to BGR</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">images</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="n">dd</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># CHW</span>
+                <span class="n">dd</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">img</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">dd</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="c1"># NHWC -&gt; NCHW</span>
+                <span class="n">dd</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+
+            <span class="k">return</span> <span class="n">dd</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c1"># multiple input pipelines</span>
+            <span class="k">for</span> <span class="n">desc</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">images</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">img</span><span class="p">,</span> <span class="n">anno</span> <span class="o">=</span> <span class="n">item</span>
+                <span class="n">ret</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">dataset_dict</span><span class="p">),</span> <span class="n">img</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ret</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">process</span><span class="p">(</span><span class="n">dataset_dict</span><span class="p">,</span> <span class="n">images</span><span class="p">)</span></div>
+
+
+<span class="n">_PREDEFINED_SPLITS_STL10</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;dataset_type&quot;</span><span class="p">:</span> <span class="s2">&quot;STL10Datasets&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;evaluator_type&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;stl10&quot;</span><span class="p">:</span> <span class="s2">&quot;classification&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;stl10&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;stl10_train&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;stl10&quot;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;stl10_unlabeled&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;stl10&quot;</span><span class="p">,</span> <span class="s2">&quot;unlabeled&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;stl10_test&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;stl10&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">),</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+<span class="n">PATH_ROUTES</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">_PREDEFINED_SPLITS_STL10</span><span class="p">,</span> <span class="s2">&quot;STL10&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="STL10Datasets"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.datasets.STL10Datasets">[docs]</a><span class="nd">@DATASETS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">STL10Datasets</span><span class="p">(</span><span class="n">STL10</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">transforms</span><span class="o">=</span><span class="p">[],</span> <span class="n">is_train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">misc</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+        <span class="n">image_root</span><span class="p">,</span> <span class="n">split</span> <span class="o">=</span> <span class="n">_PREDEFINED_SPLITS_STL10</span><span class="p">[</span><span class="s2">&quot;stl10&quot;</span><span class="p">][</span><span class="n">dataset_name</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_root</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">cvpods</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;datasets&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_root</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="n">image_root</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">STL10Datasets</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">image_root</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="n">split</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">aspect_ratios</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_transforms</span> <span class="o">=</span> <span class="n">BaseDataset</span><span class="o">.</span><span class="n">_apply_transforms</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_train</span> <span class="o">=</span> <span class="n">is_train</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;evaluator_type&quot;</span><span class="p">:</span> <span class="n">_PREDEFINED_SPLITS_STL10</span><span class="p">[</span><span class="s2">&quot;evaluator_type&quot;</span><span class="p">][</span><span class="s2">&quot;stl10&quot;</span><span class="p">]}</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+
+        <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">img</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">img</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="kc">None</span>
+
+        <span class="c1"># doing this so that it is consistent with all other datasets</span>
+        <span class="c1"># to return a PIL Image</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+        <span class="n">dataset_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;image_id&quot;</span><span class="p">:</span> <span class="n">index</span><span class="p">,</span> <span class="s2">&quot;category_id&quot;</span><span class="p">:</span> <span class="n">target</span><span class="p">}</span>
+
+        <span class="c1"># format == BGR in cvpods</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># flip channels for RGB -&gt; BGR format</span>
+
+        <span class="n">images</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="n">dd</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># CHW</span>
+                <span class="n">dd</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">img</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">dd</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="c1"># NHWC -&gt; NCHW</span>
+                <span class="n">dd</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+
+            <span class="k">return</span> <span class="n">dd</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c1"># multiple input pipelines</span>
+            <span class="k">for</span> <span class="n">desc</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">images</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">img</span><span class="p">,</span> <span class="n">anno</span> <span class="o">=</span> <span class="n">item</span>
+                <span class="n">ret</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">dataset_dict</span><span class="p">),</span> <span class="n">img</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ret</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">process</span><span class="p">(</span><span class="n">dataset_dict</span><span class="p">,</span> <span class="n">images</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

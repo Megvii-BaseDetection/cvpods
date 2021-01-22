@@ -1,0 +1,333 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>&lt;no title&gt; &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="getting_started.html" />
+    <link rel="prev" title="Tutorials" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/tutorials/install.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p>### Requirements
+- Linux or macOS with Python ≥ 3.6
+- PyTorch ≥ 1.3
+- [torchvision](<a class="reference external" href="https://github.com/pytorch/vision/">https://github.com/pytorch/vision/</a>) that matches the PyTorch installation.</p>
+<blockquote>
+<div><p>You can install them together at [pytorch.org](<a class="reference external" href="https://pytorch.org">https://pytorch.org</a>) to make sure of this.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>OpenCV, optional, needed by demo and visualization</p></li>
+<li><p>pycocotools: <cite>pip install cython; pip install ‘git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI’</cite></p></li>
+<li><p>gcc &amp; g++ ≥ 4.9</p></li>
+</ul>
+<p>### Build cvpods from source</p>
+<p>After having the above dependencies and gcc &amp; g++ ≥ 4.9, run:
+<a href="#id1"><span class="problematic" id="id2">``</span></a>`
+git clone –recursive <a class="reference external" href="https://git-core.megvii-inc.com/zhubenjin/cvpods">https://git-core.megvii-inc.com/zhubenjin/cvpods</a>
+cd cvpods
+rlaunch –cpu 8 –gpu 1 –memory 10240 – pip3 install -e .
+# (add –user if you don’t have permission)</p>
+<p># or if you are on macOS
+# MACOSX_DEPLOYMENT_TARGET=10.9 CC=clang CXX=clang++ python setup.py build develop</p>
+<p># or, as an alternative to <cite>setup.py</cite>, do
+# pip install .
+<a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+<p>To __rebuild__ cvpods that’s from local clone, <cite>rm -rf build/ **/*.so</cite> then <cite>pip install -e .</cite>.
+You often need to rebuild cvpods after reinstalling PyTorch.</p>
+<p>### Common Installation Issues</p>
+<p>Click each issue for its solutions:</p>
+<p>&lt;details&gt;
+&lt;summary&gt;
+Undefined torch/aten/caffe2 symbols, or segmentation fault immediately when running the library.
+&lt;/summary&gt;</p>
+<p>This can happen if cvpods or torchvision is not
+compiled with the version of PyTorch you’re running.</p>
+<p>If you use a pre-built torchvision, uninstall torchvision &amp; pytorch, and reinstall them
+following [pytorch.org](<a class="reference external" href="http://pytorch.org">http://pytorch.org</a>).
+If you manually build cvpods or torchvision, remove the files you built (<cite>build/</cite>, <cite>**/*.so</cite>)
+and rebuild them.</p>
+<p>If you cannot resolve the problem, please include the output of <cite>gdb -ex “r” -ex “bt” -ex “quit” –args python -m cvpods.utils.collect_env</cite>
+in your issue.
+&lt;/details&gt;</p>
+<p>&lt;details&gt;
+&lt;summary&gt;
+Undefined C++ symbols in <cite>cvpods/_C*.so</cite>.
+&lt;/summary&gt;
+Usually it’s because the library is compiled with a newer C++ compiler but run with an old C++ run time.
+This can happen with old anaconda.</p>
+<p>Try <cite>conda update libgcc</cite>. Then rebuild cvpods.
+&lt;/details&gt;</p>
+<p>&lt;details&gt;
+&lt;summary&gt;
+“Not compiled with GPU support” or “cvpods CUDA Compiler: not available”.
+&lt;/summary&gt;
+CUDA is not found when building cvpods.
+You should make sure
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">python</span> <span class="pre">-c</span> <span class="pre">'import</span> <span class="pre">torch;</span> <span class="pre">from</span> <span class="pre">torch.utils.cpp_extension</span> <span class="pre">import</span> <span class="pre">CUDA_HOME;</span> <span class="pre">print(torch.cuda.is_available(),</span> <span class="pre">CUDA_HOME)'</span>
+<span class="pre">`</span></code>
+print valid outputs at the time you build cvpods.
+&lt;/details&gt;</p>
+<p>&lt;details&gt;
+&lt;summary&gt;
+“invalid device function” or “no kernel image is available for execution”.
+&lt;/summary&gt;</p>
+<p>Two possibilities:</p>
+<ul class="simple">
+<li><p>You build cvpods with one version of CUDA but run it with a different version.</p></li>
+</ul>
+<dl>
+<dt>To check whether it is the case,</dt><dd><dl>
+<dt>use <cite>python -m cvpods.utils.collect_env</cite> to find out inconsistent CUDA versions.</dt><dd><p>In the output of this command, you should expect “cvpods CUDA Compiler”, “CUDA_HOME”, “PyTorch built with - CUDA”
+to contain cuda libraries of the same version.</p>
+<p>When they are inconsistent,
+you need to either install a different build of PyTorch (or build by yourself)
+to match your local CUDA installation, or install a different version of CUDA to match PyTorch.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<ul>
+<li><p>cvpods or PyTorch/torchvision is not built for the correct GPU architecture (compute compatibility).</p>
+<blockquote>
+<div><blockquote>
+<div><p>The GPU architecture for PyTorch/cvpods/torchvision is available in the “architecture flags” in
+<cite>python -m cvpods.utils.collect_env</cite>.</p>
+<p>The GPU architecture flags of cvpods/torchvision by default matches the GPU model detected
+during building. This means the compiled code may not work on a different GPU model.
+To overwrite the GPU architecture for cvpods/torchvision, use <cite>TORCH_CUDA_ARCH_LIST</cite> environment variable during building.</p>
+<p>For example, <cite>export TORCH_CUDA_ARCH_LIST=6.0,7.0</cite> makes it work for both P100s and V100s.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Visit [developer.nvidia.com/cuda-gpus](<a class="reference external" href="https://developer.nvidia.com/cuda-gpus">https://developer.nvidia.com/cuda-gpus</a>) to find out</dt><dd><p>the correct compute compatibility number for your device.</p>
+</dd>
+</dl>
+</div></blockquote>
+</li>
+</ul>
+<p>&lt;/details&gt;</p>
+<p>&lt;details&gt;
+&lt;summary&gt;
+Undefined CUDA symbols.
+&lt;/summary&gt;</p>
+<p>The version of NVCC you use to build cvpods or torchvision does
+not match the version of CUDA you are running with.
+This often happens when using anaconda’s CUDA runtime.</p>
+<p>Use <cite>python -m cvpods.utils.collect_env</cite> to find out inconsistent CUDA versions.
+In the output of this command, you should expect “cvpods CUDA Compiler”, “CUDA_HOME”, “PyTorch built with - CUDA”
+to contain cuda libraries of the same version.</p>
+<p>When they are inconsistent,
+you need to either install a different build of PyTorch (or build by yourself)
+to match your local CUDA installation, or install a different version of CUDA to match PyTorch.
+&lt;/details&gt;</p>
+<p>&lt;details&gt;
+&lt;summary&gt;
+“ImportError: cannot import name ‘_C’”.
+&lt;/summary&gt;
+Please build and install cvpods following the instructions above.
+&lt;/details&gt;</p>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="getting_started.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

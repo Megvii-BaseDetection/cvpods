@@ -1,0 +1,471 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.modeling.box_regression &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.modeling.box_regression</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.modeling.box_regression</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="c1"># Value for clamping large dw and dh predictions. The heuristic is that we clamp</span>
+<span class="c1"># such that dw and dh are no larger than what would transform a 16px box into a</span>
+<span class="c1"># 1000px box (based on a small anchor, 16px, and a typical image size, 1000px).</span>
+<span class="n">_DEFAULT_SCALE_CLAMP</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1000.0</span> <span class="o">/</span> <span class="mi">16</span><span class="p">)</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Box2BoxTransform&quot;</span><span class="p">,</span> <span class="s2">&quot;Box2BoxTransformRotated&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Box2BoxTransform"><a class="viewcode-back" href="../../../modules/modeling.html#cvpods.modeling.box_regression.Box2BoxTransform">[docs]</a><span class="k">class</span> <span class="nc">Box2BoxTransform</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The box-to-box transform defined in R-CNN. The transformation is parameterized</span>
+<span class="sd">    by 4 deltas: (dx, dy, dw, dh). The transformation scales the box&#39;s width and height</span>
+<span class="sd">    by exp(dw), exp(dh) and shifts a box&#39;s center by the offset (dx * width, dy * height).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Box2BoxTransform.__init__"><a class="viewcode-back" href="../../../modules/modeling.html#cvpods.modeling.box_regression.Box2BoxTransform.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">scale_clamp</span><span class="o">=</span><span class="n">_DEFAULT_SCALE_CLAMP</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            weights (4-element tuple): Scaling factors that are applied to the</span>
+<span class="sd">                (dx, dy, dw, dh) deltas. In Fast R-CNN, these were originally set</span>
+<span class="sd">                such that the deltas have unit variance; now they are treated as</span>
+<span class="sd">                hyperparameters of the system.</span>
+<span class="sd">            scale_clamp (float): When predicting deltas, the predicted box scaling</span>
+<span class="sd">                factors (dw and dh) are clamped such that they are &lt;= scale_clamp.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_clamp</span> <span class="o">=</span> <span class="n">scale_clamp</span></div>
+
+<div class="viewcode-block" id="Box2BoxTransform.get_deltas"><a class="viewcode-back" href="../../../modules/modeling.html#cvpods.modeling.box_regression.Box2BoxTransform.get_deltas">[docs]</a>    <span class="k">def</span> <span class="nf">get_deltas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src_boxes</span><span class="p">,</span> <span class="n">target_boxes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get box regression transformation deltas (dx, dy, dw, dh) that can be used</span>
+<span class="sd">        to transform the `src_boxes` into the `target_boxes`. That is, the relation</span>
+<span class="sd">        ``target_boxes == self.apply_deltas(deltas, src_boxes)`` is true (unless</span>
+<span class="sd">        any delta is too large and is clamped).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            src_boxes (Tensor): source boxes, e.g., object proposals</span>
+<span class="sd">            target_boxes (Tensor): target of the transformation, e.g., ground-truth</span>
+<span class="sd">                boxes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">src_boxes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">src_boxes</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target_boxes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">target_boxes</span><span class="p">)</span>
+
+        <span class="n">src_widths</span> <span class="o">=</span> <span class="n">src_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">src_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">src_heights</span> <span class="o">=</span> <span class="n">src_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">src_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">src_ctr_x</span> <span class="o">=</span> <span class="n">src_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">src_widths</span>
+        <span class="n">src_ctr_y</span> <span class="o">=</span> <span class="n">src_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">src_heights</span>
+
+        <span class="n">target_widths</span> <span class="o">=</span> <span class="n">target_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">target_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">target_heights</span> <span class="o">=</span> <span class="n">target_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">target_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">target_ctr_x</span> <span class="o">=</span> <span class="n">target_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">target_widths</span>
+        <span class="n">target_ctr_y</span> <span class="o">=</span> <span class="n">target_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">target_heights</span>
+
+        <span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="n">ww</span><span class="p">,</span> <span class="n">wh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">wx</span> <span class="o">*</span> <span class="p">(</span><span class="n">target_ctr_x</span> <span class="o">-</span> <span class="n">src_ctr_x</span><span class="p">)</span> <span class="o">/</span> <span class="n">src_widths</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">wy</span> <span class="o">*</span> <span class="p">(</span><span class="n">target_ctr_y</span> <span class="o">-</span> <span class="n">src_ctr_y</span><span class="p">)</span> <span class="o">/</span> <span class="n">src_heights</span>
+        <span class="n">dw</span> <span class="o">=</span> <span class="n">ww</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">target_widths</span> <span class="o">/</span> <span class="n">src_widths</span><span class="p">)</span>
+        <span class="n">dh</span> <span class="o">=</span> <span class="n">wh</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">target_heights</span> <span class="o">/</span> <span class="n">src_heights</span><span class="p">)</span>
+
+        <span class="n">deltas</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dw</span><span class="p">,</span> <span class="n">dh</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">src_widths</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="s2">&quot;Input boxes to Box2BoxTransform are not valid!&quot;</span>
+        <span class="k">return</span> <span class="n">deltas</span></div>
+
+<div class="viewcode-block" id="Box2BoxTransform.apply_deltas"><a class="viewcode-back" href="../../../modules/modeling.html#cvpods.modeling.box_regression.Box2BoxTransform.apply_deltas">[docs]</a>    <span class="k">def</span> <span class="nf">apply_deltas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deltas</span><span class="p">,</span> <span class="n">boxes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply transformation `deltas` (dx, dy, dw, dh) to `boxes`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            deltas (Tensor): transformation deltas of shape (N, k*4), where k &gt;= 1.</span>
+<span class="sd">                deltas[i] represents k potentially different class-specific</span>
+<span class="sd">                box transformations for the single box boxes[i].</span>
+<span class="sd">            boxes (Tensor): boxes to transform, of shape (N, 4)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="s2">&quot;Box regression deltas become infinite or NaN!&quot;</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">deltas</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="n">widths</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">heights</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">ctr_x</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">widths</span>
+        <span class="n">ctr_y</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">heights</span>
+
+        <span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="n">ww</span><span class="p">,</span> <span class="n">wh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">/</span> <span class="n">wx</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">/</span> <span class="n">wy</span>
+        <span class="n">dw</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">/</span> <span class="n">ww</span>
+        <span class="n">dh</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">/</span> <span class="n">wh</span>
+
+        <span class="c1"># Prevent sending too large values into torch.exp()</span>
+        <span class="n">dw</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dw</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_clamp</span><span class="p">)</span>
+        <span class="n">dh</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dh</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_clamp</span><span class="p">)</span>
+
+        <span class="n">pred_ctr_x</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">ctr_x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">pred_ctr_y</span> <span class="o">=</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">heights</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">ctr_y</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">pred_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">dw</span><span class="p">)</span> <span class="o">*</span> <span class="n">widths</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">pred_h</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">dh</span><span class="p">)</span> <span class="o">*</span> <span class="n">heights</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="n">pred_boxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span>
+        <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred_ctr_x</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">pred_w</span>  <span class="c1"># x1</span>
+        <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred_ctr_y</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">pred_h</span>  <span class="c1"># y1</span>
+        <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred_ctr_x</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">pred_w</span>  <span class="c1"># x2</span>
+        <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred_ctr_y</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">pred_h</span>  <span class="c1"># y2</span>
+        <span class="k">return</span> <span class="n">pred_boxes</span></div></div>
+
+
+<div class="viewcode-block" id="Box2BoxTransformRotated"><a class="viewcode-back" href="../../../modules/modeling.html#cvpods.modeling.box_regression.Box2BoxTransformRotated">[docs]</a><span class="k">class</span> <span class="nc">Box2BoxTransformRotated</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The box-to-box transform defined in Rotated R-CNN. The transformation is parameterized</span>
+<span class="sd">    by 5 deltas: (dx, dy, dw, dh, da). The transformation scales the box&#39;s width and height</span>
+<span class="sd">    by exp(dw), exp(dh), shifts a box&#39;s center by the offset (dx * width, dy * height),</span>
+<span class="sd">    and rotate a box&#39;s angle by da (radians).</span>
+<span class="sd">    Note: angles of deltas are in radians while angles of boxes are in degrees.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Box2BoxTransformRotated.__init__"><a class="viewcode-back" href="../../../modules/modeling.html#cvpods.modeling.box_regression.Box2BoxTransformRotated.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">scale_clamp</span><span class="o">=</span><span class="n">_DEFAULT_SCALE_CLAMP</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            weights (5-element tuple): Scaling factors that are applied to the</span>
+<span class="sd">                (dx, dy, dw, dh, da) deltas. These are treated as</span>
+<span class="sd">                hyperparameters of the system.</span>
+<span class="sd">            scale_clamp (float): When predicting deltas, the predicted box scaling</span>
+<span class="sd">                factors (dw and dh) are clamped such that they are &lt;= scale_clamp.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_clamp</span> <span class="o">=</span> <span class="n">scale_clamp</span></div>
+
+<div class="viewcode-block" id="Box2BoxTransformRotated.get_deltas"><a class="viewcode-back" href="../../../modules/modeling.html#cvpods.modeling.box_regression.Box2BoxTransformRotated.get_deltas">[docs]</a>    <span class="k">def</span> <span class="nf">get_deltas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src_boxes</span><span class="p">,</span> <span class="n">target_boxes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get box regression transformation deltas (dx, dy, dw, dh, da) that can be used</span>
+<span class="sd">        to transform the `src_boxes` into the `target_boxes`. That is, the relation</span>
+<span class="sd">        ``target_boxes == self.apply_deltas(deltas, src_boxes)`` is true (unless</span>
+<span class="sd">        any delta is too large and is clamped).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            src_boxes (Tensor): Nx5 source boxes, e.g., object proposals</span>
+<span class="sd">            target_boxes (Tensor): Nx5 target of the transformation, e.g., ground-truth</span>
+<span class="sd">                boxes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">src_boxes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">src_boxes</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target_boxes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">target_boxes</span><span class="p">)</span>
+
+        <span class="n">src_ctr_x</span><span class="p">,</span> <span class="n">src_ctr_y</span><span class="p">,</span> <span class="n">src_widths</span><span class="p">,</span> <span class="n">src_heights</span><span class="p">,</span> <span class="n">src_angles</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unbind</span><span class="p">(</span><span class="n">src_boxes</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">target_ctr_x</span><span class="p">,</span> <span class="n">target_ctr_y</span><span class="p">,</span> <span class="n">target_widths</span><span class="p">,</span> <span class="n">target_heights</span><span class="p">,</span> <span class="n">target_angles</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unbind</span><span class="p">(</span>
+            <span class="n">target_boxes</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+
+        <span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="n">ww</span><span class="p">,</span> <span class="n">wh</span><span class="p">,</span> <span class="n">wa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">wx</span> <span class="o">*</span> <span class="p">(</span><span class="n">target_ctr_x</span> <span class="o">-</span> <span class="n">src_ctr_x</span><span class="p">)</span> <span class="o">/</span> <span class="n">src_widths</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">wy</span> <span class="o">*</span> <span class="p">(</span><span class="n">target_ctr_y</span> <span class="o">-</span> <span class="n">src_ctr_y</span><span class="p">)</span> <span class="o">/</span> <span class="n">src_heights</span>
+        <span class="n">dw</span> <span class="o">=</span> <span class="n">ww</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">target_widths</span> <span class="o">/</span> <span class="n">src_widths</span><span class="p">)</span>
+        <span class="n">dh</span> <span class="o">=</span> <span class="n">wh</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">target_heights</span> <span class="o">/</span> <span class="n">src_heights</span><span class="p">)</span>
+        <span class="c1"># Angles of deltas are in radians while angles of boxes are in degrees.</span>
+        <span class="c1"># the conversion to radians serve as a way to normalize the values</span>
+        <span class="n">da</span> <span class="o">=</span> <span class="n">target_angles</span> <span class="o">-</span> <span class="n">src_angles</span>
+        <span class="n">da</span> <span class="o">=</span> <span class="p">(</span><span class="n">da</span> <span class="o">+</span> <span class="mf">180.0</span><span class="p">)</span> <span class="o">%</span> <span class="mf">360.0</span> <span class="o">-</span> <span class="mf">180.0</span>  <span class="c1"># make it in [-180, 180)</span>
+        <span class="n">da</span> <span class="o">*=</span> <span class="n">wa</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span>
+
+        <span class="n">deltas</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dw</span><span class="p">,</span> <span class="n">dh</span><span class="p">,</span> <span class="n">da</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">src_widths</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="p">),</span> <span class="s2">&quot;Input boxes to Box2BoxTransformRotated are not valid!&quot;</span>
+        <span class="k">return</span> <span class="n">deltas</span></div>
+
+<div class="viewcode-block" id="Box2BoxTransformRotated.apply_deltas"><a class="viewcode-back" href="../../../modules/modeling.html#cvpods.modeling.box_regression.Box2BoxTransformRotated.apply_deltas">[docs]</a>    <span class="k">def</span> <span class="nf">apply_deltas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deltas</span><span class="p">,</span> <span class="n">boxes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply transformation `deltas` (dx, dy, dw, dh, da) to `boxes`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            deltas (Tensor): transformation deltas of shape (N, 5).</span>
+<span class="sd">                deltas[i] represents box transformation for the single box boxes[i].</span>
+<span class="sd">            boxes (Tensor): boxes to transform, of shape (N, 5)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">deltas</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">5</span> <span class="ow">and</span> <span class="n">boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">5</span>
+        <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="s2">&quot;Box regression deltas become infinite or NaN!&quot;</span>
+
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">deltas</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="n">ctr_x</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">ctr_y</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">widths</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">heights</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span>
+
+        <span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="n">ww</span><span class="p">,</span> <span class="n">wh</span><span class="p">,</span> <span class="n">wa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span>
+
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">wx</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">wy</span>
+        <span class="n">dw</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">ww</span>
+        <span class="n">dh</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="n">wh</span>
+        <span class="n">da</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">/</span> <span class="n">wa</span>
+
+        <span class="c1"># Prevent sending too large values into torch.exp()</span>
+        <span class="n">dw</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dw</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_clamp</span><span class="p">)</span>
+        <span class="n">dh</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dh</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_clamp</span><span class="p">)</span>
+
+        <span class="n">pred_boxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span>
+        <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">widths</span> <span class="o">+</span> <span class="n">ctr_x</span>  <span class="c1"># x_ctr</span>
+        <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">heights</span> <span class="o">+</span> <span class="n">ctr_y</span>  <span class="c1"># y_ctr</span>
+        <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">dw</span><span class="p">)</span> <span class="o">*</span> <span class="n">widths</span>  <span class="c1"># width</span>
+        <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">dh</span><span class="p">)</span> <span class="o">*</span> <span class="n">heights</span>  <span class="c1"># height</span>
+
+        <span class="c1"># Following original RRPN implementation,</span>
+        <span class="c1"># angles of deltas are in radians while angles of boxes are in degrees.</span>
+        <span class="n">pred_angle</span> <span class="o">=</span> <span class="n">da</span> <span class="o">*</span> <span class="mf">180.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">+</span> <span class="n">angles</span>
+        <span class="n">pred_angle</span> <span class="o">=</span> <span class="p">(</span><span class="n">pred_angle</span> <span class="o">+</span> <span class="mf">180.0</span><span class="p">)</span> <span class="o">%</span> <span class="mf">360.0</span> <span class="o">-</span> <span class="mf">180.0</span>  <span class="c1"># make it in [-180, 180)</span>
+
+        <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred_angle</span>
+
+        <span class="k">return</span> <span class="n">pred_boxes</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">Shift2BoxTransform</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            weights (4-element tuple): Scaling factors that are applied to the</span>
+<span class="sd">                (dl, dt, dr, db) deltas.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
+
+    <span class="k">def</span> <span class="nf">get_deltas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shifts</span><span class="p">,</span> <span class="n">boxes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get box regression transformation deltas (dl, dt, dr, db) that can be used</span>
+<span class="sd">        to transform the `shifts` into the `boxes`. That is, the relation</span>
+<span class="sd">        ``boxes == self.apply_deltas(deltas, shifts)`` is true.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            shifts (Tensor): shifts, e.g., feature map coordinates</span>
+<span class="sd">            boxes (Tensor): target of the transformation, e.g., ground-truth</span>
+<span class="sd">                boxes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shifts</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">shifts</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>
+
+        <span class="n">deltas</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">shifts</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">shifts</span><span class="p">),</span>
+                           <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">shifts</span><span class="o">.</span><span class="n">new_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">deltas</span>
+
+    <span class="k">def</span> <span class="nf">apply_deltas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deltas</span><span class="p">,</span> <span class="n">shifts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply transformation `deltas` (dl, dt, dr, db) to `shifts`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            deltas (Tensor): transformation deltas of shape (N, k*4), where k &gt;= 1.</span>
+<span class="sd">                deltas[i] represents k potentially different class-specific</span>
+<span class="sd">                box transformations for the single shift shifts[i].</span>
+<span class="sd">            shifts (Tensor): shifts to transform, of shape (N, 2)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">shifts</span> <span class="o">=</span> <span class="n">shifts</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">deltas</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">deltas</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span>
+
+        <span class="n">deltas</span> <span class="o">=</span> <span class="n">deltas</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">deltas</span><span class="o">.</span><span class="n">size</span><span class="p">()[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span> <span class="o">/</span> <span class="n">shifts</span><span class="o">.</span><span class="n">new_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">shifts</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">deltas</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span>
+                           <span class="n">shifts</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">deltas</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]),</span>
+                          <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">deltas</span><span class="o">.</span><span class="n">size</span><span class="p">()[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">))</span>
+        <span class="k">return</span> <span class="n">boxes</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>&lt;no title&gt; &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="extend.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="install.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/tutorials/getting_started.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p>## Getting Started with cvpods</p>
+<p>This document provides a brief intro of the usage of builtin command-line tools in cvpods.</p>
+<p>For a tutorial that involves actual coding with the API,
+see our [playground](<a class="reference external" href="https://git-core.megvii-inc.com/zhubenjin/cvpods_playground/tree/master/examples">https://git-core.megvii-inc.com/zhubenjin/cvpods_playground/tree/master/examples</a>)
+which covers how to run inference with an
+existing model, and how to train a builtin model on a custom dataset.</p>
+<p>For more advanced tutorials, refer to our [documentation](<a class="reference external" href="https://luoshu.iap.wh-a.brainpp.cn/docs/cvpods/en/latest/">https://luoshu.iap.wh-a.brainpp.cn/docs/cvpods/en/latest/</a>).</p>
+<p>### Inference Demo with Pre-trained Models</p>
+<p>Our trained model in example is saved in s3://wangfengdata/cvpods_modelzoo,
+you may pick a model you want with the following command, for example, maskrcnn baseline
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>shell
+oss cp </p>
+<blockquote>
+<div><p>s3://wangfengdata/cvpods_modelzoo/detmodel/maskrcnn.res50.fpn.800size.1x.pth .</p>
+</div></blockquote>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>Pick a model and get its code link from</dt><dd><p>[model zoo](<a class="reference external" href="https://git-core.megvii-inc.com/zhubenjin/cvpods/blob/megvii/MODEL_ZOO.md">https://git-core.megvii-inc.com/zhubenjin/cvpods/blob/megvii/MODEL_ZOO.md</a>),</p>
+</dd>
+</dl>
+</li>
+</ol>
+<p>2. We provide <cite>demo.py</cite> that is able to run builtin standard models. Run it with:
+<a href="#id9"><span class="problematic" id="id10">``</span></a>`
+python demo/demo.py </p>
+<blockquote>
+<div><p>–input input1.jpg input2.jpg –opts MODEL.WEIGHTS your_model.pkl</p>
+</div></blockquote>
+<p><a href="#id11"><span class="problematic" id="id12">``</span></a>`
+The configs are made for training, therefore we need to specify <cite>MODEL.WEIGHTS</cite> to a model from model zoo for evaluation.
+This command will run the inference and show visualizations in an OpenCV window.</p>
+<p>For details of the command line arguments, see <cite>demo.py -h</cite> or look at its source code
+to understand its behavior. Some common arguments are:
+* To run __on your <a href="#id13"><span class="problematic" id="id14">webcam__</span></a>, replace <cite>–input files</cite> with <cite>–webcam</cite>.
+* To run __on a <a href="#id13"><span class="problematic" id="id15">video__</span></a>, replace <cite>–input files</cite> with <cite>–video-input video.mp4</cite>.
+* To run __on <a href="#id13"><span class="problematic" id="id16">cpu__</span></a>, add <cite>MODEL.DEVICE cpu</cite> after <cite>–opts</cite>.
+* To save outputs to a directory (for images) or a file (for webcam or video), use <cite>–output</cite>.</p>
+<p>### Training &amp; Evaluation in Command Line</p>
+<p>We provide a script in “tools/{,plain_}train_net.py”, that is made to train
+all the configs provided in cvpods.
+You may want to use it as a reference to write your own training script for a new research.</p>
+<p>To train a model with “train_net.py”, first
+setup the corresponding datasets following
+[datasets/README.md](<a class="reference external" href="https://git-core.megvii-inc.com/zhubenjin/cvpods/tree/megvii/datasets">https://git-core.megvii-inc.com/zhubenjin/cvpods/tree/megvii/datasets</a>),
+enter the directory of your code, then run:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">python</span> <span class="pre">path_to_your_cvpods/tools/train_net.py</span> <span class="pre">--num-gpus</span> <span class="pre">8</span>
+<span class="pre">`</span></code>
+To train a model with “cvpods_train”, enter the directory and run:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">cvpods_train</span> <span class="pre">--num-gpus</span> <span class="pre">8</span>
+<span class="pre">`</span></code></p>
+<p>The configs are made for 8-GPU training. To train on 1 GPU, change the batch size with:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">cvpods_train</span> <span class="pre">--nums-gpu</span> <span class="pre">1</span> <span class="pre">SOLVER.IMS_PER_BATCH</span> <span class="pre">2</span> <span class="pre">SOLVER.BASE_LR</span> <span class="pre">0.0025</span>
+<span class="pre">`</span></code>
+After training, a README.md file is generated automaticly, it shows you the model performance.
+For most models, CPU training is not supported.</p>
+<p>(Note that we applied the [linear learning rate scaling rule](<a class="reference external" href="https://arxiv.org/abs/1706.02677">https://arxiv.org/abs/1706.02677</a>)
+when changing the batch size.)</p>
+<p>To evaluate a model’s performance, use
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">cvpods_test</span> <span class="pre">--nums-gpu</span> <span class="pre">8</span>
+<span class="pre">`</span></code>
+this will help you to test the performance of latest model. You may set start-iter and end-iter if you want:
+<code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">cvpods_test</span> <span class="pre">--nums-gpu</span> <span class="pre">8</span> <span class="pre">--start-iter</span> <span class="pre">0</span> <span class="pre">--end-iter</span> <span class="pre">10000</span>
+<span class="pre">`</span></code>
+For more options, see <cite>python tools/train_net.py -h</cite>.</p>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="extend.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="install.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

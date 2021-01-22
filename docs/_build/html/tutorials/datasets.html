@@ -1,0 +1,409 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>&lt;no title&gt; &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="data_loading.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="extend.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/tutorials/datasets.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p># Use Custom Datasets</p>
+<p>If you want to use a custom dataset while also reusing cvpods’s data loaders,
+you will need to</p>
+<ol class="arabic simple">
+<li><p>Register your dataset (i.e., tell cvpods how to obtain your dataset).</p></li>
+<li><p>Optionally, register metadata for your dataset.</p></li>
+</ol>
+<p>Next, we explain the above two concepts in details.</p>
+<p>The [Colab Notebook](<a class="reference external" href="https://colab.research.google.com/drive/">https://colab.research.google.com/drive/</a><a href="#id9"><span class="problematic" id="id10">16jcaJoc6bCFAQ96jDe2HwtXj7BMD_</span></a>-m5)
+has a working example of how to register and train on a dataset of custom formats.</p>
+<p>### Register a Dataset</p>
+<p>To let cvpods know how to obtain a dataset named “my_dataset”, you will implement
+a function that returns the items in your dataset and then tell cvpods about this
+function:
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
+def get_dicts():</p>
+<blockquote>
+<div><p>…
+return list[dict] in the following format</p>
+</div></blockquote>
+<p>from cvpods.data import DatasetCatalog
+DatasetCatalog.register(“my_dataset”, get_dicts)
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>Here, the snippet associates a dataset “my_dataset” with a function that returns the data.
+If you do not modify downstream code (i.e., you use the standard data loader and data mapper),
+then the function has to return a list of dicts in cvpods’s standard dataset format, described
+next. You can also use arbitrary custom data format, as long as the
+downstream code (mainly the [custom data loader](data_loading.html)) supports it.</p>
+<p>For standard tasks
+(instance detection, instance/semantic/panoptic segmentation, keypoint detection),
+we use a format similar to COCO’s json annotations
+as the basic dataset representation.</p>
+<p>The format uses one dict to represent the annotations of
+one image. The dict may have the following fields.
+The fields are often optional, and some functions may be able to
+infer certain fields from others if needed, e.g., the data loader
+will load the image from “file_name” and load “sem_seg” from “sem_seg_file_name”.</p>
+<ul>
+<li><p><cite>file_name</cite>: the full path to the image file. Will apply rotation and flipping if the image has such exif information.</p></li>
+<li><p><cite>sem_seg_file_name</cite>: the full path to the ground truth semantic segmentation file.</p></li>
+<li><p><cite>image</cite>: the image as a numpy array.</p></li>
+<li><p><cite>sem_seg</cite>: semantic segmentation ground truth in a 2D <cite>torch.Tensor</cite>. Values in the array represent
+category labels starting from 0.</p></li>
+<li><p><cite>height</cite>, <cite>width</cite>: integer. The shape of image.</p></li>
+<li><dl class="simple">
+<dt><cite>image_id</cite> (str or int): a unique id that identifies this image. Used</dt><dd><p>during evaluation to identify the images, but a dataset may use it for different purposes.</p>
+</dd>
+</dl>
+</li>
+<li><p><cite>annotations</cite> (list[dict]): each dict corresponds to annotations of one instance
+in this image. Images with empty <cite>annotations</cite> will by default be removed from training,</p>
+<blockquote>
+<div><p>but can be included using <cite>DATALOADER.FILTER_EMPTY_ANNOTATIONS</cite>.
+Each dict may contain the following keys:</p>
+</div></blockquote>
+<ul>
+<li><p><cite>bbox</cite> (list[float]): list of 4 numbers representing the bounding box of the instance.</p></li>
+<li><p><cite>bbox_mode</cite> (int): the format of bbox.
+It must be a member of
+[structures.BoxMode](../modules/structures.html#cvpods.structures.BoxMode).
+Currently supports: <cite>BoxMode.XYXY_ABS</cite>, <cite>BoxMode.XYWH_ABS</cite>.</p></li>
+<li><p><cite>category_id</cite> (int): an integer in the range [0, num_categories) representing the category label.
+The value num_categories is reserved to represent the “background” category, if applicable.</p></li>
+<li><p><cite>segmentation</cite> (list[list[float]] or dict):
++ If <cite>list[list[float]]</cite>, it represents a list of polygons, one for each connected component</p>
+<blockquote>
+<div><p>of the object. Each <cite>list[float]</cite> is one simple polygon in the format of <cite>[x1, y1, …, xn, yn]</cite>.
+The Xs and Ys are either relative coordinates in [0, 1], or absolute coordinates,
+depend on whether “bbox_mode” is relative.</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>If <cite>dict</cite>, it represents the per-pixel segmentation mask in COCO’s RLE format. The dict should have</dt><dd><p>keys “size” and “counts”. You can convert a uint8 segmentation mask of 0s and 1s into
+RLE format by <cite>pycocotools.mask.encode(np.asarray(mask, order=”F”))</cite>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</li>
+<li><p><cite>keypoints</cite> (list[float]): in the format of [x1, y1, v1,…, xn, yn, vn].
+v[i] means the [visibility](<a class="reference external" href="http://cocodataset.org/#format-data">http://cocodataset.org/#format-data</a>) of this keypoint.
+<cite>n</cite> must be equal to the number of keypoint categories.
+The Xs and Ys are either relative coordinates in [0, 1], or absolute coordinates,
+depend on whether “bbox_mode” is relative.</p>
+<p>Note that the coordinate annotations in COCO format are integers in range [0, H-1 or W-1].
+By default, cvpods adds 0.5 to absolute keypoint coordinates to convert them from discrete
+pixel indices to floating point coordinates.</p>
+</li>
+<li><p><cite>iscrowd</cite>: 0 or 1. Whether this instance is labeled as COCO’s “crowd
+region”. Don’t include this field if you don’t know what it means.</p></li>
+</ul>
+</li>
+</ul>
+<p>The following keys are used by Fast R-CNN style training, which is rare today.</p>
+<ul class="simple">
+<li><p><cite>proposal_boxes</cite> (array): 2D numpy array with shape (K, 4) representing K precomputed proposal boxes for this image.</p></li>
+<li><p><cite>proposal_objectness_logits</cite> (array): numpy array with shape (K, ), which corresponds to the objectness
+logits of proposals in ‘proposal_boxes’.</p></li>
+<li><p><cite>proposal_bbox_mode</cite> (int): the format of the precomputed proposal bbox.
+It must be a member of
+[structures.BoxMode](../modules/structures.html#cvpods.structures.BoxMode).
+Default format is <cite>BoxMode.XYXY_ABS</cite>.</p></li>
+</ul>
+<p>If your dataset is already in the COCO format, you can simply register it by
+<code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">from</span> <span class="pre">cvpods.data.datasets</span> <span class="pre">import</span> <span class="pre">register_coco_instances</span>
+<span class="pre">register_coco_instances(&quot;my_dataset&quot;,</span> <span class="pre">{},</span> <span class="pre">&quot;json_annotation.json&quot;,</span> <span class="pre">&quot;path/to/image/dir&quot;)</span>
+<span class="pre">`</span></code>
+which will take care of everything (including metadata) for you.</p>
+<p>If your dataset is in COCO format with custom per-instance annotations,
+the [load_coco_json](../modules/data.html#cvpods.data.datasets.load_coco_json) function can be used.</p>
+<p>### “Metadata” for Datasets</p>
+<p>Each dataset is associated with some metadata, accessible through
+<cite>MetadataCatalog.get(dataset_name).some_metadata</cite>.
+Metadata is a key-value mapping that contains primitive information that helps interpret what’s in the dataset, e.g.,
+names of classes, colors of classes, root of files, etc.
+This information will be useful for augmentation, evaluation, visualization, logging, etc.
+The structure of metadata depends on the what is needed from the corresponding downstream code.</p>
+<p>If you register a new dataset through <cite>DatasetCatalog.register</cite>,
+you may also want to add its corresponding metadata through
+<cite>MetadataCatalog.get(dataset_name).set(name, value)</cite>, to enable any features that need metadata.
+You can do it like this (using the metadata field “thing_classes” as an example):</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">from</span> <span class="pre">cvpods.data</span> <span class="pre">import</span> <span class="pre">MetadataCatalog</span>
+<span class="pre">MetadataCatalog.get(&quot;my_dataset&quot;).thing_classes</span> <span class="pre">=</span> <span class="pre">[&quot;person&quot;,</span> <span class="pre">&quot;dog&quot;]</span>
+<span class="pre">`</span></code></p>
+<p>Here is a list of metadata keys that are used by builtin features in cvpods.
+If you add your own dataset without these metadata, some features may be
+unavailable to you:</p>
+<ul class="simple">
+<li><p><cite>thing_classes</cite> (list[str]): Used by all instance detection/segmentation tasks.
+A list of names for each instance/thing category.
+If you load a COCO format dataset, it will be automatically set by the function <cite>load_coco_json</cite>.</p></li>
+<li><p><cite>thing_colors</cite> (list[tuple(r, g, b)]): Pre-defined color (in [0, 255]) for each thing category.
+Used for visualization. If not given, random colors are used.</p></li>
+<li><p><cite>stuff_classes</cite> (list[str]): Used by semantic and panoptic segmentation tasks.
+A list of names for each stuff category.</p></li>
+<li><p><cite>stuff_colors</cite> (list[tuple(r, g, b)]): Pre-defined color (in [0, 255]) for each stuff category.
+Used for visualization. If not given, random colors are used.</p></li>
+<li><p><cite>keypoint_names</cite> (list[str]): Used by keypoint localization. A list of names for each keypoint.</p></li>
+<li><p><cite>keypoint_flip_map</cite> (list[tuple[str]]): Used by the keypoint localization task. A list of pairs of names,
+where each pair are the two keypoints that should be flipped if the image is
+flipped during augmentation.</p></li>
+<li><p><cite>keypoint_connection_rules</cite>: list[tuple(str, str, (r, g, b))]. Each tuple specifies a pair of keypoints
+that are connected and the color to use for the line between them when visualized.</p></li>
+</ul>
+<p>Some additional metadata that are specific to the evaluation of certain datasets (e.g. COCO):</p>
+<ul class="simple">
+<li><p><cite>thing_dataset_id_to_contiguous_id</cite> (dict[int-&gt;int]): Used by all instance detection/segmentation tasks in the COCO format.
+A mapping from instance class ids in the dataset to contiguous ids in range [0, #class).
+Will be automatically set by the function <cite>load_coco_json</cite>.</p></li>
+<li><p><cite>stuff_dataset_id_to_contiguous_id</cite> (dict[int-&gt;int]): Used when generating prediction json files for
+semantic/panoptic segmentation.
+A mapping from semantic segmentation class ids in the dataset
+to contiguous ids in [0, num_categories). It is useful for evaluation only.</p></li>
+<li><p><cite>json_file</cite>: The COCO annotation json file. Used by COCO evaluation for COCO-format datasets.</p></li>
+<li><p><cite>panoptic_root</cite>, <cite>panoptic_json</cite>: Used by panoptic evaluation.</p></li>
+<li><dl class="simple">
+<dt><cite>evaluator_type</cite>: Used by the builtin main training script to select</dt><dd><p>evaluator. No need to use it if you write your own main script.
+You can just provide the [DatasetEvaluator](../modules/evaluation.html#cvpods.evaluation.DatasetEvaluator)
+for your dataset directly in your main script.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>NOTE: For background on the concept of “thing” and “stuff” categories, see
+[On Seeing Stuff: The Perception of Materials by Humans and Machines](<a class="reference external" href="http://persci.mit.edu/pub_pdfs/adelson_spie_01.pdf">http://persci.mit.edu/pub_pdfs/adelson_spie_01.pdf</a>).
+In cvpods, the term “thing” is used for instance-level tasks,
+and “stuff” is used for semantic segmentation tasks.
+Both are used in panoptic segmentation.</p>
+<p>### Update the Config for New Datasets</p>
+<p>Once you’ve registered the dataset, you can use the name of the dataset (e.g., “my_dataset” in
+example above) in <cite>DATASETS.{TRAIN,TEST}</cite>.
+There are other configs you might want to change to train or evaluate on new datasets:</p>
+<ul>
+<li><dl class="simple">
+<dt><cite>MODEL.ROI_HEADS.NUM_CLASSES</cite> and <cite>MODEL.RETINANET.NUM_CLASSES</cite> are the number of thing classes</dt><dd><p>for R-CNN and RetinaNet models.</p>
+</dd>
+</dl>
+</li>
+<li><p><cite>MODEL.ROI_KEYPOINT_HEAD.NUM_KEYPOINTS</cite> sets the number of keypoints for Keypoint R-CNN.
+You’ll also need to set [Keypoint OKS](<a class="reference external" href="http://cocodataset.org/#keypoints-eval">http://cocodataset.org/#keypoints-eval</a>)</p>
+<blockquote>
+<div><p>with <cite>TEST.KEYPOINT_OKS_SIGMAS</cite> for evaluation.</p>
+</div></blockquote>
+</li>
+<li><p><cite>MODEL.SEM_SEG_HEAD.NUM_CLASSES</cite> sets the number of stuff classes for Semantic FPN &amp; Panoptic FPN.</p></li>
+<li><dl class="simple">
+<dt>If you’re training Fast R-CNN (with precomputed proposals), <cite>DATASETS.PROPOSAL_FILES_{TRAIN,TEST}</cite></dt><dd><p>need to match the datasts. The format of proposal files are documented
+[here](../modules/data.html#detectron2.data.load_proposals_into_dataset).</p>
+</dd>
+</dl>
+</li>
+</ul>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="data_loading.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="extend.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

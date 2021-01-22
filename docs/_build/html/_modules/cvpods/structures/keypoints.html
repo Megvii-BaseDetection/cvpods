@@ -1,0 +1,416 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.structures.keypoints &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.structures.keypoints</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.structures.keypoints</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">cvpods.layers</span> <span class="k">import</span> <span class="n">interpolate</span>
+
+
+<div class="viewcode-block" id="Keypoints"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.Keypoints">[docs]</a><span class="k">class</span> <span class="nc">Keypoints</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores keypoint annotation data. GT Instances have a `gt_keypoints` property</span>
+<span class="sd">    containing the x,y location and visibility flag of each keypoint. This tensor has shape</span>
+<span class="sd">    (N, K, 3) where N is the number of instances and K is the number of keypoints per instance.</span>
+
+<span class="sd">    The visibility flag follows the COCO format and must be one of three integers:</span>
+<span class="sd">    * v=0: not labeled (in which case x=y=0)</span>
+<span class="sd">    * v=1: labeled but not visible</span>
+<span class="sd">    * v=2: labeled and visible</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Keypoints.__init__"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.Keypoints.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keypoints</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            keypoints: A Tensor, numpy array, or list of the x, y, and visibility of each keypoint.</span>
+<span class="sd">            The shape should be (N, K, 3) where N is the number of</span>
+<span class="sd">            instances, and K is the number of keypoints per instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">keypoints</span><span class="o">.</span><span class="n">device</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keypoints</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="n">keypoints</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">keypoints</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">keypoints</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">keypoints</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="n">keypoints</span><span class="o">.</span><span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span> <span class="o">=</span> <span class="n">keypoints</span></div>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Keypoints.to"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.Keypoints.to">[docs]</a>    <span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Keypoints&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">device</span>
+
+<div class="viewcode-block" id="Keypoints.to_heatmap"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.Keypoints.to_heatmap">[docs]</a>    <span class="k">def</span> <span class="nf">to_heatmap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boxes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">heatmap_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            boxes: Nx4 tensor, the boxes to draw the keypoints to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            heatmaps:</span>
+<span class="sd">                A tensor of shape (N, K) containing an integer spatial label</span>
+<span class="sd">                in the range [0, heatmap_size**2 - 1] for each keypoint in the input.</span>
+<span class="sd">            valid:</span>
+<span class="sd">                A tensor of shape (N, K) containing whether each keypoint is in the roi or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_keypoints_to_heatmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="n">boxes</span><span class="p">,</span> <span class="n">heatmap_size</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Keypoints.__getitem__"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.Keypoints.__getitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Keypoints&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a new `Keypoints` by indexing on this `Keypoints`.</span>
+
+<span class="sd">        The following usage are allowed:</span>
+
+<span class="sd">        1. `new_kpts = kpts[3]`: return a `Keypoints` which contains only one instance.</span>
+<span class="sd">        2. `new_kpts = kpts[2:10]`: return a slice of key points.</span>
+<span class="sd">        3. `new_kpts = kpts[vector]`, where vector is a torch.ByteTensor</span>
+<span class="sd">           with `length = len(kpts)`. Nonzero elements in the vector will be selected.</span>
+
+<span class="sd">        Note that the returned Keypoints might share storage with this Keypoints,</span>
+<span class="sd">        subject to Pytorch&#39;s indexing semantics.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Keypoints</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">item</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">Keypoints</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">[</span><span class="n">item</span><span class="p">])</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;(&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;num_instances=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensor</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+
+
+<span class="c1"># TODO make this nicer, this is a direct translation from C2 (but removing the inner loop)</span>
+<span class="k">def</span> <span class="nf">_keypoints_to_heatmap</span><span class="p">(</span>
+    <span class="n">keypoints</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">rois</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">heatmap_size</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encode keypoint locations into a target heatmap for use in SoftmaxWithLoss across space.</span>
+
+<span class="sd">    Maps keypoints from the half-open interval [x1, x2) on continuous image coordinates to the</span>
+<span class="sd">    closed interval [0, heatmap_size - 1] on discrete image coordinates. We use the</span>
+<span class="sd">    continuous-discrete conversion from Heckbert 1990 (&quot;What is the coordinate of a pixel?&quot;):</span>
+<span class="sd">    d = floor(c) and c = d + 0.5, where d is a discrete coordinate and c is a continuous coordinate.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        keypoints: tensor of keypoint locations in of shape (N, K, 3).</span>
+<span class="sd">        rois: Nx4 tensor of rois in xyxy format</span>
+<span class="sd">        heatmap_size: integer side length of square heatmap.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        heatmaps: A tensor of shape (N, K) containing an integer spatial label</span>
+<span class="sd">            in the range [0, heatmap_size**2 - 1] for each keypoint in the input.</span>
+<span class="sd">        valid: A tensor of shape (N, K) containing whether each keypoint is in</span>
+<span class="sd">            the roi or not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">rois</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">rois</span><span class="o">.</span><span class="n">new</span><span class="p">()</span><span class="o">.</span><span class="n">long</span><span class="p">(),</span> <span class="n">rois</span><span class="o">.</span><span class="n">new</span><span class="p">()</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+    <span class="n">offset_x</span> <span class="o">=</span> <span class="n">rois</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">offset_y</span> <span class="o">=</span> <span class="n">rois</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">scale_x</span> <span class="o">=</span> <span class="n">heatmap_size</span> <span class="o">/</span> <span class="p">(</span><span class="n">rois</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">rois</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">scale_y</span> <span class="o">=</span> <span class="n">heatmap_size</span> <span class="o">/</span> <span class="p">(</span><span class="n">rois</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">rois</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">offset_x</span> <span class="o">=</span> <span class="n">offset_x</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">offset_y</span> <span class="o">=</span> <span class="n">offset_y</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">scale_x</span> <span class="o">=</span> <span class="n">scale_x</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">scale_y</span> <span class="o">=</span> <span class="n">scale_y</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">keypoints</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">keypoints</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">x_boundary_inds</span> <span class="o">=</span> <span class="n">x</span> <span class="o">==</span> <span class="n">rois</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">y_boundary_inds</span> <span class="o">=</span> <span class="n">y</span> <span class="o">==</span> <span class="n">rois</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">offset_x</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_x</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">floor</span><span class="p">()</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">offset_y</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_y</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">floor</span><span class="p">()</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+
+    <span class="n">x</span><span class="p">[</span><span class="n">x_boundary_inds</span><span class="p">]</span> <span class="o">=</span> <span class="n">heatmap_size</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">y_boundary_inds</span><span class="p">]</span> <span class="o">=</span> <span class="n">heatmap_size</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="n">valid_loc</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">heatmap_size</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">heatmap_size</span><span class="p">)</span>
+    <span class="n">vis</span> <span class="o">=</span> <span class="n">keypoints</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="p">(</span><span class="n">valid_loc</span> <span class="o">&amp;</span> <span class="n">vis</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+
+    <span class="n">lin_ind</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">heatmap_size</span> <span class="o">+</span> <span class="n">x</span>
+    <span class="n">heatmaps</span> <span class="o">=</span> <span class="n">lin_ind</span> <span class="o">*</span> <span class="n">valid</span>
+
+    <span class="k">return</span> <span class="n">heatmaps</span><span class="p">,</span> <span class="n">valid</span>
+
+
+<div class="viewcode-block" id="heatmaps_to_keypoints"><a class="viewcode-back" href="../../../modules/structures.html#cvpods.structures.heatmaps_to_keypoints">[docs]</a><span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">heatmaps_to_keypoints</span><span class="p">(</span><span class="n">maps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">rois</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract predicted keypoint locations from heatmaps.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        maps (Tensor): (#ROIs, #keypoints, POOL_H, POOL_W). The predicted heatmap of logits for</span>
+<span class="sd">        each ROI and each keypoint.</span>
+<span class="sd">        rois (Tensor): (#ROIs, 4). The box of each ROI.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tensor of shape (#ROIs, #keypoints, 4) with the last dimension corresponding to</span>
+<span class="sd">        (x, y, logit, score) for each keypoint.</span>
+
+<span class="sd">    When converting discrete pixel indices in an NxN image to a continuous keypoint coordinate,</span>
+<span class="sd">    we maintain consistency with :meth:`Keypoints.to_heatmap` by using the conversion from</span>
+<span class="sd">    Heckbert 1990: c = d + 0.5, where d is a discrete coordinate and c is a continuous coordinate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">offset_x</span> <span class="o">=</span> <span class="n">rois</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">offset_y</span> <span class="o">=</span> <span class="n">rois</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">widths</span> <span class="o">=</span> <span class="p">(</span><span class="n">rois</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">rois</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">heights</span> <span class="o">=</span> <span class="p">(</span><span class="n">rois</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">rois</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">widths_ceil</span> <span class="o">=</span> <span class="n">widths</span><span class="o">.</span><span class="n">ceil</span><span class="p">()</span>
+    <span class="n">heights_ceil</span> <span class="o">=</span> <span class="n">heights</span><span class="o">.</span><span class="n">ceil</span><span class="p">()</span>
+
+    <span class="n">num_rois</span><span class="p">,</span> <span class="n">num_keypoints</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">xy_preds</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">(</span><span class="n">rois</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_keypoints</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+    <span class="n">width_corrections</span> <span class="o">=</span> <span class="n">widths</span> <span class="o">/</span> <span class="n">widths_ceil</span>
+    <span class="n">height_corrections</span> <span class="o">=</span> <span class="n">heights</span> <span class="o">/</span> <span class="n">heights_ceil</span>
+
+    <span class="n">keypoints_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_keypoints</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">maps</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_rois</span><span class="p">):</span>
+        <span class="n">outsize</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">heights_ceil</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">widths_ceil</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="n">roi_map</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">maps</span><span class="p">[[</span><span class="n">i</span><span class="p">]],</span> <span class="n">size</span><span class="o">=</span><span class="n">outsize</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bicubic&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span>
+            <span class="mi">0</span>
+        <span class="p">)</span>  <span class="c1"># #keypoints x H x W</span>
+
+        <span class="c1"># softmax over the spatial region</span>
+        <span class="n">max_score</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">roi_map</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">num_keypoints</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">max_score</span> <span class="o">=</span> <span class="n">max_score</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">num_keypoints</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">tmp_full_resolution</span> <span class="o">=</span> <span class="p">(</span><span class="n">roi_map</span> <span class="o">-</span> <span class="n">max_score</span><span class="p">)</span><span class="o">.</span><span class="n">exp_</span><span class="p">()</span>
+        <span class="n">tmp_pool_resolution</span> <span class="o">=</span> <span class="p">(</span><span class="n">maps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">max_score</span><span class="p">)</span><span class="o">.</span><span class="n">exp_</span><span class="p">()</span>
+        <span class="c1"># Produce scores over the region H x W, but normalize with POOL_H x POOL_W,</span>
+        <span class="c1"># so that the scores of objects of different absolute sizes will be more comparable</span>
+        <span class="n">roi_map_scores</span> <span class="o">=</span> <span class="n">tmp_full_resolution</span> <span class="o">/</span> <span class="n">tmp_pool_resolution</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">w</span> <span class="o">=</span> <span class="n">roi_map</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">roi_map</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">num_keypoints</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">x_int</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">%</span> <span class="n">w</span>
+        <span class="n">y_int</span> <span class="o">=</span> <span class="p">(</span><span class="n">pos</span> <span class="o">-</span> <span class="n">x_int</span><span class="p">)</span> <span class="o">//</span> <span class="n">w</span>
+
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">roi_map_scores</span><span class="p">[</span><span class="n">keypoints_idx</span><span class="p">,</span> <span class="n">y_int</span><span class="p">,</span> <span class="n">x_int</span><span class="p">]</span>
+            <span class="o">==</span> <span class="n">roi_map_scores</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">num_keypoints</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_int</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">width_corrections</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_int</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">height_corrections</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="n">xy_preds</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">offset_x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">xy_preds</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">offset_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">xy_preds</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">roi_map</span><span class="p">[</span><span class="n">keypoints_idx</span><span class="p">,</span> <span class="n">y_int</span><span class="p">,</span> <span class="n">x_int</span><span class="p">]</span>
+        <span class="n">xy_preds</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">roi_map_scores</span><span class="p">[</span><span class="n">keypoints_idx</span><span class="p">,</span> <span class="n">y_int</span><span class="p">,</span> <span class="n">x_int</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">xy_preds</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

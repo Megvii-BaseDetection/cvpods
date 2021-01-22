@@ -1,0 +1,559 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.layers.nms &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.layers.nms</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.layers.nms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torchvision.ops</span> <span class="k">import</span> <span class="n">boxes</span> <span class="k">as</span> <span class="n">box_ops</span>
+<span class="kn">from</span> <span class="nn">torchvision.ops</span> <span class="k">import</span> <span class="n">nms</span>  <span class="c1"># BC-compat</span>
+
+<span class="kn">from</span> <span class="nn">cvpods</span> <span class="k">import</span> <span class="n">_C</span>
+<span class="kn">from</span> <span class="nn">cvpods.layers.rotated_boxes</span> <span class="k">import</span> <span class="n">pairwise_iou_rotated</span>
+<span class="kn">from</span> <span class="nn">cvpods.utils.apex_wrapper</span> <span class="k">import</span> <span class="n">float_function</span>
+
+<span class="n">ml_nms</span> <span class="o">=</span> <span class="n">_C</span><span class="o">.</span><span class="n">ml_nms</span>
+
+
+<div class="viewcode-block" id="batched_nms"><a class="viewcode-back" href="../../../modules/layers.html#cvpods.layers.batched_nms">[docs]</a><span class="nd">@float_function</span>
+<span class="k">def</span> <span class="nf">batched_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">idxs</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Same as torchvision.ops.boxes.batched_nms, but safer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span>
+    <span class="c1"># TODO may need better strategy.</span>
+    <span class="c1"># Investigate after having a fully-cuda NMS op.</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">40000</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">box_ops</span><span class="o">.</span><span class="n">batched_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">idxs</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">)</span>
+
+    <span class="n">result_mask</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">idxs</span> <span class="o">==</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">scores</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">iou_threshold</span><span class="p">)</span>
+        <span class="n">result_mask</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">keep</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">result_mask</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">keep</span><span class="p">[</span><span class="n">scores</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">keep</span></div>
+
+
+<div class="viewcode-block" id="batched_softnms"><a class="viewcode-back" href="../../../modules/layers.html#cvpods.layers.batched_softnms">[docs]</a><span class="k">def</span> <span class="nf">batched_softnms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">idxs</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">,</span>
+                    <span class="n">score_threshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">soft_mode</span><span class="o">=</span><span class="s2">&quot;gaussian&quot;</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">soft_mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;gaussian&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span>
+
+    <span class="c1"># change scores inplace</span>
+    <span class="c1"># no need to return changed scores</span>
+    <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">idxs</span> <span class="o">==</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">scores</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">softnms</span><span class="p">(</span><span class="n">boxes</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">scores</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">iou_threshold</span><span class="p">,</span>
+                               <span class="n">score_threshold</span><span class="p">,</span> <span class="n">soft_mode</span><span class="p">)</span>
+
+    <span class="n">keep</span> <span class="o">=</span> <span class="p">(</span><span class="n">scores</span> <span class="o">&gt;</span> <span class="n">score_threshold</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">keep</span><span class="p">[</span><span class="n">scores</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">keep</span></div>
+
+
+<div class="viewcode-block" id="batched_softnms_rotated"><a class="viewcode-back" href="../../../modules/layers.html#cvpods.layers.batched_softnms_rotated">[docs]</a><span class="k">def</span> <span class="nf">batched_softnms_rotated</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">idxs</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">,</span>
+                            <span class="n">score_threshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">soft_mode</span><span class="o">=</span><span class="s2">&quot;gaussian&quot;</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">soft_mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;gaussian&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">5</span>
+
+    <span class="c1"># change scores inplace</span>
+    <span class="c1"># no need to return changed scores</span>
+    <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">idxs</span> <span class="o">==</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">scores</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">softnms_rotated</span><span class="p">(</span><span class="n">boxes</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">scores</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">iou_threshold</span><span class="p">,</span>
+                                       <span class="n">score_threshold</span><span class="p">,</span> <span class="n">soft_mode</span><span class="p">)</span>
+
+    <span class="n">keep</span> <span class="o">=</span> <span class="p">(</span><span class="n">scores</span> <span class="o">&gt;</span> <span class="n">score_threshold</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">keep</span><span class="p">[</span><span class="n">scores</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">keep</span></div>
+
+
+<div class="viewcode-block" id="generalized_batched_nms"><a class="viewcode-back" href="../../../modules/layers.html#cvpods.layers.generalized_batched_nms">[docs]</a><span class="k">def</span> <span class="nf">generalized_batched_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">idxs</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">,</span>
+                            <span class="n">score_threshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">nms_type</span><span class="o">=</span><span class="s2">&quot;normal&quot;</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span>
+
+    <span class="k">if</span> <span class="n">nms_type</span> <span class="o">==</span> <span class="s2">&quot;normal&quot;</span><span class="p">:</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">batched_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">idxs</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">nms_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;softnms&quot;</span><span class="p">):</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">batched_softnms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">idxs</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">,</span>
+                               <span class="n">score_threshold</span><span class="o">=</span><span class="n">score_threshold</span><span class="p">,</span>
+                               <span class="n">soft_mode</span><span class="o">=</span><span class="n">nms_type</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;softnms-&quot;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">nms_type</span> <span class="o">==</span> <span class="s2">&quot;cluster&quot;</span><span class="p">:</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">batched_clusternms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">idxs</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;NMS type not implemented: </span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nms_type</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">keep</span></div>
+
+
+<span class="k">def</span> <span class="nf">iou</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">top_box</span><span class="p">):</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="n">top_box</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="n">top_box</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="n">top_box</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="n">top_box</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="n">inters</span> <span class="o">=</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">areas</span> <span class="o">=</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">unions</span> <span class="o">=</span> <span class="p">(</span><span class="n">top_box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">top_box</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">top_box</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">top_box</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">areas</span> <span class="o">-</span> <span class="n">inters</span>
+
+    <span class="k">return</span> <span class="n">inters</span> <span class="o">/</span> <span class="n">unions</span>
+
+
+<span class="k">def</span> <span class="nf">scale_by_iou</span><span class="p">(</span><span class="n">ious</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">soft_mode</span><span class="o">=</span><span class="s2">&quot;gaussian&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">soft_mode</span> <span class="o">==</span> <span class="s2">&quot;linear&quot;</span><span class="p">:</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">ious</span><span class="o">.</span><span class="n">new_ones</span><span class="p">(</span><span class="n">ious</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
+        <span class="n">scale</span><span class="p">[</span><span class="n">ious</span> <span class="o">&gt;=</span> <span class="n">sigma</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">ious</span><span class="p">[</span><span class="n">ious</span> <span class="o">&gt;=</span> <span class="n">sigma</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">ious</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">scale</span>
+
+
+<div class="viewcode-block" id="softnms"><a class="viewcode-back" href="../../../modules/layers.html#cvpods.layers.softnms">[docs]</a><span class="k">def</span> <span class="nf">softnms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">score_threshold</span><span class="p">,</span> <span class="n">soft_mode</span><span class="o">=</span><span class="s2">&quot;gaussian&quot;</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">soft_mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;gaussian&quot;</span><span class="p">]</span>
+
+    <span class="n">undone_mask</span> <span class="o">=</span> <span class="n">scores</span> <span class="o">&gt;=</span> <span class="n">score_threshold</span>
+    <span class="k">while</span> <span class="n">undone_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">undone_mask</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">undone_mask</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">top_box</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">undone_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">_boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">undone_mask</span><span class="p">]</span>
+
+        <span class="n">ious</span> <span class="o">=</span> <span class="n">iou</span><span class="p">(</span><span class="n">_boxes</span><span class="p">,</span> <span class="n">top_box</span><span class="p">)</span>
+        <span class="n">scales</span> <span class="o">=</span> <span class="n">scale_by_iou</span><span class="p">(</span><span class="n">ious</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">soft_mode</span><span class="p">)</span>
+
+        <span class="n">scores</span><span class="p">[</span><span class="n">undone_mask</span><span class="p">]</span> <span class="o">*=</span> <span class="n">scales</span>
+        <span class="n">undone_mask</span><span class="p">[</span><span class="n">scores</span> <span class="o">&lt;</span> <span class="n">score_threshold</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">scores</span></div>
+
+
+<div class="viewcode-block" id="softnms_rotated"><a class="viewcode-back" href="../../../modules/layers.html#cvpods.layers.softnms_rotated">[docs]</a><span class="k">def</span> <span class="nf">softnms_rotated</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">score_threshold</span><span class="p">,</span> <span class="n">soft_mode</span><span class="o">=</span><span class="s2">&quot;gaussian&quot;</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">soft_mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;gaussian&quot;</span><span class="p">]</span>
+
+    <span class="n">iou_matrix</span> <span class="o">=</span> <span class="n">pairwise_iou_rotated</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">boxes</span><span class="p">)</span>
+
+    <span class="n">undone_mask</span> <span class="o">=</span> <span class="n">scores</span> <span class="o">&gt;=</span> <span class="n">score_threshold</span>
+    <span class="k">while</span> <span class="n">undone_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">undone_mask</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">undone_mask</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">undone_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">ious</span> <span class="o">=</span> <span class="n">iou_matrix</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">undone_mask</span><span class="p">]</span>
+        <span class="n">scales</span> <span class="o">=</span> <span class="n">scale_by_iou</span><span class="p">(</span><span class="n">ious</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">soft_mode</span><span class="p">)</span>
+
+        <span class="n">scores</span><span class="p">[</span><span class="n">undone_mask</span><span class="p">]</span> <span class="o">*=</span> <span class="n">scales</span>
+        <span class="n">undone_mask</span><span class="p">[</span><span class="n">scores</span> <span class="o">&lt;</span> <span class="n">score_threshold</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">scores</span></div>
+
+
+<span class="k">def</span> <span class="nf">batched_clusternms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">idxs</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span>
+
+    <span class="n">result_mask</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">idxs</span> <span class="o">==</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">cluster_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">scores</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">iou_threshold</span><span class="p">)</span>
+        <span class="n">result_mask</span><span class="p">[</span><span class="n">mask</span><span class="p">[</span><span class="n">keep</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">result_mask</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">keep</span><span class="p">[</span><span class="n">scores</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">keep</span>
+
+
+<div class="viewcode-block" id="cluster_nms"><a class="viewcode-back" href="../../../modules/layers.html#cvpods.layers.cluster_nms">[docs]</a><span class="k">def</span> <span class="nf">cluster_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">):</span>
+    <span class="n">last_keep</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="o">*</span><span class="n">scores</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">boxes</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="n">scores</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="n">origin_iou_matrix</span> <span class="o">=</span> <span class="n">box_ops</span><span class="o">.</span><span class="n">box_iou</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">boxes</span><span class="p">)</span><span class="o">.</span><span class="n">tril</span><span class="p">(</span><span class="n">diagonal</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">iou_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">last_keep</span><span class="o">.</span><span class="n">float</span><span class="p">()),</span> <span class="n">origin_iou_matrix</span><span class="p">)</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="p">(</span><span class="n">iou_matrix</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">iou_threshold</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">keep</span> <span class="o">==</span> <span class="n">last_keep</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">idx</span><span class="p">[</span><span class="n">keep</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)]</span>
+
+        <span class="n">last_keep</span> <span class="o">=</span> <span class="n">keep</span></div>
+
+
+<span class="c1"># Note: this function (nms_rotated) might be moved into</span>
+<span class="c1"># torchvision/ops/boxes.py in the future</span>
+<div class="viewcode-block" id="nms_rotated"><a class="viewcode-back" href="../../../modules/layers.html#cvpods.layers.nms_rotated">[docs]</a><span class="k">def</span> <span class="nf">nms_rotated</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs non-maximum suppression (NMS) on the rotated boxes according</span>
+<span class="sd">    to their intersection-over-union (IoU).</span>
+
+<span class="sd">    Rotated NMS iteratively removes lower scoring rotated boxes which have an</span>
+<span class="sd">    IoU greater than iou_threshold with another (higher scoring) rotated box.</span>
+
+<span class="sd">    Note that RotatedBox (5, 3, 4, 2, -90) covers exactly the same region as</span>
+<span class="sd">    RotatedBox (5, 3, 4, 2, 90) does, and their IoU will be 1. However, they</span>
+<span class="sd">    can be representing completely different objects in certain tasks, e.g., OCR.</span>
+
+<span class="sd">    As for the question of whether rotated-NMS should treat them as faraway boxes</span>
+<span class="sd">    even though their IOU is 1, it depends on the application and/or ground truth annotation.</span>
+
+<span class="sd">    As an extreme example, consider a single character v and the square box around it.</span>
+
+<span class="sd">    If the angle is 0 degree, the object (text) would be read as &#39;v&#39;;</span>
+
+<span class="sd">    If the angle is 90 degrees, the object (text) would become &#39;&gt;&#39;;</span>
+
+<span class="sd">    If the angle is 180 degrees, the object (text) would become &#39;^&#39;;</span>
+
+<span class="sd">    If the angle is 270/-90 degrees, the object (text) would become &#39;&lt;&#39;</span>
+
+<span class="sd">    All of these cases have IoU of 1 to each other, and rotated NMS that only</span>
+<span class="sd">    uses IoU as criterion would only keep one of them with the highest score -</span>
+<span class="sd">    which, practically, still makes sense in most cases because typically</span>
+<span class="sd">    only one of theses orientations is the correct one. Also, it does not matter</span>
+<span class="sd">    as much if the box is only used to classify the object (instead of transcribing</span>
+<span class="sd">    them with a sequential OCR recognition model) later.</span>
+
+<span class="sd">    On the other hand, when we use IoU to filter proposals that are close to the</span>
+<span class="sd">    ground truth during training, we should definitely take the angle into account if</span>
+<span class="sd">    we know the ground truth is labeled with the strictly correct orientation (as in,</span>
+<span class="sd">    upside-down words are annotated with -180 degrees even though they can be covered</span>
+<span class="sd">    with a 0/90/-90 degree box, etc.)</span>
+
+<span class="sd">    The way the original dataset is annotated also matters. For example, if the dataset</span>
+<span class="sd">    is a 4-point polygon dataset that does not enforce ordering of vertices/orientation,</span>
+<span class="sd">    we can estimate a minimum rotated bounding box to this polygon, but there&#39;s no way</span>
+<span class="sd">    we can tell the correct angle with 100% confidence (as shown above, there could be 4 different</span>
+<span class="sd">    rotated boxes, with angles differed by 90 degrees to each other, covering the exactly</span>
+<span class="sd">    same region). In that case we have to just use IoU to determine the box</span>
+<span class="sd">    proximity (as many detection benchmarks (even for text) do) unless there&#39;re other</span>
+<span class="sd">    assumptions we can make (like width is always larger than height, or the object is not</span>
+<span class="sd">    rotated by more than 90 degrees CCW/CW, etc.)</span>
+
+<span class="sd">    In summary, not considering angles in rotated NMS seems to be a good option for now,</span>
+<span class="sd">    but we should be aware of its implications.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        boxes (Tensor[N, 5]): Rotated boxes to perform NMS on. They are expected to be in</span>
+<span class="sd">           (x_center, y_center, width, height, angle_degrees) format.</span>
+<span class="sd">        scores (Tensor[N]): Scores for each one of the rotated boxes</span>
+<span class="sd">        iou_threshold (float): Discards all overlapping rotated boxes with IoU &lt; iou_threshold</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        keep (Tensor): int64 tensor with the indices of the elements that have been kept</span>
+<span class="sd">        by Rotated NMS, sorted in decreasing order of scores</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">cvpods</span> <span class="k">import</span> <span class="n">_C</span>
+
+    <span class="k">return</span> <span class="n">_C</span><span class="o">.</span><span class="n">nms_rotated</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">)</span></div>
+
+
+<span class="c1"># Note: this function (batched_nms_rotated) might be moved into</span>
+<span class="c1"># torchvision/ops/boxes.py in the future</span>
+<div class="viewcode-block" id="batched_nms_rotated"><a class="viewcode-back" href="../../../modules/layers.html#cvpods.layers.batched_nms_rotated">[docs]</a><span class="k">def</span> <span class="nf">batched_nms_rotated</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">idxs</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs non-maximum suppression in a batched fashion.</span>
+
+<span class="sd">    Each index value correspond to a category, and NMS</span>
+<span class="sd">    will not be applied between elements of different categories.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        boxes (Tensor[N, 5]):</span>
+<span class="sd">           boxes where NMS will be performed. They</span>
+<span class="sd">           are expected to be in (x_ctr, y_ctr, width, height, angle_degrees) format</span>
+<span class="sd">        scores (Tensor[N]):</span>
+<span class="sd">           scores for each one of the boxes</span>
+<span class="sd">        idxs (Tensor[N]):</span>
+<span class="sd">           indices of the categories for each one of the boxes.</span>
+<span class="sd">        iou_threshold (float):</span>
+<span class="sd">           discards all overlapping boxes</span>
+<span class="sd">           with IoU &lt; iou_threshold</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tensor:</span>
+<span class="sd">            int64 tensor with the indices of the elements that have been kept</span>
+<span class="sd">            by NMS, sorted in decreasing order of scores</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">5</span>
+
+    <span class="k">if</span> <span class="n">boxes</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">boxes</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="c1"># Strategy: in order to perform NMS independently per class,</span>
+    <span class="c1"># we add an offset to all the boxes. The offset is dependent</span>
+    <span class="c1"># only on the class idx, and is large enough so that boxes</span>
+    <span class="c1"># from different classes do not overlap</span>
+
+    <span class="c1"># Note that batched_nms in torchvision/ops/boxes.py only uses max_coordinate,</span>
+    <span class="c1"># which won&#39;t handle negative coordinates correctly.</span>
+    <span class="c1"># Here by using min_coordinate we can make sure the negative coordinates are</span>
+    <span class="c1"># correctly handled.</span>
+    <span class="n">max_coordinate</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">min_coordinate</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="n">idxs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_coordinate</span> <span class="o">-</span> <span class="n">min_coordinate</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">boxes_for_nms</span> <span class="o">=</span> <span class="n">boxes</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>  <span class="c1"># avoid modifying the original values in boxes</span>
+    <span class="n">boxes_for_nms</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">offsets</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">nms_rotated</span><span class="p">(</span><span class="n">boxes_for_nms</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">keep</span></div>
+
+
+<div class="viewcode-block" id="matrix_nms"><a class="viewcode-back" href="../../../modules/layers.html#cvpods.layers.matrix_nms">[docs]</a><span class="k">def</span> <span class="nf">matrix_nms</span><span class="p">(</span><span class="n">seg_masks</span><span class="p">,</span> <span class="n">cate_labels</span><span class="p">,</span> <span class="n">cate_scores</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;gaussian&quot;</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">sum_masks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Matrix NMS for multi-class masks.</span>
+<span class="sd">    See: https://arxiv.org/pdf/2003.10152.pdf for more details.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        seg_masks (Tensor): shape: [N, H, W], binary masks.</span>
+<span class="sd">        cate_labels (Tensor): shepe: [N], mask labels in descending order.</span>
+<span class="sd">        cate_scores (Tensor): shape [N], mask scores in descending order.</span>
+<span class="sd">        kernel (str):  &#39;linear&#39; or &#39;gaussian&#39;.</span>
+<span class="sd">        sigma (float): std in gaussian method.</span>
+<span class="sd">        sum_masks (Tensor): The sum of seg_masks.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tensor: cate_scores_update, tensors of shape [N].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cate_labels</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_samples</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">sum_masks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sum_masks</span> <span class="o">=</span> <span class="n">seg_masks</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+    <span class="n">seg_masks</span> <span class="o">=</span> <span class="n">seg_masks</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+    <span class="c1"># inter.</span>
+    <span class="n">inter_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">seg_masks</span><span class="p">,</span> <span class="n">seg_masks</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="c1"># union.</span>
+    <span class="n">sum_masks_x</span> <span class="o">=</span> <span class="n">sum_masks</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
+    <span class="c1"># iou.</span>
+    <span class="n">iou_matrix</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">inter_matrix</span> <span class="o">/</span> <span class="p">(</span><span class="n">sum_masks_x</span> <span class="o">+</span> <span class="n">sum_masks_x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">inter_matrix</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">diagonal</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># label_specific matrix.</span>
+    <span class="n">cate_labels_x</span> <span class="o">=</span> <span class="n">cate_labels</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
+    <span class="n">label_matrix</span> <span class="o">=</span> <span class="p">(</span><span class="n">cate_labels_x</span> <span class="o">==</span> <span class="n">cate_labels_x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">diagonal</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># IoU compensation</span>
+    <span class="n">compensate_iou</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="p">(</span><span class="n">iou_matrix</span> <span class="o">*</span> <span class="n">label_matrix</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">compensate_iou</span> <span class="o">=</span> <span class="n">compensate_iou</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># IoU decay</span>
+    <span class="n">decay_iou</span> <span class="o">=</span> <span class="n">iou_matrix</span> <span class="o">*</span> <span class="n">label_matrix</span>
+
+    <span class="c1"># matrix nms</span>
+    <span class="k">if</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;gaussian&quot;</span><span class="p">:</span>
+        <span class="n">decay_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">*</span> <span class="p">(</span><span class="n">decay_iou</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">compensate_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">*</span> <span class="p">(</span><span class="n">compensate_iou</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">decay_coefficient</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="p">(</span><span class="n">decay_matrix</span> <span class="o">/</span> <span class="n">compensate_matrix</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;linear&quot;</span><span class="p">:</span>
+        <span class="n">decay_matrix</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">decay_iou</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">compensate_iou</span><span class="p">)</span>
+        <span class="n">decay_coefficient</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">decay_matrix</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="c1"># update the score.</span>
+    <span class="n">cate_scores_update</span> <span class="o">=</span> <span class="n">cate_scores</span> <span class="o">*</span> <span class="n">decay_coefficient</span>
+    <span class="k">return</span> <span class="n">cate_scores_update</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

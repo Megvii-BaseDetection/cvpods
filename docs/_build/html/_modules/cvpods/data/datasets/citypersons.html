@@ -1,0 +1,545 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>cvpods.data.datasets.citypersons &mdash; cvpods 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> cvpods
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notes/index.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules/index.html">API Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">cvpods</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cvpods.data.datasets.citypersons</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cvpods.data.datasets.citypersons</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved</span>
+
+<span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">osp</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">cvpods.structures</span> <span class="k">import</span> <span class="n">BoxMode</span>
+<span class="kn">from</span> <span class="nn">cvpods.utils</span> <span class="k">import</span> <span class="n">PathManager</span><span class="p">,</span> <span class="n">Timer</span>
+
+<span class="kn">from</span> <span class="nn">..base_dataset</span> <span class="k">import</span> <span class="n">BaseDataset</span>
+<span class="kn">from</span> <span class="nn">..detection_utils</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">annotations_to_instances</span><span class="p">,</span>
+    <span class="n">check_image_size</span><span class="p">,</span>
+    <span class="n">create_keypoint_hflip_indices</span><span class="p">,</span>
+    <span class="n">filter_empty_instances</span><span class="p">,</span>
+    <span class="n">read_image</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..registry</span> <span class="k">import</span> <span class="n">DATASETS</span>
+<span class="kn">from</span> <span class="nn">.paths_route</span> <span class="k">import</span> <span class="n">_PREDEFINED_SPLITS_CITYPERSONS</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This file contains functions to parse COCO-format annotations into dicts in &quot;cvpods format&quot;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CityPersonsDataset"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.datasets.CityPersonsDataset">[docs]</a><span class="nd">@DATASETS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">CityPersonsDataset</span><span class="p">(</span><span class="n">BaseDataset</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">transforms</span><span class="o">=</span><span class="p">[],</span> <span class="n">is_train</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CityPersonsDataset</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">is_train</span><span class="p">)</span>
+
+        <span class="n">image_root</span><span class="p">,</span> <span class="n">json_file</span> <span class="o">=</span> <span class="n">_PREDEFINED_SPLITS_CITYPERSONS</span><span class="p">[</span><span class="s2">&quot;citypersons&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">json_file</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="n">json_file</span><span class="p">)</span> \
+            <span class="k">if</span> <span class="s2">&quot;://&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">image_root</span> <span class="k">else</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">image_root</span><span class="p">,</span> <span class="n">json_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_root</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="n">image_root</span><span class="p">)</span> \
+            <span class="k">if</span> <span class="s2">&quot;://&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">image_root</span> <span class="k">else</span> <span class="n">image_root</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_metadata</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_dicts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_annotations</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">json_file</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">image_root</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">extra_annotation_keys</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># fmt: off</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_format</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">INPUT</span><span class="o">.</span><span class="n">FORMAT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_on</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">MASK_ON</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_format</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">INPUT</span><span class="o">.</span><span class="n">MASK_FORMAT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_empty</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">DATALOADER</span><span class="o">.</span><span class="n">FILTER_EMPTY_ANNOTATIONS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keypoint_on</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">KEYPOINT_ON</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_proposals</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">LOAD_PROPOSALS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proposal_files</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">DATASETS</span><span class="o">.</span><span class="n">PROPOSAL_FILES_TRAIN</span>
+        <span class="c1"># fmt: on</span>
+
+        <span class="k">if</span> <span class="n">is_train</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataset_dicts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_annotations</span><span class="p">(</span>
+                <span class="n">filter_empty</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_empty</span><span class="p">,</span>
+                <span class="n">min_keypoints</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">MODEL</span><span class="o">.</span><span class="n">ROI_KEYPOINT_HEAD</span><span class="o">.</span><span class="n">MIN_KEYPOINTS_PER_IMAGE</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">keypoint_on</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="n">proposal_files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">proposal_files</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_proposals</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_group_flag</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">eval_with_gt</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">TEST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;WITH_GT&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">keypoint_on</span><span class="p">:</span>
+            <span class="c1"># Flip only makes sense in training</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keypoint_hflip_indices</span> <span class="o">=</span> <span class="n">create_keypoint_hflip_indices</span><span class="p">(</span>
+                <span class="n">cfg</span><span class="o">.</span><span class="n">DATASETS</span><span class="o">.</span><span class="n">TRAIN</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keypoint_hflip_indices</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="CityPersonsDataset.__getitem__"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.datasets.CityPersonsDataset.__getitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load data, apply transforms, converto to Instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dataset_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset_dicts</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+
+        <span class="c1"># read image</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">read_image</span><span class="p">(</span><span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;file_name&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_format</span><span class="p">)</span>
+        <span class="n">check_image_size</span><span class="p">(</span><span class="n">dataset_dict</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;annotations&quot;</span> <span class="ow">in</span> <span class="n">dataset_dict</span><span class="p">:</span>
+            <span class="n">annotations</span> <span class="o">=</span> <span class="n">dataset_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;annotations&quot;</span><span class="p">)</span>
+            <span class="n">annotations</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">ann</span> <span class="k">for</span> <span class="n">ann</span> <span class="ow">in</span> <span class="n">annotations</span> <span class="k">if</span> <span class="n">ann</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iscrowd&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">annotations</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># apply transfrom</span>
+        <span class="n">image</span><span class="p">,</span> <span class="n">annotations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_transforms</span><span class="p">(</span>
+            <span class="n">image</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">annotations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_shape</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># h, w</span>
+
+            <span class="n">instances</span> <span class="o">=</span> <span class="n">annotations_to_instances</span><span class="p">(</span>
+                <span class="n">annotations</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">,</span> <span class="n">mask_format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_format</span>
+            <span class="p">)</span>
+
+            <span class="c1"># # Create a tight bounding box from masks, useful when image is cropped</span>
+            <span class="c1"># if self.crop_gen and instances.has(&quot;gt_masks&quot;):</span>
+            <span class="c1">#     instances.gt_boxes = instances.gt_masks.get_bounding_boxes()</span>
+
+            <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;instances&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter_empty_instances</span><span class="p">(</span><span class="n">instances</span><span class="p">)</span>
+
+        <span class="c1"># convert to Instance type</span>
+        <span class="c1"># Pytorch&#39;s dataloader is efficient on torch.Tensor due to shared-memory,</span>
+        <span class="c1"># but not efficient on large generic data structures due to the use of pickle &amp; mp.Queue.</span>
+        <span class="c1"># Therefore it&#39;s important to use torch.Tensor.</span>
+        <span class="c1"># h, w, c -&gt; c, h, w</span>
+        <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+
+        <span class="k">return</span> <span class="n">dataset_dict</span></div>
+
+    <span class="k">def</span> <span class="nf">__reset__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset_dicts</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_annotations</span><span class="p">(</span>  <span class="c1"># noqa</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">json_file</span><span class="p">,</span>
+        <span class="n">image_root</span><span class="p">,</span>
+        <span class="n">dataset_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">extra_annotation_keys</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load a json file with COCO&#39;s instances annotation format.</span>
+<span class="sd">        Currently supports instance detection, instance segmentation,</span>
+<span class="sd">        and person keypoints annotations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            json_file (str): full path to the json file in COCO instances annotation format.</span>
+<span class="sd">            image_root (str): the directory where the images in this json file exists.</span>
+<span class="sd">            dataset_name (str): the name of the dataset (e.g., coco_2017_train).</span>
+<span class="sd">                If provided, this function will also put &quot;thing_classes&quot; into</span>
+<span class="sd">                the metadata associated with this dataset.</span>
+<span class="sd">            extra_annotation_keys (list[str]): list of per-annotation keys that should also be</span>
+<span class="sd">                loaded into the dataset dict (besides &quot;iscrowd&quot;, &quot;bbox&quot;, &quot;keypoints&quot;,</span>
+<span class="sd">                &quot;category_id&quot;, &quot;segmentation&quot;). The values for these keys will be returned as-is.</span>
+<span class="sd">                For example, the densepose annotations are loaded in this way.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[dict]: a list of dicts in cvpods standard format. (See</span>
+<span class="sd">            `Using Custom Datasets &lt;/tutorials/datasets.html&gt;`_ )</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            1. This function does not read the image files.</span>
+<span class="sd">            The results do not have the &quot;image&quot; field.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">pycocotools.coco</span> <span class="k">import</span> <span class="n">COCO</span>
+
+        <span class="n">timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
+        <span class="n">json_file</span> <span class="o">=</span> <span class="n">PathManager</span><span class="o">.</span><span class="n">get_local_path</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()):</span>
+            <span class="n">coco_api</span> <span class="o">=</span> <span class="n">COCO</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">seconds</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading </span><span class="si">{}</span><span class="s2"> takes </span><span class="si">{:.2f}</span><span class="s2"> seconds.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">json_file</span><span class="p">,</span> <span class="n">timer</span><span class="o">.</span><span class="n">seconds</span><span class="p">()))</span>
+
+        <span class="n">id_map</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">dataset_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span>
+            <span class="n">cat_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">coco_api</span><span class="o">.</span><span class="n">getCatIds</span><span class="p">())</span>
+            <span class="n">cats</span> <span class="o">=</span> <span class="n">coco_api</span><span class="o">.</span><span class="n">loadCats</span><span class="p">(</span><span class="n">cat_ids</span><span class="p">)</span>
+            <span class="c1"># The categories in a custom json file may not be sorted.</span>
+            <span class="n">thing_classes</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">c</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cats</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+            <span class="p">]</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;thing_classes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">thing_classes</span>
+
+            <span class="c1"># In COCO, certain category ids are artificially removed,</span>
+            <span class="c1"># and by convention they are always ignored.</span>
+            <span class="c1"># We deal with COCO&#39;s id issue and translate</span>
+            <span class="c1"># the category ids to contiguous ids in [0, 80).</span>
+
+            <span class="c1"># It works by looking at the &quot;categories&quot; field in the json, therefore</span>
+            <span class="c1"># if users&#39; own json also have incontiguous ids, we&#39;ll</span>
+            <span class="c1"># apply this mapping as well but print a warning.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">cat_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">max</span><span class="p">(</span><span class="n">cat_ids</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">cat_ids</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="s2">&quot;coco&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset_name</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Category ids in annotations are not in [1, #categories]! We&#39;ll apply a mapping for you.</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="n">id_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cat_ids</span><span class="p">)}</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;thing_dataset_id_to_contiguous_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">id_map</span>
+
+        <span class="c1"># sort indices for reproducible results</span>
+        <span class="n">img_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">coco_api</span><span class="o">.</span><span class="n">imgs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="c1"># imgs is a list of dicts, each looks something like:</span>
+        <span class="c1"># {&#39;license&#39;: 4,</span>
+        <span class="c1">#  &#39;url&#39;: &#39;http://farm6.staticflickr.com/5454/9413846304_881d5e5c3b_z.jpg&#39;,</span>
+        <span class="c1">#  &#39;file_name&#39;: &#39;COCO_val2014_000000001268.jpg&#39;,</span>
+        <span class="c1">#  &#39;height&#39;: 427,</span>
+        <span class="c1">#  &#39;width&#39;: 640,</span>
+        <span class="c1">#  &#39;date_captured&#39;: &#39;2013-11-17 05:57:24&#39;,</span>
+        <span class="c1">#  &#39;id&#39;: 1268}</span>
+        <span class="n">imgs</span> <span class="o">=</span> <span class="n">coco_api</span><span class="o">.</span><span class="n">loadImgs</span><span class="p">(</span><span class="n">img_ids</span><span class="p">)</span>
+        <span class="c1"># anns is a list[list[dict]], where each dict is an annotation</span>
+        <span class="c1"># record for an object. The inner list enumerates the objects in an image</span>
+        <span class="c1"># and the outer list enumerates over images. Example of anns[0]:</span>
+        <span class="c1"># [{&#39;segmentation&#39;: [[192.81,</span>
+        <span class="c1">#     247.09,</span>
+        <span class="c1">#     ...</span>
+        <span class="c1">#     219.03,</span>
+        <span class="c1">#     249.06]],</span>
+        <span class="c1">#   &#39;area&#39;: 1035.749,</span>
+        <span class="c1">#   &#39;iscrowd&#39;: 0,</span>
+        <span class="c1">#   &#39;image_id&#39;: 1268,</span>
+        <span class="c1">#   &#39;bbox&#39;: [192.81, 224.8, 74.73, 33.43],</span>
+        <span class="c1">#   &#39;category_id&#39;: 16,</span>
+        <span class="c1">#   &#39;id&#39;: 42986},</span>
+        <span class="c1">#  ...]</span>
+        <span class="n">anns</span> <span class="o">=</span> <span class="p">[</span><span class="n">coco_api</span><span class="o">.</span><span class="n">imgToAnns</span><span class="p">[</span><span class="n">img_id</span><span class="p">]</span> <span class="k">for</span> <span class="n">img_id</span> <span class="ow">in</span> <span class="n">img_ids</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;minival&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">json_file</span><span class="p">:</span>
+            <span class="c1"># The popular valminusminival &amp; minival annotations for COCO2014 contain this bug.</span>
+            <span class="c1"># However the ratio of buggy annotations there is tiny and does not affect accuracy.</span>
+            <span class="c1"># Therefore we explicitly white-list them.</span>
+            <span class="n">ann_ids</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">ann</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">anns_per_image</span> <span class="ow">in</span> <span class="n">anns</span> <span class="k">for</span> <span class="n">ann</span> <span class="ow">in</span> <span class="n">anns_per_image</span>
+            <span class="p">]</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ann_ids</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="n">ann_ids</span><span class="p">),</span> <span class="s2">&quot;Annotation ids in &#39;</span><span class="si">{}</span><span class="s2">&#39; are not unique!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">json_file</span><span class="p">)</span>
+
+        <span class="n">imgs_anns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="n">anns</span><span class="p">))</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loaded </span><span class="si">{}</span><span class="s2"> images in COCO format from </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">imgs_anns</span><span class="p">),</span> <span class="n">json_file</span><span class="p">))</span>
+
+        <span class="n">dataset_dicts</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">ann_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;iscrowd&quot;</span><span class="p">,</span> <span class="s2">&quot;bbox&quot;</span><span class="p">,</span> <span class="s2">&quot;keypoints&quot;</span><span class="p">,</span> <span class="s2">&quot;category_id&quot;</span>
+                    <span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">extra_annotation_keys</span> <span class="ow">or</span> <span class="p">[])</span>
+
+        <span class="n">num_instances_without_valid_segmentation</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">num_instances_without_valid_bbox</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">img_dict</span><span class="p">,</span> <span class="n">anno_dict_list</span><span class="p">)</span> <span class="ow">in</span> <span class="n">imgs_anns</span><span class="p">:</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">record</span><span class="p">[</span><span class="s2">&quot;file_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">image_root</span><span class="p">,</span>
+                                               <span class="n">img_dict</span><span class="p">[</span><span class="s2">&quot;file_name&quot;</span><span class="p">])</span>
+            <span class="n">record</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_dict</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span>
+            <span class="n">record</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_dict</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span>
+            <span class="n">image_id</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;image_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_dict</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+
+            <span class="n">objs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">anno</span> <span class="ow">in</span> <span class="n">anno_dict_list</span><span class="p">:</span>
+                <span class="c1"># Check that the image_id in this annotation is the same as</span>
+                <span class="c1"># the image_id we&#39;re looking at.</span>
+                <span class="c1"># This fails only when the data parsing logic or the annotation file is buggy.</span>
+
+                <span class="c1"># The original COCO valminusminival2014 &amp; minival2014 annotation files</span>
+                <span class="c1"># actually contains bugs that, together with certain ways of using COCO API,</span>
+                <span class="c1"># can trigger this assertion.</span>
+                <span class="k">assert</span> <span class="n">anno</span><span class="p">[</span><span class="s2">&quot;image_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">image_id</span>
+
+                <span class="c1"># Some annotations have negative coordinates</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">anno</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">num_instances_without_valid_bbox</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">anno</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">obj</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">anno</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ann_keys</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">anno</span><span class="p">}</span>
+
+                <span class="n">segm</span> <span class="o">=</span> <span class="n">anno</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;segmentation&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">segm</span><span class="p">:</span>    <span class="c1"># either list[list[float]] or dict(RLE)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">segm</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="c1"># filter out invalid polygons (&lt; 3 points)</span>
+                        <span class="n">segm</span> <span class="o">=</span> <span class="p">[</span>
+                            <span class="n">poly</span> <span class="k">for</span> <span class="n">poly</span> <span class="ow">in</span> <span class="n">segm</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">6</span>
+                        <span class="p">]</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">segm</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">num_instances_without_valid_segmentation</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="k">continue</span>    <span class="c1"># ignore this instance</span>
+                    <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;segmentation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">segm</span>
+
+                <span class="n">keypts</span> <span class="o">=</span> <span class="n">anno</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;keypoints&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">keypts</span><span class="p">:</span>    <span class="c1"># list[int]</span>
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keypts</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">idx</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                            <span class="c1"># COCO&#39;s segmentation coordinates are floating points in [0, H or W],</span>
+                            <span class="c1"># but keypoint coordinates are integers in [0, H-1 or W-1]</span>
+                            <span class="c1"># Therefore we assume the coordinates are &quot;pixel indices&quot; and</span>
+                            <span class="c1"># add 0.5 to convert to floating point coordinates.</span>
+                            <span class="n">keypts</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span> <span class="o">+</span> <span class="mf">0.5</span>
+                    <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;keypoints&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">keypts</span>
+
+                <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;bbox_mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">BoxMode</span><span class="o">.</span><span class="n">XYWH_ABS</span>
+                <span class="k">if</span> <span class="n">id_map</span><span class="p">:</span>
+                    <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;category_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">id_map</span><span class="p">[</span><span class="n">obj</span><span class="p">[</span><span class="s2">&quot;category_id&quot;</span><span class="p">]]</span>
+                <span class="n">objs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="n">record</span><span class="p">[</span><span class="s2">&quot;annotations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">objs</span>
+            <span class="n">dataset_dicts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">num_instances_without_valid_bbox</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Filtered out </span><span class="si">{}</span><span class="s2"> instances without valid bbox. &quot;</span>
+                <span class="s2">&quot;There might be issues in your dataset generation process.&quot;</span><span class="o">.</span>
+                <span class="nb">format</span><span class="p">(</span><span class="n">num_instances_without_valid_bbox</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">num_instances_without_valid_segmentation</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Filtered out </span><span class="si">{}</span><span class="s2"> instances without valid segmentation. &quot;</span>
+                <span class="s2">&quot;There might be issues in your dataset generation process.&quot;</span><span class="o">.</span>
+                <span class="nb">format</span><span class="p">(</span><span class="n">num_instances_without_valid_segmentation</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">dataset_dicts</span>
+
+    <span class="k">def</span> <span class="nf">_get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;thing_classes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;person&quot;</span><span class="p">]}</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;evaluator_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_PREDEFINED_SPLITS_CITYPERSONS</span><span class="p">[</span><span class="s2">&quot;evaluator_type&quot;</span><span class="p">][</span><span class="s2">&quot;citypersons&quot;</span><span class="p">]</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;image_root&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_root</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;json_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">json_file</span>
+        <span class="k">return</span> <span class="n">meta</span>
+
+<div class="viewcode-block" id="CityPersonsDataset.evaluate"><a class="viewcode-back" href="../../../../modules/data.html#cvpods.data.datasets.CityPersonsDataset.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">predictions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Dataset must provide a evaluation function to evaluate model.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ground_truth_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_dicts</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, cvpods contributors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
