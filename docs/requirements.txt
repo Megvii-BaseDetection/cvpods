@@ -27,6 +27,5 @@ appdirs
 shapely
 psutil
 hydra-core
-panopticapi
 lvis
 cityscapesscripts
