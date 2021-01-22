@@ -9,7 +9,8 @@ Welcome to CVPODS's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+    
+   modules/index
 
 
 Indices and tables
