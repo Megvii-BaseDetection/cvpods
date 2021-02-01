@@ -14,8 +14,8 @@ jobs:
       - name: Install requirements 
         run: |
           pip install flake8
-          pip install isort
-          pip install pylint
+          pip install isort==4.3.21
+          pip install pylint==2.5.3
           pip install pre-commit
           pre-commit install
       - name: Linting
