@@ -1,3 +1,5 @@
+# pylint: disable=W0613
+
 from .error import BestGTMatch, Error
 
 
