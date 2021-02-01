@@ -1,7 +1,7 @@
 <div align=center><img src=".github/cvpods_logo.png" width="400" ><div align=left>
 
 [![cvpods compliant](https://img.shields.io/badge/cvpods-master-brightgreen)](https://github.com/Megvii-BaseDetection/cvpods)
-![](https://github.com/Megvii-BaseDetection/cvpods/workflows/build/badge.svg)
+![](https://github.com/Megvii-BaseDetection/cvpods/workflows/.github/workflows/build.yml/badge.svg?branch=add_gha_pylint)
 
 Welcome to **cvpods**, a versatile and efficient codebase for many computer vision tasks: classification, segmentation, detection, self-supervised learning, keypoints and 3D(classification / segmentation / detection / representation learing), etc. The aim of cvpods is to achieve efficient experiments management and smooth tasks-switching.
 
