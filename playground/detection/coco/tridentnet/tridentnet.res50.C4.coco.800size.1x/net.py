@@ -12,8 +12,6 @@ from tridentnet_base.trident_rpn import TridentRPN
 sys.path.append("..")
 
 
-
-
 def build_backbone(cfg, input_shape=None):
     if input_shape is None:
         input_shape = ShapeSpec(channels=len(cfg.MODEL.PIXEL_MEAN))

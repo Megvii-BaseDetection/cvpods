@@ -10,8 +10,8 @@ repos:
       - id: check-yaml
         args: ["--unsafe"]
       - id: debug-statements
-      - id: end-of-file-fixer
-      - id: trailing-whitespace
+      # - id: end-of-file-fixer
+      # - id: trailing-whitespace
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.8.3
     hooks:
@@ -25,9 +25,9 @@ repos:
       entry: isort --check-only
       files: \.py$
       language: system
-    - id: lint
-      name: lint
-      entry: pylint --rcfile pylint.cfg
-      language: system
-      files: \.py$
+    # - id: lint
+      # name: lint
+      # entry: pylint --rcfile pylint.cfg
+      # language: system
+      # files: \.py$
 
