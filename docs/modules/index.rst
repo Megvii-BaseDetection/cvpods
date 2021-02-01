@@ -4,7 +4,7 @@ API Documentation
 .. toctree::
 
     checkpoint
-    config
+    configs
     data
     engine
     evaluation
