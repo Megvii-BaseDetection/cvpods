@@ -36,6 +36,14 @@ from cvpods.utils import (
 from . import hooks
 from .hooks import HookBase
 
+try:
+    from apex import amp
+except ImportError:
+    apex_url = "https://www.github.com/nvidia/apex"
+    raise ImportError(
+        "Please install apex from {} to run this example.".format(apex_url)
+    )
+
 
 __all__ = ["TrainerBase", "SimpleTrainer", "DefaultTrainer"]
 
@@ -369,13 +377,6 @@ class DefaultTrainer(SimpleTrainer):
         if comm.get_world_size() > 1:
             if cfg.TRAINER.FP16.ENABLED:
                 if cfg.TRAINER.FP16.TYPE == "APEX":
-                    try:
-                        from apex import amp
-                    except ImportError:
-                        apex_url = "https://www.github.com/nvidia/apex"
-                        raise ImportError(
-                            "Please install apex from {} to run this example.".format(apex_url)
-                        )
                     model, optimizer = amp.initialize(
                         model, optimizer, opt_level=cfg.TRAINER.FP16.OPTS.OPT_LEVEL
                     )
