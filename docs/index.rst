@@ -9,6 +9,4 @@ Welcome to cvpods's documentation!
 .. toctree::
    :maxdepth: 2
 
-   tutorials/index
-   notes/index
    modules/index

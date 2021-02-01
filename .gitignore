@@ -42,6 +42,7 @@ wheels/
 /datasets
 /models
 tools/pods_*
+**/_build
 #
 # soft link
 **/log
