@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# pylint: disable=W0613
 
 import functools
 from collections import OrderedDict, defaultdict, namedtuple

@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import copy
+import logging
+import os
+import pickle
+from typing import Any
+
 import numpy as np
 
 import torch
@@ -10,16 +16,8 @@ from torch.nn.parallel import DataParallel, DistributedDataParallel
 from cvpods.utils import PathManager
 from cvpods.utils.distributed import comm
 
-import copy
-import logging
-import os
-import pickle
-from typing import Any
-
 from .c2_model_loading import align_and_update_state_dicts
 from .utils import (
-    _group_checkpoint_keys,
-    _group_to_str,
     _strip_prefix_if_present,
     get_missing_parameters_message,
     get_unexpected_parameters_message

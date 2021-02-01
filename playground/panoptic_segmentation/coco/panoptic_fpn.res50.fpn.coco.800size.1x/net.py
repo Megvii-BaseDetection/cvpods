@@ -1,14 +1,13 @@
 import logging
 
 from cvpods.layers import ShapeSpec
-from cvpods.modeling.meta_arch import PanopticFPN
-from cvpods.modeling.meta_arch import SemSegFPNHead
 from cvpods.modeling.backbone import Backbone
 from cvpods.modeling.backbone.fpn import build_resnet_fpn_backbone
+from cvpods.modeling.meta_arch import PanopticFPN, SemSegFPNHead
 from cvpods.modeling.proposal_generator import RPN
+from cvpods.modeling.roi_heads import StandardROIHeads
 from cvpods.modeling.roi_heads.box_head import FastRCNNConvFCHead
 from cvpods.modeling.roi_heads.mask_head import MaskRCNNConvUpsampleHead
-from cvpods.modeling.roi_heads import StandardROIHeads
 
 
 def build_backbone(cfg, input_shape=None):

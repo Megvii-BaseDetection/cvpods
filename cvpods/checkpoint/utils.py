@@ -1,7 +1,6 @@
-from termcolor import colored
-
 import collections
 from collections import defaultdict
+from termcolor import colored
 
 
 def get_missing_parameters_message(keys: list):

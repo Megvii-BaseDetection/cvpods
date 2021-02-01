@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-import time
 import functools
 import json
 import multiprocessing as mp
-import numpy as np
 import os
+import time
+
+import numpy as np
 from PIL import Image
 
 from cvpods.data.datasets.builtin_meta import COCO_CATEGORIES

@@ -14,7 +14,6 @@ import torch
 from cvpods.utils import Timer
 
 from ..base_dataset import BaseDataset
-from ..detection_utils import annotations_to_instances, filter_empty_instances
 from ..registry import DATASETS
 from .paths_route import _PREDEFINED_SPLITS_IMAGENET
 

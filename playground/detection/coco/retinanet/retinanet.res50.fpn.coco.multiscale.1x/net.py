@@ -1,10 +1,10 @@
 import logging
 
 from cvpods.layers import ShapeSpec
-from cvpods.modeling.meta_arch import RetinaNet
+from cvpods.modeling.anchor_generator import DefaultAnchorGenerator
 from cvpods.modeling.backbone import Backbone
 from cvpods.modeling.backbone.fpn import build_retinanet_resnet_fpn_backbone
-from cvpods.modeling.anchor_generator import DefaultAnchorGenerator
+from cvpods.modeling.meta_arch import RetinaNet
 
 
 def build_backbone(cfg, input_shape=None):

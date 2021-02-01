@@ -4,10 +4,9 @@
 
 import glob
 import os
-import shutil
 from os import path
 from setuptools import find_packages, setup
-from typing import List
+
 import torch
 from torch.utils.cpp_extension import CUDA_HOME, CppExtension, CUDAExtension
 
@@ -150,7 +149,7 @@ if __name__ == "__main__":
                 "flake8-comprehensions",
             ],
         },
-            ext_modules=get_extensions(),
+        ext_modules=get_extensions(),
         cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
         scripts=[
             "tools/pods_train",

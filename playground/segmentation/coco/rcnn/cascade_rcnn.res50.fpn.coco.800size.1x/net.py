@@ -1,11 +1,11 @@
 from cvpods.layers.shape_spec import ShapeSpec
 from cvpods.modeling.backbone import Backbone
 from cvpods.modeling.backbone.fpn import build_resnet_fpn_backbone
+from cvpods.modeling.meta_arch.rcnn import GeneralizedRCNN
 from cvpods.modeling.proposal_generator import RPN
 from cvpods.modeling.roi_heads.box_head import FastRCNNConvFCHead
-from cvpods.modeling.roi_heads.mask_head import MaskRCNNConvUpsampleHead
 from cvpods.modeling.roi_heads.cascade_rcnn import CascadeROIHeads
-from cvpods.modeling.meta_arch.rcnn import GeneralizedRCNN
+from cvpods.modeling.roi_heads.mask_head import MaskRCNNConvUpsampleHead
 
 
 def build_backbone(cfg, input_shape=None):

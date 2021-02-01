@@ -2,7 +2,6 @@ import os.path as osp
 
 from cvpods.configs.rcnn_fpn_config import RCNNFPNConfig
 
-
 _config_dict = dict(
     MODEL=dict(
         WEIGHTS="detectron2://ImageNetPretrained/MSRA/R-50.pkl",
@@ -68,5 +67,6 @@ class KeypointConfig(RCNNFPNConfig):
     def __init__(self):
         super(KeypointConfig, self).__init__()
         self._register_configuration(_config_dict)
+
 
 config = KeypointConfig()

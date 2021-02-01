@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 
+import numpy as np
+
 import copy
 import pylab as plt
-
-import numpy as np
 
 
 def draw_box(ax, vertices, color='black'):

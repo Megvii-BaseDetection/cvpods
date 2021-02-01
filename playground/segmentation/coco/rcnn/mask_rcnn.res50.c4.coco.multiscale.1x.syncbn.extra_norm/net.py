@@ -1,11 +1,10 @@
-from cvpods.layers import get_norm
-from cvpods.layers import ShapeSpec
+from cvpods.layers import ShapeSpec, get_norm
 from cvpods.modeling.backbone import Backbone
 from cvpods.modeling.backbone.resnet import build_resnet_backbone
-from cvpods.modeling.proposal_generator import RPN
-from cvpods.modeling.roi_heads.mask_head import MaskRCNNConvUpsampleHead
-from cvpods.modeling.roi_heads import Res5ROIHeads
 from cvpods.modeling.meta_arch.rcnn import GeneralizedRCNN
+from cvpods.modeling.proposal_generator import RPN
+from cvpods.modeling.roi_heads import Res5ROIHeads
+from cvpods.modeling.roi_heads.mask_head import MaskRCNNConvUpsampleHead
 
 
 class Res5ROIHeadsExtraNorm(Res5ROIHeads):
