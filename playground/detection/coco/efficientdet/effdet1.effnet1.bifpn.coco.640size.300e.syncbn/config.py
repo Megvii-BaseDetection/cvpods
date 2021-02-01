@@ -4,8 +4,7 @@ from cvpods.configs.efficientdet_config import EfficientDetConfig
 
 _config_dict = dict(
     MODEL=dict(
-        WEIGHTS="cvpods/ImageNetPretrained/GOOGLE/" +
-                "EfficientNet/efficientnet-b1.pth",
+        WEIGHTS="cvpods/ImageNetPretrained/GOOGLE/EfficientNet/efficientnet-b1.pth",
         EFFICIENTNET=dict(
             MODEL_NAME="efficientnet-b1",
             NORM="SyncBN",

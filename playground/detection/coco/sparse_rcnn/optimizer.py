@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 import itertools
+
 import torch
 from torch import optim
 

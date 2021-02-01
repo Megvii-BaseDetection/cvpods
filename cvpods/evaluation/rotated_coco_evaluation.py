@@ -5,6 +5,7 @@ import json
 import os
 
 import numpy as np
+
 from pycocotools.cocoeval import COCOeval, maskUtils
 
 import torch

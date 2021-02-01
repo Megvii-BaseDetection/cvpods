@@ -636,8 +636,8 @@ def maybe_adjust_epoch_and_iter(cfg, dataloader):
     cfg.SOLVER.OPTIMIZER.BASE_LR *= subdivision
 
     if max_epoch:
-        epoch_iter = math.ceil(len(dataloader.dataset) /
-                               (cfg.SOLVER.IMS_PER_BATCH * subdivision))
+        epoch_iter = math.ceil(len(dataloader.dataset) / (
+            cfg.SOLVER.IMS_PER_BATCH * subdivision))
 
         if max_iter is not None:
             logger.warning(

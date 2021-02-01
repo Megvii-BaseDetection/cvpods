@@ -2,16 +2,17 @@
 import logging
 import math
 from typing import List
+
 import torch
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
 
 from cvpods.layers import ShapeSpec, batched_nms, cat
-from cvpods.structures import Boxes, ImageList, Instances, pairwise_iou
-from cvpods.utils import log_first_n
 from cvpods.modeling.box_regression import Box2BoxTransform
 from cvpods.modeling.losses import smooth_l1_loss
 from cvpods.modeling.postprocessing import detector_postprocess
+from cvpods.structures import Boxes, ImageList, Instances, pairwise_iou
+from cvpods.utils import log_first_n
 
 
 def permute_to_N_HWA_K(tensor, K):
@@ -210,8 +211,7 @@ class RetinaNet(nn.Module):
             num_foreground += len(gt_instances_per_image)
             positive_losses.append(
                 positive_bag_loss(
-                    matched_pred_class_probs_per_image *
-                    matched_pred_reg_probs_per_image,
+                    matched_pred_class_probs_per_image * matched_pred_reg_probs_per_image,
                     dim=1))
 
         # positive_loss: \sum_{i}{ -log( Mean-max(P_{ij}^{cls} * P_{ij}^{loc}) ) } / ||B||

@@ -5,6 +5,7 @@ import urllib.request
 import zipfile
 from collections import defaultdict
 from pathlib import Path
+
 from appdirs import user_data_dir
 
 from . import functions as f

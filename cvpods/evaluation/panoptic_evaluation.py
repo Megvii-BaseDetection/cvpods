@@ -7,6 +7,7 @@ import logging
 import os
 import tempfile
 from collections import OrderedDict
+
 from tabulate import tabulate
 
 from PIL import Image

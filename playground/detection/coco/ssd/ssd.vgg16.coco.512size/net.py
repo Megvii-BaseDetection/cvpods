@@ -1,10 +1,10 @@
 import logging
 
+from cvpods.layers import ShapeSpec
 from cvpods.modeling.backbone import Backbone
 from cvpods.modeling.backbone.vgg import build_ssd_vgg_backbone
 from cvpods.modeling.meta_arch import SSD
 from cvpods.modeling.meta_arch.ssd import DefaultBox
-from cvpods.layers import ShapeSpec
 
 
 def build_backbone(cfg, input_shape=None):

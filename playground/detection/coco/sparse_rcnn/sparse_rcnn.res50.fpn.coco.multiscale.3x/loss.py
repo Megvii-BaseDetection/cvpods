@@ -1,6 +1,7 @@
+from scipy.optimize import linear_sum_assignment
+
 import torch
 import torch.nn.functional as F
-from scipy.optimize import linear_sum_assignment
 from torch import nn
 
 from cvpods.modeling.losses import sigmoid_focal_loss_jit

@@ -1,11 +1,12 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import itertools
+
 import torch
 
 from cvpods.layers import batched_nms, cat
-from cvpods.structures import Boxes, Instances
 from cvpods.modeling.proposal_generator.rpn import RPN
 from cvpods.modeling.proposal_generator.rpn_outputs import RPNOutputs
+from cvpods.structures import Boxes, Instances
 
 
 """

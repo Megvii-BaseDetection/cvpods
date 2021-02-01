@@ -1,13 +1,17 @@
+import sys
+
 from cvpods.layers.shape_spec import ShapeSpec
 from cvpods.modeling.backbone import Backbone
-from cvpods.modeling.roi_heads.box_head import FastRCNNConvFCHead
 from cvpods.modeling.meta_arch.rcnn import GeneralizedRCNN
+from cvpods.modeling.roi_heads.box_head import FastRCNNConvFCHead
 
-import sys
-sys.path.append("..")
 from tridentnet_base.trident_backbone import build_trident_resnet_backbone
-from tridentnet_base.trident_rpn import TridentRPN
 from tridentnet_base.trident_rcnn import TridentRes5ROIHeads
+from tridentnet_base.trident_rpn import TridentRPN
+
+sys.path.append("..")
+
+
 
 
 def build_backbone(cfg, input_shape=None):

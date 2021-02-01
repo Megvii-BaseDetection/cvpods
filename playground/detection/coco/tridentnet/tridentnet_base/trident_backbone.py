@@ -1,11 +1,17 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import torch
 
-from cvpods.layers import Conv2d, FrozenBatchNorm2d, get_norm, get_activation
+import cvpods.modeling.nn_utils.weight_init as weight_init
+from cvpods.layers import Conv2d, FrozenBatchNorm2d, get_activation, get_norm
 from cvpods.modeling import ResNet, ResNetBlockBase, make_stage
 from cvpods.modeling.backbone.resnet import (
-    BasicStem, BottleneckBlock, DeformBottleneckBlock, BasicBlock, AVDBottleneckBlock)
-import cvpods.modeling.nn_utils.weight_init as weight_init
+    AVDBottleneckBlock,
+    BasicBlock,
+    BasicStem,
+    BottleneckBlock,
+    DeformBottleneckBlock
+)
+
 from .trident_conv import TridentConv
 
 __all__ = ["TridentBottleneckBlock", "make_trident_stage", "build_trident_resnet_backbone"]

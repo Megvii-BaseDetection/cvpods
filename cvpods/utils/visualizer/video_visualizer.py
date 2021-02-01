@@ -1,5 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import numpy as np
+
 import pycocotools.mask as mask_util
 
 from .colormap import random_color

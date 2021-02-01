@@ -2,6 +2,7 @@ import os
 from collections import OrderedDict, defaultdict
 
 import numpy as np
+
 from pycocotools import mask as mask_utils
 
 from . import functions as f

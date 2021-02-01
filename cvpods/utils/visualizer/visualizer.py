@@ -10,6 +10,7 @@ import matplotlib.colors as mplc
 import matplotlib.figure as mplfigure
 import numpy as np
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+
 import pycocotools.mask as mask_util
 
 import torch

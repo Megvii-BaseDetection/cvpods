@@ -1,6 +1,5 @@
-from cvpods.modeling.backbone import Backbone
 from cvpods.layers import ShapeSpec
-from cvpods.modeling.backbone import build_resnet_backbone
+from cvpods.modeling.backbone import Backbone, build_resnet_backbone
 from cvpods.modeling.meta_arch import CenterNet
 
 

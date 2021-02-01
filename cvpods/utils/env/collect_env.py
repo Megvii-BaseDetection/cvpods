@@ -5,6 +5,7 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
+
 from tabulate import tabulate
 
 import numpy as np

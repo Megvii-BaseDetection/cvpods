@@ -6,6 +6,7 @@ import collections
 import os
 import pprint
 import re
+
 import six
 from colorama import Back, Fore
 from easydict import EasyDict

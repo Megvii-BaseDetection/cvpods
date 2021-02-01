@@ -8,6 +8,7 @@ import shutil
 from collections import OrderedDict
 from typing import IO, Any, Dict, List, MutableMapping, Optional
 from urllib.parse import urlparse
+
 import portalocker
 
 from .download import download
