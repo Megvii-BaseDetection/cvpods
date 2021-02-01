@@ -348,7 +348,7 @@ def build_dynamic_backbone(cfg, input_shape: ShapeSpec):
     """
     Create a Dynamic Backbone from config.
     Args:
-        cfg: a dl_lib CfgNode
+        cfg: a config dict
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
     """

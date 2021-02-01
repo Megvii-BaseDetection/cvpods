@@ -28,7 +28,7 @@ class ClassificationEvaluator(DatasetEvaluator):
         Args:
             dataset_name (str): name of the dataset to be evaluated.
             meta (SimpleNamespace): dataset metadata.
-            cfg (CfgNode): cvpods Config instance.
+            cfg (config dict): cvpods Config instance.
             distributed (True): if True, will collect results from all ranks for evaluation.
                 Otherwise, will evaluate the results in the current process.
             output_dir (str): optional, an output directory to dump all

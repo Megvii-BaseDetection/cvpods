@@ -10,8 +10,5 @@ API Documentation
     evaluation
     layers
     modeling
-    model_zoo
     solver
     structures
-    utils
-    export

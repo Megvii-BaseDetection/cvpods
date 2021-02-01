@@ -30,20 +30,15 @@ from cvpods.utils import (
     JSONWriter,
     TensorboardXWriter,
     comm,
-    setup_logger
+    setup_logger,
+    apex_wrapper
 )
 
 from . import hooks
 from .hooks import HookBase
 
-try:
-    from apex import amp
-except ImportError:
-    raise ImportError(
-        "Please install apex from https://www.github.com/nvidia/apex to run this example."
-    )
 
-
+amp = None 
 __all__ = ["TrainerBase", "SimpleTrainer", "DefaultTrainer"]
 
 

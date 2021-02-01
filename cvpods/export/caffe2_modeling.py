@@ -142,7 +142,7 @@ class Caffe2MetaArch(Caffe2Compatible, torch.nn.Module):
     def __init__(self, torch_model):
         """
         Args:
-            cfg (CfgNode):
+            cfg (config dict):
             torch_model (nn.Module): the cvpods model (meta_arch) to be
                 converted.
         """

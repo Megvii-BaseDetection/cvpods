@@ -9,27 +9,6 @@ cvpods.data package
 cvpods.data.catalog module
 --------------------------------
 
-.. automodule:: cvpods.data.catalog
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-cvpods.data.common module
---------------------------------
-
-.. automodule:: cvpods.data.common
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-cvpods.data.dataset\_mapper module
----------------------------------------
-
-.. automodule:: cvpods.data.dataset_mapper
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 cvpods.data.detection\_utils module
 ---------------------------------------
 

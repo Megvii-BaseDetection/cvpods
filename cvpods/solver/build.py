@@ -69,7 +69,7 @@ def maybe_add_gradient_clipping(cfg, optimizer: torch.optim.Optimizer) -> torch.
     that inherits OptimizerType and overrides the `step` method to
     include gradient clipping.
     Args:
-        cfg: CfgNode
+        cfg: config dict
             configuration options
         optimizer: torch.optim.Optimizer
             existing optimizer instance

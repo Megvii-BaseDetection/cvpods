@@ -36,12 +36,9 @@ from .transform import (  # isort:skip
     GaussianBlurTransform,
     GaussianBlurConvTransform,
     SolarizationTransform,
-    LightningTransform,
     ComposeTransform,
     # LabSpaceTransform,
     PadTransform,
-    FiveCropTransform,
-    JigsawCropTransform,
 )
 
 __all__ = [
@@ -74,10 +71,7 @@ __all__ = [
     "GaussianBlur",
     "GaussianBlurConv",
     "Solarization",
-    "Lightning",
-    "RandomFiveCrop",
     "AutoAugment",
-    "JigsawCrop",
 ]
 
 
@@ -218,26 +212,6 @@ class TorchTransformGen:
     def __call__(self, img: np.ndarray, annotations: None, **kwargs):
         pil_image = Image.fromarray(img)
         return np.array(self.tfm(pil_image)), annotations
-
-
-@TRANSFORMS.register()
-class RandomFiveCrop(TransformGen):
-    """
-    Random select rand_in crops from the fixed 5 crops: center, left-top, right-top,
-        left-bottom, and right-bottom.
-    """
-    def __init__(self, size, rand_in=[0, -1]):
-        """
-        Args:
-            size (int): desired crop size.
-            rand_in (List[int]): select crops according to indexes in rand_in, then random select
-                from those crops.
-        """
-        super().__init__()
-        self._init(locals())
-
-    def get_transform(self, img, annotations=None):
-        return FiveCropTransform(self.size, self.rand_in)
 
 
 @TRANSFORMS.register()
@@ -957,30 +931,6 @@ class Expand(TransformGen):
 
 
 @TRANSFORMS.register()
-class Lightning(TransformGen):
-    """
-    Lightning augmentation, used in classification.
-
-    .. code-block:: python
-        tfm = LightningTransform(
-            alpha_std=0.1,
-            eig_val=np.array([[0.2175, 0.0188, 0.0045]]),
-            eig_vec=np.array([
-                [-0.5675, 0.7192, 0.4009],
-                [-0.5808, -0.0045, -0.8140],
-                [-0.5836, -0.6948, 0.4203]
-            ]),
-        )
-    """
-    def __init__(self, alpha_std, eig_val, eig_vec):
-        super().__init__()
-        self._init(locals())
-
-    def get_transform(self, img, annotations=None):
-        return LightningTransform(self.alpha_std, self.eig_val, self.eig_vec)
-
-
-@TRANSFORMS.register()
 class RandomScale(TransformGen):
     """
     Randomly scale the image according to the specified output size and scale ratio range.
@@ -1155,26 +1105,3 @@ class RepeatList(TransformGen):
             repeat_annotations.append(tmp_anno)
         repeat_imgs = np.stack(repeat_imgs, axis=0)
         return repeat_imgs, repeat_annotations
-
-
-@TRANSFORMS.register()
-class JigsawCrop(TransformGen):
-    """
-    Crop an image into n_grid times n_grid crops, no overlaps.
-    """
-    def __init__(self, n_grid=3, img_size=255, crop_size=64):
-        """
-        Args:
-            n_grid (int): crop image into n_grid x n_grid crops.
-            img_size (int): image scale size.
-            crop_size (int): crop size.
-        """
-        super().__init__()
-        self._init(locals())
-
-    def get_transform(self, img, annotations=None):
-        return JigsawCropTransform(self.n_grid, self.img_size, self.crop_size)
-
-    def __call__(self, img, annotations=None, **kwargs):
-        crops, annos = self.get_transform(img)(img, annotations, **kwargs)
-        return np.stack(crops, axis=0), annos

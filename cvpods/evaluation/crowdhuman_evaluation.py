@@ -42,15 +42,15 @@ class CrowdHumanEvaluator(DatasetEvaluator):
         Args:
             dataset_name (str): name of the dataset to be evaluated.
                 It must have either the following corresponding metadata:
-
-
                     "json_file": the path to the COCO format annotation
                 Or it must be in cvpods's standard dataset format
                 so it can be converted to COCO format automatically.
-            cfg (CfgNode): config instance
+            meta (dict): dataset meta.
+            cfg (dict): config instance
             distributed (True): if True, will collect results from all ranks for evaluation.
                 Otherwise, will evaluate the results in the current process.
             output_dir (str): optional, an output directory to dump results.
+            dump (boolean): optional, whether dump predictions to disk.
         """
         self._dump = dump
         self._tasks = self._tasks_from_config(cfg)

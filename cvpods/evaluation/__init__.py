@@ -10,7 +10,7 @@ from .lvis_evaluation import LVISEvaluator
 from .panoptic_evaluation import COCOPanopticEvaluator
 from .pascal_voc_evaluation import PascalVOCDetectionEvaluator
 from .registry import EVALUATOR
-from .rotated_coco_evaluation import RotatedCOCOEvaluator
+# from .rotated_coco_evaluation import RotatedCOCOEvaluator
 from .sem_seg_evaluation import SemSegEvaluator
 from .testing import print_csv_format, verify_results
 from .widerface_evaluation import WiderFaceEvaluator

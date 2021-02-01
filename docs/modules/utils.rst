@@ -57,18 +57,18 @@ cvpods.utils.file.file\_io module
     :undoc-members:
     :show-inheritance:
 
-cvpods.utils.file.imports module
+cvpods.utils.imports module
 --------------------------------
 
-.. automodule:: cvpods.utils.file.imports
+.. automodule:: cvpods.utils.imports
     :members:
     :undoc-members:
     :show-inheritance:
 
-cvpods.utils.retry.memory module
+cvpods.utils.memory module
 ------------------------------------
 
-.. automodule:: cvpods.utils.retry.memory
+.. automodule:: cvpods.utils.memory
     :members:
     :undoc-members:
     :show-inheritance:
@@ -97,34 +97,34 @@ cvpods.utils.visualizer.visualizer module
     :undoc-members:
     :show-inheritance:
 
-cvpods.utils.wrapper.serialize module
+cvpods.utils.file.serialize module
 ----------------------------------
 
-.. automodule:: cvpods.utils.wrapper.serialize
+.. automodule:: cvpods.utils.file.serialize
     :members:
     :undoc-members:
     :show-inheritance:
 
-cvpods.utils.writer.events module
+cvpods.utils.dump.events module
 --------------------------------------
 
-.. automodule:: cvpods.utils.writer.events
+.. automodule:: cvpods.utils.dump.events
     :members:
     :undoc-members:
     :show-inheritance:
 
-cvpods.utils.writer.history\_buffer module
+cvpods.utils.dump.history\_buffer module
 ----------------------------------------------
 
-.. automodule:: cvpods.utils.writer.history_buffer
+.. automodule:: cvpods.utils.dump.history_buffer
     :members:
     :undoc-members:
     :show-inheritance:
 
-cvpods.utils.writer.logger module
+cvpods.utils.dump.logger module
 -------------------------------------
 
-.. automodule:: cvpods.utils.writer.logger
+.. automodule:: cvpods.utils.dump.logger
     :members:
     :undoc-members:
     :show-inheritance:
