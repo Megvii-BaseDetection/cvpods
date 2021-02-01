@@ -215,7 +215,7 @@ class LastLevelP6P7(nn.Module):
 def build_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
     """
     Args:
-        cfg: a cvpods CfgNode
+        cfg: a cvpods config dict
 
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
@@ -237,7 +237,7 @@ def build_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
 def build_mobilenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
     """
     Args:
-        cfg: a cvpods CfgNode
+        cfg: a cvpods config dict
         input_shape: cvpods.layers.ShapeSpec
 
     Returns:
@@ -260,7 +260,7 @@ def build_mobilenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
 def build_retinanet_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
     """
     Args:
-        cfg: a cvpods CfgNode
+        cfg: a cvpods config dict
 
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
@@ -283,7 +283,7 @@ def build_retinanet_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
 def build_shufflenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
     """
     Args:
-        cfg: a cvpods CfgNode
+        cfg: a cvpods config dict
 
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
@@ -305,7 +305,7 @@ def build_shufflenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
 def build_retinanet_resnet_fpn_p5_backbone(cfg, input_shape: ShapeSpec):
     """
     Args:
-        cfg: a cvpods CfgNode
+        cfg: a cvpods config dict
 
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
@@ -328,7 +328,7 @@ def build_retinanet_resnet_fpn_p5_backbone(cfg, input_shape: ShapeSpec):
 def build_retinanet_mobilenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
     """
     Args:
-        cfg: a cvpods CfgNode
+        cfg: a cvpods config dict
 
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
@@ -351,7 +351,7 @@ def build_retinanet_mobilenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
 def build_retinanet_mobilenetv2_fpn_p5_backbone(cfg, input_shape: ShapeSpec):
     """
     Args:
-        cfg: a cvpods CfgNode
+        cfg: a cvpods config dict
 
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.

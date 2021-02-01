@@ -88,37 +88,6 @@ def get_extensions():
     return ext_modules
 
 
-def get_model_zoo_configs() -> List[str]:
-    """
-    Return a list of configs to include in package for model zoo. Copy over these configs inside
-    cvpods/model_zoo.
-    """
-
-    # Use absolute paths while symlinking.
-    source_configs_dir = path.join(path.dirname(path.realpath(__file__)), "configs")
-    destination = path.join(
-        path.dirname(path.realpath(__file__)), "cvpods", "model_zoo", "configs"
-    )
-    # Symlink the config directory inside package to have a cleaner pip install.
-
-    # Remove stale symlink/directory from a previous build.
-    if path.exists(source_configs_dir):
-        if path.islink(destination):
-            os.unlink(destination)
-        elif path.isdir(destination):
-            shutil.rmtree(destination)
-
-    if not path.exists(destination):
-        try:
-            os.symlink(source_configs_dir, destination)
-        except OSError:
-            # Fall back to copying if symlink fails: ex. on Windows.
-            shutil.copytree(source_configs_dir, destination)
-
-    config_paths = glob.glob("configs/**/*.yaml", recursive=True)
-    return config_paths
-
-
 def build_cvpods_script():
     cur_dir = os.getcwd()
     head = "#!/bin/bash\n\nexport OMP_NUM_THREADS=1\n\n"

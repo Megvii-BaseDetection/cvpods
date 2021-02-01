@@ -37,7 +37,7 @@ class LVISEvaluator(DatasetEvaluator):
                     "json_file": the path to the LVIS format annotation
 
             meta (SimpleNamespace): dataset metadata.
-            cfg (CfgNode): cvpods Config instance.
+            cfg (config dict): cvpods Config instance.
             distributed (True): if True, will collect results from all ranks for evaluation.
                 Otherwise, will evaluate the results in the current process.
             output_dir (str): optional, an output directory to dump results.
