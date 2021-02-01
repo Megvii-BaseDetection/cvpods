@@ -33,7 +33,7 @@ class Checkpointer(object):
     def __init__(
         self,
         model: nn.Module,
-        save_dir:  str = "",
+        save_dir: str = "",
         resume: bool = False,
         *,
         save_to_disk: bool = True,
