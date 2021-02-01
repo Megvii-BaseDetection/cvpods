@@ -1,10 +1,33 @@
 repos:
-# -   repo: https://github.com/ambv/black
-#     rev: stable
-#     hooks:
-#     - id: black
-#       language_version: python3.6
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v1.2.3
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
     hooks:
-    - id: flake8
+      - id: check-added-large-files
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-yaml
+        args: ["--unsafe"]
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.3
+    hooks:
+      - id: flake8
+        args:
+        - --jobs=4
+  - repo: local
+    hooks:
+    - id: isort
+      name: isort
+      entry: isort --check-only
+      files: \.py$
+      language: system
+    - id: lint
+      name: lint
+      entry: pylint --rcfile pylint.cfg
+      language: system
+      files: \.py$
+
