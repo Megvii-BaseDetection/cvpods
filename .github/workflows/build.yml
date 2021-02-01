@@ -16,11 +16,10 @@ jobs:
           pip install flake8
           pip install isort
           pip install pylint
+          pip install pre-commit
+          pre-commit install
       - name: Linting
-        run: |
-          isort -rc --check-only cvpods
-          pylint --rcfile pylint.cfg ./cvpods 
-          flake8 ./cvpods
+        run: pre-commit run --all-files
       - name: Check docstring coverage
         run: |
           pip install interrogate
