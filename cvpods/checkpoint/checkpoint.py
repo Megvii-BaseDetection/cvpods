@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import numpy as np
 import copy
 import logging
 import os
 import pickle
 from typing import Any
 
-import numpy as np
 
 import torch
 import torch.nn as nn
