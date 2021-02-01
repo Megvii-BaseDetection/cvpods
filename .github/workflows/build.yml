@@ -18,7 +18,7 @@ jobs:
           pip install pylint
       - name: Linting
         run: |
-          isort --check-only -rc ./cvpods 
+          isort -rc --check-only cvpods
           pylint --rcfile pylint.cfg ./cvpods 
           flake8 ./cvpods
       - name: Check docstring coverage
