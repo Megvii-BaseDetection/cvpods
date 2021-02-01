@@ -15,18 +15,18 @@ repos:
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.8.3
     hooks:
-      - id: flake8 ./cvpods ./playground
+      - id: flake8
         args:
         - --jobs=4
   - repo: local
     hooks:
     - id: isort
       name: isort
-      entry: isort --check-only -rc ./cvpods
+      entry: isort --check-only
       files: \.py$
       language: system
     - id: lint
       name: lint
-      entry: pylint --rcfile pylint.cfg ./cvpods ./playground
+      entry: pylint --rcfile pylint.cfg
       language: system
       files: \.py$
