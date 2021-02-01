@@ -164,8 +164,8 @@ class CrowdHumanDataset(BaseDataset):
 
             record = {}
             record["file_name"] = os.path.join(image_root, "{}.jpg".format(anno_dict["ID"]))
-            record["height"] = anno_dict["height"]
-            record["width"] = anno_dict["width"]
+            # record["height"] = anno_dict["height"]
+            # record["width"] = anno_dict["width"]
             record["image_id"] = anno_dict["ID"]
 
             objs = []
