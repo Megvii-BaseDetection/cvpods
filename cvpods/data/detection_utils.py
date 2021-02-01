@@ -6,7 +6,6 @@ import logging
 import cv2
 import numpy as np
 from PIL import Image
-
 import pycocotools.mask as mask_util
 
 import torch

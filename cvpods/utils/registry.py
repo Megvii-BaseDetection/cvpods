@@ -2,7 +2,6 @@
 # Modified by BaseDetection, Inc. and its affiliates. All Rights Reserved
 
 from typing import Dict, Optional
-
 from tabulate import tabulate
 
 

@@ -4,7 +4,6 @@ import copy
 import io
 import logging
 from typing import List
-
 from tabulate import tabulate
 from termcolor import colored
 

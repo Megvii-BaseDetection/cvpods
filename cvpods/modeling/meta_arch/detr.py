@@ -12,8 +12,8 @@ from torch import nn
 from cvpods.layers import ShapeSpec, position_encoding_dict
 from cvpods.modeling.backbone import Transformer
 from cvpods.modeling.matcher import HungarianMatcher
-from cvpods.structures import boxes as box_ops
 from cvpods.structures import Boxes, ImageList, Instances
+from cvpods.structures import boxes as box_ops
 from cvpods.structures.boxes import generalized_box_iou
 from cvpods.utils import comm
 from cvpods.utils.metrics import accuracy

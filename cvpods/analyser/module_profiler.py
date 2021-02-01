@@ -5,7 +5,6 @@
 
 import functools
 from collections import OrderedDict, defaultdict, namedtuple
-
 from tabulate import tabulate
 
 import numpy as np

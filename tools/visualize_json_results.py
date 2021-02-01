@@ -5,7 +5,6 @@ import argparse
 import json
 import os
 from collections import defaultdict
-
 import tqdm
 
 import cv2

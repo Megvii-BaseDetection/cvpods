@@ -4,7 +4,6 @@ import itertools
 from typing import Iterator, List, Union
 
 import numpy as np
-
 import pycocotools.mask as mask_utils
 
 import torch

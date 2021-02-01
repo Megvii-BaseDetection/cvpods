@@ -2,7 +2,6 @@
 import argparse
 import os
 from itertools import chain
-
 import tqdm
 
 import cv2
@@ -10,8 +9,8 @@ import numpy as np
 from PIL import Image
 
 from cvpods.config import get_cfg
-from cvpods.data import detection_utils as utils
 from cvpods.data import DatasetCatalog, MetadataCatalog, build_train_loader
+from cvpods.data import detection_utils as utils
 from cvpods.data.build import filter_images_with_few_keypoints
 from cvpods.utils import Visualizer, setup_logger
 

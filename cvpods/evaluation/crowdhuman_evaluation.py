@@ -10,7 +10,6 @@ import os
 from collections import OrderedDict
 
 import numpy as np
-
 import pycocotools.mask as mask_util
 
 import torch

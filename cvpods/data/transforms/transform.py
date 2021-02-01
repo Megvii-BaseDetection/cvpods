@@ -10,7 +10,6 @@ from typing import Callable, TypeVar
 import cv2
 import numpy as np
 from PIL import Image, ImageFilter, ImageOps
-
 import pycocotools.mask as mask_util
 
 import torch

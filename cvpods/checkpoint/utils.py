@@ -1,6 +1,5 @@
 import collections
 from collections import defaultdict
-
 from termcolor import colored
 
 

@@ -7,7 +7,6 @@ from collections import OrderedDict
 
 import numpy as np
 import PIL.Image as Image
-
 import pycocotools.mask as mask_util
 
 import torch

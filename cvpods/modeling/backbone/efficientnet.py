@@ -1,7 +1,6 @@
 import math
 import re
 from copy import deepcopy
-
 from easydict import EasyDict as edict
 
 import torch
