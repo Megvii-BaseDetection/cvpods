@@ -12,3 +12,4 @@ API Documentation
     modeling
     solver
     structures
+    utils
