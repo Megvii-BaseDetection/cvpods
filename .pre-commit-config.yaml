@@ -4,8 +4,8 @@ repos:
     hooks:
       - id: check-added-large-files
       # - id: check-docstring-first
-      - id: check-executables-have-shebangs
-      - id: check-json
+      # - id: check-executables-have-shebangs
+      # - id: check-json
       - id: check-merge-conflict
       - id: check-yaml
         args: ["--unsafe"]
@@ -20,11 +20,6 @@ repos:
         - --jobs=4
   - repo: local
     hooks:
-    - id: isort
-      name: isort
-      entry: isort --check-only -rc
-      files: \.py$
-      language: system
     - id: lint
       name: lint
       entry: pylint --rcfile pylint.cfg
