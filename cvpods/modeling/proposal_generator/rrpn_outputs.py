@@ -47,7 +47,7 @@ def find_top_rrpn_proposals(
     pre_nms_topk,
     post_nms_topk,
     min_box_side_len,
-    training,
+    training,  # pylint: disable=W0613
 ):
     """
     For each feature map, select the `pre_nms_topk` highest scoring proposals,
