@@ -7,6 +7,7 @@ Note: this script has an extra dependency of psutil.
 
 import itertools
 import logging
+
 import psutil
 import tqdm
 
