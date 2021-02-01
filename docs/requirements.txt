@@ -2,7 +2,7 @@ termcolor
 numpy
 tqdm
 docutils>=0.14
-Sphinx==2.2.1
+Sphinx==3.0.0
 recommonmark==0.4.0
 sphinx_rtd_theme
 catalyst-sphinx-theme
