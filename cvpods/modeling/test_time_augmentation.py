@@ -85,7 +85,7 @@ class GeneralizedRCNNWithTTA(nn.Module):
     def __init__(self, cfg, model, tta_mapper=None, batch_size=3):
         """
         Args:
-            cfg (CfgNode):
+            cfg (config dict):
             model (GeneralizedRCNN): a GeneralizedRCNN to apply TTA on.
             tta_mapper (callable): takes a dataset dict and returns a list of
                 augmented versions of the dataset dict. Defaults to
@@ -263,7 +263,7 @@ class SimpleTTAWarper(nn.Module):
     def __init__(self, cfg, model, tta_mapper=None, batch_size=3):
         """
         Args:
-            cfg (CfgNode):
+            cfg (config dict):
             model (GeneralizedRCNN): a GeneralizedRCNN to apply TTA on.
             tta_mapper (callable): takes a dataset dict and returns a list of
                 augmented versions of the dataset dict. Defaults to
@@ -343,7 +343,7 @@ class TTAWarper(nn.Module):
     def __init__(self, cfg, model, tta_mapper=None, batch_size=3):
         """
         Args:
-            cfg (CfgNode):
+            cfg (config dict):
             model (GeneralizedRCNN): a GeneralizedRCNN to apply TTA on.
             tta_mapper (callable): takes a dataset dict and returns a list of
                 augmented versions of the dataset dict. Defaults to

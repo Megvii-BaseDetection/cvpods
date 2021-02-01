@@ -111,7 +111,7 @@ def build_train_loader(cfg):
     The batched ``list[mapped_dict]`` is what this dataloader will return.
 
     Args:
-        cfg (CfgNode): the config
+        cfg (config dict): the config
 
     Returns:
         an infinite iterator of training data
@@ -163,7 +163,7 @@ def build_test_loader(cfg):
     and uses batch size 1.
 
     Args:
-        cfg: a cvpods CfgNode
+        cfg: a cvpods config dict
 
     Returns:
         DataLoader: a torch DataLoader, that loads the given detection

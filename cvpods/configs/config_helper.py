@@ -182,7 +182,7 @@ def _decode_cfg_value(value):
     """
     Decodes a raw config value (e.g., from a yaml config files or command
     line argument) into a Python object.
-    If the value is a dict, it will be interpreted as a new CfgNode.
+    If the value is a dict, it will be interpreted as a new config dict.
     If the value is a str, it will be evaluated as literals.
     Otherwise it is returned as-is.
 

@@ -9,6 +9,7 @@ from .meta_arch import GeneralizedRCNN, PanopticFPN, ProposalNetwork, RetinaNet,
 from .postprocessing import detector_postprocess
 from .roi_heads import ROIHeads, StandardROIHeads
 from .test_time_augmentation import DatasetMapperTTA, GeneralizedRCNNWithTTA, TTAWarper
+from .matcher import Matcher
 
 _EXCLUDE = {"torch", "ShapeSpec"}
 __all__ = [k for k in globals().keys() if k not in _EXCLUDE and not k.startswith("_")]

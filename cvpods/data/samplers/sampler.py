@@ -86,12 +86,14 @@ class GroupSampler(Sampler):
 
 @SAMPLERS.register()
 class DistributedGroupSampler(Sampler):
-    """Sampler that restricts data loading to a subset of the dataset.
+    """
+    Sampler that restricts data loading to a subset of the dataset.
     It is especially useful in conjunction with
     :class:`torch.nn.parallel.DistributedDataParallel`. In such case, each
     process can pass a DistributedSampler instance as a DataLoader sampler,
     and load a subset of the original dataset that is exclusive to it.
-    .. note::
+
+    Note:
         Dataset is assumed to be of constant size.
     """
 
