@@ -1,12 +1,12 @@
-import os
-from collections import OrderedDict
-import pandas as pd
-import seaborn as sns
-
 import cv2
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+
+import os
+import pandas as pd
+import seaborn as sns
+from collections import OrderedDict
 
 from .datasets import get_tide_path
 from .errors.main_errors import (
