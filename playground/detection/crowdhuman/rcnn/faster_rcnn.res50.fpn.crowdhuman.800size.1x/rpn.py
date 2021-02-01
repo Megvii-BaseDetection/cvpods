@@ -1,11 +1,12 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import itertools
+
 import torch
 
 from cvpods.layers import batched_nms, cat
-from cvpods.structures import Boxes, Instances
 from cvpods.modeling.proposal_generator.rpn import RPN
 from cvpods.modeling.proposal_generator.rpn_outputs import RPNOutputs
+from cvpods.structures import Boxes, Instances
 
 
 """
@@ -25,7 +26,7 @@ def find_top_rpn_proposals(
     pre_nms_topk,
     post_nms_topk,
     min_box_side_len,
-    training,
+    training,  # pylint: disable=W0613
 ):
     """
     For each feature map, select the `pre_nms_topk` highest scoring proposals,

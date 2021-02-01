@@ -2,6 +2,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 
 # flake8: noqa
+# pylint: disable=W0613
 
 # Configuration file for the Sphinx documentation builder.
 #

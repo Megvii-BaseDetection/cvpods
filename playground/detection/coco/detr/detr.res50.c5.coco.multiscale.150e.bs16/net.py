@@ -1,12 +1,13 @@
 import logging
+import sys
 
+from cvpods.layers import ShapeSpec
 from cvpods.modeling.backbone import Backbone, build_resnet_backbone
 from cvpods.modeling.meta_arch.detr import DETR
-from cvpods.layers import ShapeSpec
 
-import sys
-sys.path.append("..")
 from optimizer import OPTIMIZER_BUILDER  # noqa
+
+sys.path.append("..")
 
 
 def build_backbone(cfg, input_shape=None):

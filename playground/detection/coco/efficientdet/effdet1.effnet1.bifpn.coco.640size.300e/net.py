@@ -1,11 +1,10 @@
 import logging
 
 from cvpods.layers import ShapeSpec
-from cvpods.modeling.backbone import Backbone
 from cvpods.modeling.anchor_generator import DefaultAnchorGenerator
-from cvpods.modeling.nn_utils.parameter_count import parameter_count
-from cvpods.modeling.backbone import build_efficientnet_bifpn_backbone
+from cvpods.modeling.backbone import Backbone, build_efficientnet_bifpn_backbone
 from cvpods.modeling.meta_arch import EfficientDet
+from cvpods.modeling.nn_utils.parameter_count import parameter_count
 
 
 def build_backbone(cfg, input_shape=None):

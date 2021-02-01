@@ -1,17 +1,17 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import logging
-import numpy as np
 from typing import Dict, List
+
+import numpy as np
+
 import torch
 
 from cvpods.layers import ShapeSpec
-from cvpods.structures import Boxes, Instances, pairwise_iou, pairwise_ioa
-from cvpods.utils import get_event_storage
-
 from cvpods.modeling.matcher import MatcherIgnore
-from cvpods.modeling.roi_heads import StandardROIHeads
-
 from cvpods.modeling.proposal_generator.proposal_utils import add_ground_truth_to_proposals
+from cvpods.modeling.roi_heads import StandardROIHeads
+from cvpods.structures import Boxes, Instances, pairwise_ioa, pairwise_iou
+from cvpods.utils import get_event_storage
 
 logger = logging.getLogger(__name__)
 

@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
-from cvpods.solver import OPTIMIZER_BUILDER, OptimizerBuilder
 from torch import optim
+
+from cvpods.solver import OPTIMIZER_BUILDER, OptimizerBuilder
 
 
 @OPTIMIZER_BUILDER.register()

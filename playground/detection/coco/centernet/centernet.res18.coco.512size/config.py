@@ -1,4 +1,5 @@
 import os.path as osp
+
 from cvpods.configs.base_detection_config import BaseDetectionConfig
 
 _config_dict = dict(

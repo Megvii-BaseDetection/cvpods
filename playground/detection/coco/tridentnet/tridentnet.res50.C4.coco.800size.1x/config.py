@@ -2,7 +2,6 @@ import os.path as osp
 
 from cvpods.configs.rcnn_config import RCNNConfig
 
-
 _config_dict = dict(
     MODEL=dict(
         WEIGHTS="detectron2://ImageNetPretrained/MSRA/R-50.pkl",

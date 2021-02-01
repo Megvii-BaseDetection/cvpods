@@ -36,6 +36,14 @@ from cvpods.utils import (
 from . import hooks
 from .hooks import HookBase
 
+try:
+    from apex import amp
+except ImportError:
+    apex_url = "https://www.github.com/nvidia/apex"
+    raise ImportError(
+        "Please install apex from {} to run this example.".format(apex_url)
+    )
+
 
 __all__ = ["TrainerBase", "SimpleTrainer", "DefaultTrainer"]
 
@@ -369,13 +377,6 @@ class DefaultTrainer(SimpleTrainer):
         if comm.get_world_size() > 1:
             if cfg.TRAINER.FP16.ENABLED:
                 if cfg.TRAINER.FP16.TYPE == "APEX":
-                    try:
-                        from apex import amp
-                    except ImportError:
-                        apex_url = "https://www.github.com/nvidia/apex"
-                        raise ImportError(
-                            "Please install apex from {} to run this example.".format(apex_url)
-                        )
                     model, optimizer = amp.initialize(
                         model, optimizer, opt_level=cfg.TRAINER.FP16.OPTS.OPT_LEVEL
                     )
@@ -636,8 +637,8 @@ def maybe_adjust_epoch_and_iter(cfg, dataloader):
     cfg.SOLVER.OPTIMIZER.BASE_LR *= subdivision
 
     if max_epoch:
-        epoch_iter = math.ceil(len(dataloader.dataset) /
-                               (cfg.SOLVER.IMS_PER_BATCH * subdivision))
+        epoch_iter = math.ceil(len(dataloader.dataset) / (
+            cfg.SOLVER.IMS_PER_BATCH * subdivision))
 
         if max_iter is not None:
             logger.warning(

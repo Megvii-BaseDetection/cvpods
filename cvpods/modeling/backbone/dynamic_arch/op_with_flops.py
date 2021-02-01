@@ -1,3 +1,5 @@
+# pylint: disable=W0613
+
 # Routinng candidates for dynamic networks with calculated FLOPs,
 # modified Search Space in DARTS to have different input and output channels.
 # @author: yanwei.li

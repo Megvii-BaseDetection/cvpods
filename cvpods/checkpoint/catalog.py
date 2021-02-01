@@ -1,7 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-from cvpods.utils import PathHandler, PathManager
-
 import logging
+
+from cvpods.utils import PathHandler, PathManager
 
 
 class ModelCatalog(object):

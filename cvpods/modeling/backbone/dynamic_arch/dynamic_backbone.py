@@ -152,7 +152,7 @@ class DynamicNetwork(Backbone):
     """
     def __init__(
         self, init_channel, input_shape, cell_num_list, layer_num,
-        ext_layer=None, norm="", cal_flops=True, cell_type='',
+        ext_layer=None, norm="", cal_flops=True, cell_type='',  # pylint: disable=W0613
         max_stride=32, sep_stem=True, using_gate=False,
         small_gate=False, gate_bias=1.5, drop_prob=0.0,
     ):

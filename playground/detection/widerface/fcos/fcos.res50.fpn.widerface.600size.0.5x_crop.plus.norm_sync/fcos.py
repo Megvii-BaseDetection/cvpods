@@ -1,17 +1,18 @@
 import logging
 import math
 from typing import List
+
 import torch
-from cvpods.modeling.losses import sigmoid_focal_loss_jit, iou_loss
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
 
 from cvpods.layers import ShapeSpec, batched_nms, cat
+from cvpods.modeling.box_regression import Shift2BoxTransform
+from cvpods.modeling.losses import iou_loss, sigmoid_focal_loss_jit
+from cvpods.modeling.meta_arch.retinanet import permute_to_N_HWA_K
+from cvpods.modeling.postprocessing import detector_postprocess
 from cvpods.structures import Boxes, ImageList, Instances
 from cvpods.utils import log_first_n
-from cvpods.modeling.box_regression import Shift2BoxTransform
-from cvpods.modeling.postprocessing import detector_postprocess
-from cvpods.modeling.meta_arch.retinanet import permute_to_N_HWA_K
 
 
 def permute_all_cls_and_box_to_N_HWA_K_and_concat(box_cls,
@@ -541,7 +542,7 @@ class FCOSHead(nn.Module):
         logits = []
         bbox_reg = []
         centerness = []
-        for l, feature in enumerate(features):
+        for layer, feature in enumerate(features):
             cls_subnet = self.cls_subnet(feature)
             bbox_subnet = self.bbox_subnet(feature)
 
@@ -551,9 +552,9 @@ class FCOSHead(nn.Module):
             else:
                 centerness.append(self.centerness(cls_subnet))
 
-            bbox_pred = self.scales[l](self.bbox_pred(bbox_subnet))
+            bbox_pred = self.scales[layer](self.bbox_pred(bbox_subnet))
             if self.norm_reg_targets:
-                bbox_reg.append(F.relu(bbox_pred) * self.fpn_strides[l])
+                bbox_reg.append(F.relu(bbox_pred) * self.fpn_strides[layer])
             else:
                 bbox_reg.append(torch.exp(bbox_pred))
         return logits, bbox_reg, centerness

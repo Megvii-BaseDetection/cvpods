@@ -1,9 +1,9 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-import torch
-
 import copy
 import logging
 import re
+
+import torch
 
 from .utils import (  # isort:skip
     get_missing_parameters_message,

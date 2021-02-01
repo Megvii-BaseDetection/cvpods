@@ -1,7 +1,7 @@
 from cvpods.layers import ShapeSpec
 from cvpods.modeling.backbone import Backbone
 from cvpods.modeling.backbone.fpn import build_resnet_fpn_backbone
-from cvpods.modeling.meta_arch import SemSegFPNHead, SemanticSegmentor
+from cvpods.modeling.meta_arch import SemanticSegmentor, SemSegFPNHead
 
 
 def build_backbone(cfg, input_shape=None):

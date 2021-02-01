@@ -16,25 +16,26 @@ Therefore, we recommend you to use cvpods as an library and take
 this file as an example of how to use the library.
 You may want to write your own script with your datasets and other customizations.
 """
-from pprint import pformat
 import glob
 import logging
 import os
 import re
 import sys
 from collections import OrderedDict
+from pprint import pformat
 
 from torch.nn.parallel import DistributedDataParallel
 
 from cvpods.checkpoint import DefaultCheckpointer
 from cvpods.engine import DefaultTrainer, default_argument_parser, default_setup, launch
 from cvpods.evaluation import build_evaluator, verify_results
-from cvpods.modeling import GeneralizedRCNNWithTTA, GeneralizedRCNN, TTAWarper
+from cvpods.modeling import GeneralizedRCNN, GeneralizedRCNNWithTTA, TTAWarper
 from cvpods.utils import PathManager, comm
 
-sys.path.insert(0, '.')
 from config import config  # noqa: E402
 from net import build_model  # noqa: E402
+
+sys.path.insert(0, '.')
 
 
 class Trainer(DefaultTrainer):
