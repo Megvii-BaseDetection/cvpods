@@ -1,6 +1,5 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-# from scipy.optimize import linear_sum_assignment
-linear_sum_assignment = None
+from scipy.optimize import linear_sum_assignment
 
 import torch
 from torch import nn
