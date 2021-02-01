@@ -1,4 +1,4 @@
-# <img src=".github/cvpods_logo.pdf" width="300" > 
+<div align=center><img src=".github/cvpods_logo.png" width="400" ><div align=left>
 
 [![cvpods compliant](https://img.shields.io/badge/cvpods-master-brightgreen)](https://github.com/Megvii-BaseDetection/cvpods)
 
