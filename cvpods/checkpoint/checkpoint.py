@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-import numpy as np
 import copy
 import logging
 import os
 import pickle
 from typing import Any
 
+import numpy as np
 
 import torch
 import torch.nn as nn
@@ -33,7 +33,7 @@ class Checkpointer(object):
     def __init__(
         self,
         model: nn.Module,
-        save_dir: str = "",
+        save_dir:  str = "",
         resume: bool = False,
         *,
         save_to_disk: bool = True,
