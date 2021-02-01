@@ -283,7 +283,7 @@ class ConfigDict(dict):
     def merge_from_list(self, cfg_list):
         """
         Merge config (keys, values) in a list (e.g., from command line) into
-        this CfgNode.
+        this config dict.
 
         Args:
             cfg_list (list): cfg_list must be divided exactly.
