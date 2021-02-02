@@ -39,8 +39,8 @@ from .hooks import HookBase
 try:
     from apex import amp
 except ImportError:
+    # TODO: logging warnings and refine the import logic @poodarchu
     apex_url = "https://www.github.com/nvidia/apex"
-    print(f"Please install apex from {apex_url} to run this example.")
 
 
 __all__ = ["TrainerBase", "SimpleTrainer", "DefaultTrainer"]
