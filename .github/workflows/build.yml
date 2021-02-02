@@ -63,7 +63,7 @@ jobs:
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Build and install
         run: |
-          pip install --progress-bar off ninja opencv-python-headless colorama lvis
+          pip install --progress-bar off opencv-python-headless colorama lvis
           FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="Pascal;Volta;Turing" python setup.py build develop
       - name: Run unittests
         run: |
