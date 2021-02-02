@@ -1,7 +1,7 @@
 <div align=center><img src=".github/cvpods_logo.png" width="400" ><div align=left>
 
 [![cvpods compliant](https://img.shields.io/badge/cvpods-master-brightgreen)](https://github.com/Megvii-BaseDetection/cvpods)
-![](https://github.com/Megvii-BaseDetection/cvpods/workflows/build/badge.svg)
+![ci](https://github.com/Megvii-BaseDetection/cvpods/workflows/build/badge.svg?branch=master)
 
 Welcome to **cvpods**, a versatile and efficient codebase for many computer vision tasks: classification, segmentation, detection, self-supervised learning, keypoints and 3D(classification / segmentation / detection / representation learing), etc. The aim of cvpods is to achieve efficient experiments management and smooth tasks-switching.
 
@@ -34,17 +34,16 @@ Welcome to **cvpods**, a versatile and efficient codebase for many computer visi
 **Make sure GPU is available on your local machine.**
 
 ```shell
-# Install cvpods (requires GPU) locally
-python -m pip install 'git+https://github.com/Megvii-BaseDetection/cvpods.git'
-# (add --user if you don't have permission)
+# Install cvpods with GPU directly 
+pip install 'git+https://github.com/Megvii-BaseDetection/cvpods.git'
 
-# Or, to install it from a local clone:
+# Or, to install it with GPU from a local clone:
 git clone https://github.com/Megvii-BaseDetection/cvpods.git
-python -m pip install -e cvpods 
+pip install -e cvpods 
 
-# Or,
-pip install -r requirements.txt
-python setup.py build develop
+# Or, to build it without GPU from a local clone:
+FORCE_CUDA=1 pip install -e cvpods 
+
 ```
 
 ## Usage
