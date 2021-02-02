@@ -29,7 +29,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # CUDA: 10.1.105-1
       CUDA: 10.2.89-1
       CUDA_SHORT: 10.2
       UBUNTU_VERSION: ubuntu1804
@@ -60,19 +59,11 @@ jobs:
           export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
           export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/include:${LD_LIBRARY_PATH}
           export PATH=${CUDA_HOME}/bin:${PATH}
-      # - name: Install Pillow
-        # run: pip install Pillow==6.2.2
-        # if: ${{matrix.torchvision < 0.5}}
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
-      # - name: Install mmdet dependencies
-        # run: |
-        # pip install -r requirements.txt
       - name: Build and install
         run: |
-          ls -l /usr/local
-          find /usr/local/ -name cublas_v2.h
-          rm -rf .eggs build
+          pip install opencv-python
           FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="Pascal;Volta;Turing" python setup.py build develop
       - name: Run unittests
         run: |
