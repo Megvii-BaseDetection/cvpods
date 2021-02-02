@@ -39,10 +39,10 @@ pip install 'git+https://github.com/Megvii-BaseDetection/cvpods.git'
 
 # Or, to install it with GPU from a local clone:
 git clone https://github.com/Megvii-BaseDetection/cvpods.git
-pip install --verbose -e cvpods 
+pip install -e cvpods 
 
 # Or, to build it without GPU from a local clone:
-FORCE_CUDA=1 pip install --verbose -e cvpods 
+FORCE_CUDA=1 pip install -e cvpods 
 
 ```
 
