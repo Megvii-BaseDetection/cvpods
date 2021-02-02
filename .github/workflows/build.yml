@@ -61,9 +61,9 @@ jobs:
           export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
           export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/include:${LD_LIBRARY_PATH}
           export PATH=${CUDA_HOME}/bin:${PATH}
-      - name: Install Pillow
-        run: pip install Pillow==6.2.2
-        if: ${{matrix.torchvision < 0.5}}
+      # - name: Install Pillow
+        # run: pip install Pillow==6.2.2
+        # if: ${{matrix.torchvision < 0.5}}
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       # - name: Install mmdet dependencies
@@ -71,8 +71,10 @@ jobs:
         # pip install -r requirements.txt
       - name: Build and install
         run: |
+          find /usr/local/ -name cublas_v2.h
+          find /usr -name cublas_v2.h
           rm -rf .eggs
-          FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="Kepler;Kepler+Tesla;Maxwell;Maxwell+Tegra;Pascal;Volta;Turing" python setup.py build develop
+          FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="Pascal;Volta;Turing" python setup.py build develop
       - name: Run unittests
         run: |
           pip install pytest
