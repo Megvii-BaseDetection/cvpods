@@ -64,7 +64,7 @@ jobs:
       - name: Build and install
         run: |
           pip install opencv-python-headless colorama lvis ninja
-          FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="Pascal;Volta;Turing" pip install --verbose -e . 
+          FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="Pascal;Volta;Turing" python setup.py build 
       - name: Run unittests
         run: |
           pip install pytest-xdist
