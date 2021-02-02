@@ -34,17 +34,16 @@ Welcome to **cvpods**, a versatile and efficient codebase for many computer visi
 **Make sure GPU is available on your local machine.**
 
 ```shell
-# Install cvpods (requires GPU) locally
-python -m pip install 'git+https://github.com/Megvii-BaseDetection/cvpods.git'
-# (add --user if you don't have permission)
+# Install cvpods with GPU directly 
+pip install 'git+https://github.com/Megvii-BaseDetection/cvpods.git'
 
-# Or, to install it from a local clone:
+# Or, to install it with GPU from a local clone:
 git clone https://github.com/Megvii-BaseDetection/cvpods.git
-python -m pip install -e cvpods 
+pip install --verbose -e cvpods 
 
-# Or,
-pip install -r requirements.txt
-python setup.py build develop
+# Or, to build it without GPU from a local clone:
+FORCE_CUDA=1 pip install --verbose -e cvpods 
+
 ```
 
 ## Usage
