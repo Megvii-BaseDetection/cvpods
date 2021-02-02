@@ -72,7 +72,7 @@ jobs:
       - name: Build and install
         run: |
           rm -rf .eggs
-          FORCE_CUDA=1 python setup.py build develop
+          FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="Kepler;Kepler+Tesla;Maxwell;Maxwell+Tegra;Pascal;Volta;Turing" python setup.py build develop
       - name: Run unittests
         run: |
           pip install pytest
