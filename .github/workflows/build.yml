@@ -59,7 +59,7 @@ jobs:
           sudo apt install -y cuda-${CUDA_SHORT/./-} cuda-cufft-dev-${CUDA_SHORT/./-}
           sudo apt clean
           export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
-          export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/include:${LD_LIBRARY_PATH}
+          export LD_LIBRARY_PATH=/usr/include:${CUDA_HOME}/lib64:${CUDA_HOME}/include:${LD_LIBRARY_PATH}
           export PATH=${CUDA_HOME}/bin:${PATH}
       # - name: Install Pillow
         # run: pip install Pillow==6.2.2
@@ -71,9 +71,9 @@ jobs:
         # pip install -r requirements.txt
       - name: Build and install
         run: |
+          ls -l /usr/local
           find /usr/local/ -name cublas_v2.h
-          find /usr -name cublas_v2.h
-          rm -rf .eggs
+          rm -rf .eggs build
           FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="Pascal;Volta;Turing" python setup.py build develop
       - name: Run unittests
         run: |
