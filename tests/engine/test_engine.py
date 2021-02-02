@@ -23,7 +23,8 @@ class TestTrainer(unittest.TestCase):
                 yield torch.rand(3, 3).to(device)
 
         trainer = SimpleTrainer(model, data_loader(), torch.optim.SGD(model.parameters(), 0.1))
-        trainer.train(0, 10, 0)
+        # trainer.train(0, 10, 0)
+        return trainer
 
     @unittest.skipIf(not torch.cuda.is_available(), "CUDA not available")
     def test_simple_trainer_cuda(self):
