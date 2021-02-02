@@ -40,9 +40,7 @@ try:
     from apex import amp
 except ImportError:
     apex_url = "https://www.github.com/nvidia/apex"
-    raise ImportError(
-        "Please install apex from {} to run this example.".format(apex_url)
-    )
+    print(f"Please install apex from {apex_url} to run this example.")
 
 
 __all__ = ["TrainerBase", "SimpleTrainer", "DefaultTrainer"]
