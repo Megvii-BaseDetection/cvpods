@@ -117,6 +117,7 @@ if __name__ == "__main__":
             # opencv themselves, preferrably by OS's package manager, or by
             # choosing the proper pypi package name at https://github.com/skvark/opencv-python
             "termcolor>=1.1",
+            "colorama",
             "Pillow>=7.1",  # or use pillow-simd for better performance
             "tabulate",
             "cloudpickle",
