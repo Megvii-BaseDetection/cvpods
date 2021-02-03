@@ -1,4 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+
+# pylint: disable=W0613
+
 import datetime
 import json
 import logging
