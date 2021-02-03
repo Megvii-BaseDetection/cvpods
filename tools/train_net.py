@@ -47,7 +47,7 @@ def trainer_decrator(cls):
         return build_evaluator(cfg, dataset_name, dataset, output_folder, dump=dump_train)
 
     def test_with_TTA(cls, cfg, model):
-        logger = logging.getLogger("cvpack2.trainer")
+        logger = logging.getLogger("cvpods.trainer")
         # In the end of training, run an evaluation with TTA
         # Only support some R-CNN models.
         logger.info("Running inference with test-time augmentation ...")

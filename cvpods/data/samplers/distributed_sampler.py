@@ -4,6 +4,8 @@ import math
 from collections import defaultdict
 from typing import Optional
 
+import numpy as np
+
 import torch
 from torch.utils.data.sampler import Sampler
 
@@ -13,49 +15,97 @@ from ..registry import SAMPLERS
 
 
 @SAMPLERS.register()
-class TrainingSampler(Sampler):
-    """
-    In training, we only care about the "infinite stream" of training data.
-    So this sampler produces an infinite stream of indices and
-    all workers cooperate to correctly shuffle the indices and sample different indices.
-
-    The samplers in each worker effectively produces `indices[worker_id::num_workers]`
-    where `indices` is an infinite stream of indices consisting of
-    `shuffle(range(size)) + shuffle(range(size)) + ...` (if shuffle is True)
-    or `range(size) + range(size) + ...` (if shuffle is False)
+class DistributedGroupSampler(Sampler):
+    """Sampler that restricts data loading to a subset of the dataset.
+    It is especially useful in conjunction with
+    :class:`torch.nn.parallel.DistributedDataParallel`. In such case, each
+    process can pass a DistributedSampler instance as a DataLoader sampler,
+    and load a subset of the original dataset that is exclusive to it.
+    .. note::
+        Dataset is assumed to be of constant size.
     """
 
-    def __init__(self, size: int, shuffle: bool = True, seed: Optional[int] = None):
+    def __init__(self,
+                 dataset,
+                 samples_per_gpu=1,
+                 num_replicas=None,
+                 rank=None):
         """
         Args:
-            size (int): the total number of data of the underlying dataset to sample from
-            shuffle (bool): whether to shuffle the indices or not
-            seed (int): the initial seed of the shuffle. Must be the same
-                across all workers. If None, will use a random seed shared
-                among workers (require synchronization among all workers).
+            dataset (Dataset): Dataset used for sampling.
+            num_replicas (optional): Number of processes participating in
+                distributed training.
+            rank (optional): Rank of the current process within num_replicas.
         """
-        self._size = size
-        assert size > 0
-        self._shuffle = shuffle
-        if seed is None:
-            seed = comm.shared_random_seed()
-        self._seed = int(seed)
+        _rank = comm.get_rank()
+        _num_replicas = comm.get_world_size()
+        if num_replicas is None:
+            num_replicas = _num_replicas
+        if rank is None:
+            rank = _rank
+        self.dataset = dataset
+        self.samples_per_gpu = samples_per_gpu
+        self.num_replicas = num_replicas
+        self.rank = rank
+        self.epoch = 0
 
-        self._rank = comm.get_rank()
-        self._world_size = comm.get_world_size()
+        assert hasattr(self.dataset, 'aspect_ratios')
+        self.aspect_ratios = self.dataset.aspect_ratios
+        self.group_sizes = np.bincount(self.aspect_ratios)
+
+        self.num_samples = 0
+        for i, j in enumerate(self.group_sizes):
+            self.num_samples += int(
+                math.ceil(
+                    self.group_sizes[i] * 1.0 / self.samples_per_gpu / self.num_replicas
+                )
+            ) * self.samples_per_gpu
+        self.total_size = self.num_samples * self.num_replicas
 
     def __iter__(self):
-        start = self._rank
-        yield from itertools.islice(self._infinite_indices(), start, None, self._world_size)
-
-    def _infinite_indices(self):
+        # deterministically shuffle based on epoch
         g = torch.Generator()
-        g.manual_seed(self._seed)
-        while True:
-            if self._shuffle:
-                yield from torch.randperm(self._size, generator=g)
-            else:
-                yield from torch.arange(self._size)
+        g.manual_seed(self.epoch)
+
+        indices = []
+        for i, size in enumerate(self.group_sizes):
+            if size > 0:
+                indice = np.where(self.aspect_ratios == i)[0]
+                assert len(indice) == size
+                indice = indice[list(torch.randperm(int(size),
+                                                    generator=g))].tolist()
+                extra = int(
+                    math.ceil(
+                        size * 1.0 / self.samples_per_gpu / self.num_replicas)
+                ) * self.samples_per_gpu * self.num_replicas - len(indice)
+                # pad indice
+                tmp = indice.copy()
+                for _ in range(extra // size):
+                    indice.extend(tmp)
+                indice.extend(tmp[:extra % size])
+                indices.extend(indice)
+
+        assert len(indices) == self.total_size
+
+        indices = [
+            indices[j] for i in list(
+                torch.randperm(
+                    len(indices) // self.samples_per_gpu, generator=g))
+            for j in range(i * self.samples_per_gpu, (i + 1) * self.samples_per_gpu)
+        ]
+
+        # subsample
+        offset = self.num_samples * self.rank
+        indices = indices[offset:offset + self.num_samples]
+        assert len(indices) == self.num_samples
+
+        return iter(indices)
+
+    def __len__(self):
+        return self.num_samples
+
+    def set_epoch(self, epoch):
+        self.epoch = epoch
 
 
 @SAMPLERS.register()
