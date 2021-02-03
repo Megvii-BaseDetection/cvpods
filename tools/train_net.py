@@ -19,6 +19,7 @@ import logging
 import os
 import pickle as pkl
 import sys
+sys.path.insert(0, '.')
 from collections import OrderedDict
 from colorama import Fore, Style
 
@@ -32,8 +33,6 @@ from cvpods.utils import comm
 
 from config import config  # noqa: E402
 from net import build_model  # noqa: E402
-
-sys.path.insert(0, '.')
 
 
 class Trainer(DefaultTrainer):
