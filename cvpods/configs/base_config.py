@@ -29,7 +29,6 @@ except ImportError:
 
 
 _config_dict = dict(
-    MODE="",
     MODEL=dict(
         DEVICE="cuda",
         # Path (possibly with schema like catalog://, detectron2://, s3://) to a checkpoint file
@@ -176,6 +175,9 @@ _config_dict = dict(
     ),
     # Trainer is used to specify options related to control the training process
     TRAINER=dict(
+        TYPE="IterRunner",
+        WINDOW_SIZE=20,
+        LOG_INTERVAL=20,
         FP16=dict(
             ENABLED=False,
             # options: [APEX, PyTorch]
