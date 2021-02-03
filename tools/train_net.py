@@ -36,7 +36,7 @@ def trainer_decrator(cls):
     "tools/plain_train_net.py" as an example.
     """
 
-    def build_evaluator(cls, cfg, dataset_name, dataset, output_folder=None):
+    def build_evaluator(cfg, dataset_name, dataset, output_folder=None):
         """
         Create evaluator(s) for a given dataset.
         This uses the special metadata "evaluator_type" associated with each builtin dataset.
