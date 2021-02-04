@@ -147,10 +147,11 @@ class FPN(Backbone):
             results.insert(0, output_conv(prev_features))
 
         if self.top_block is not None:
-            top_block_in_feature = bottom_up_features.get(self.top_block.in_feature, None)
-            if top_block_in_feature is None:
+            if self.top_block.in_feature in bottom_up_features:
+                top_block_in_feature = bottom_up_features[self.top_block.in_feature]
+            else:
                 top_block_in_feature = results[self._out_features.index(self.top_block.in_feature)]
-            results.extend(self.top_block(top_block_in_feature, results[-1]))
+            results.extend(self.top_block(top_block_in_feature))
         assert len(self._out_features) == len(results)
         return dict(zip(self._out_features, results))
 
@@ -184,17 +185,22 @@ class LastLevelMaxPool(nn.Module):
         self.num_levels = 1
         self.in_feature = "p5"
 
-    def forward(self, x, p5=None):
+    def forward(self, x):
         return [F.max_pool2d(x, kernel_size=1, stride=2, padding=0)]
 
 
 class LastLevelP6P7(nn.Module):
     """
-    This module is used in RetinaNet to generate extra layers, P6 and P7 from
-    C5 feature.
+    This module is used in Retinanet and follow-up network to generate extra layers
+    P6 and P7 from C5/P5 feature.
     """
 
     def __init__(self, in_channels, out_channels, in_feature="res5"):
+        """
+        Args:
+            in_feature: input feature name, e.g. "res5" stands for C5 features,
+                "p5" stands for P5 feature.
+        """
         super().__init__()
         self.num_levels = 2
         self.in_feature = in_feature
@@ -203,10 +209,7 @@ class LastLevelP6P7(nn.Module):
         for module in [self.p6, self.p7]:
             weight_init.c2_xavier_fill(module)
 
-        self.use_P5 = in_channels == out_channels
-
-    def forward(self, c5, p5=None):
-        x = p5 if self.use_P5 else c5
+    def forward(self, x):
         p6 = self.p6(x)
         p7 = self.p7(F.relu(p6))
         return [p6, p7]
@@ -268,13 +271,21 @@ def build_retinanet_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
     bottom_up = build_resnet_backbone(cfg, input_shape)
     in_features = cfg.MODEL.FPN.IN_FEATURES
     out_channels = cfg.MODEL.FPN.OUT_CHANNELS
-    in_channels_p6p7 = bottom_up.output_shape()["res5"].channels
+
+    block_in_feature = cfg.MODEL.FPN.BLOCK_IN_FEATURES
+    if block_in_feature == "p5":
+        in_channels_p6p7 = out_channels
+    elif block_in_feature == "res5":
+        in_channels_p6p7 = bottom_up.output_shape()[in_features].channels
+    else:
+        raise ValueError(block_in_feature)
+
     backbone = FPN(
         bottom_up=bottom_up,
         in_features=in_features,
         out_channels=out_channels,
         norm=cfg.MODEL.FPN.NORM,
-        top_block=LastLevelP6P7(in_channels_p6p7, out_channels),
+        top_block=LastLevelP6P7(in_channels_p6p7, out_channels, in_feature=block_in_feature),
         fuse_type=cfg.MODEL.FPN.FUSE_TYPE,
     )
     return backbone
@@ -304,25 +315,15 @@ def build_shufflenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
 
 def build_retinanet_resnet_fpn_p5_backbone(cfg, input_shape: ShapeSpec):
     """
+    Will be deprecated in the future.
+
     Args:
         cfg: a cvpods config dict
 
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
     """
-    bottom_up = build_resnet_backbone(cfg, input_shape)
-    in_features = cfg.MODEL.FPN.IN_FEATURES
-    out_channels = cfg.MODEL.FPN.OUT_CHANNELS
-    in_channels_p6p7 = out_channels
-    backbone = FPN(
-        bottom_up=bottom_up,
-        in_features=in_features,
-        out_channels=out_channels,
-        norm=cfg.MODEL.FPN.NORM,
-        top_block=LastLevelP6P7(in_channels_p6p7, out_channels),
-        fuse_type=cfg.MODEL.FPN.FUSE_TYPE,
-    )
-    return backbone
+    return build_retinanet_resnet_fpn_backbone(cfg, input_shape)
 
 
 def build_retinanet_mobilenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
@@ -336,13 +337,21 @@ def build_retinanet_mobilenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
     bottom_up = build_mobilenetv2_backbone(cfg, input_shape)
     in_features = cfg.MODEL.FPN.IN_FEATURES
     out_channels = cfg.MODEL.FPN.OUT_CHANNELS
-    in_channels_p6p7 = bottom_up.output_shape()["mobile5-last"].channels
+
+    block_in_feature = cfg.MODEL.FPN.BLOCK_IN_FEATURES
+    if block_in_feature == "p5":
+        in_channels_p6p7 = out_channels
+    elif block_in_feature == "mobile5-last" or block_in_feature == "mobile5":
+        in_channels_p6p7 = bottom_up.output_shape()[in_features].channels
+    else:
+        raise ValueError(block_in_feature)
+
     backbone = FPN(
         bottom_up=bottom_up,
         in_features=in_features,
         out_channels=out_channels,
         norm=cfg.MODEL.FPN.NORM,
-        top_block=LastLevelP6P7(in_channels_p6p7, out_channels, "mobile5-last"),
+        top_block=LastLevelP6P7(in_channels_p6p7, out_channels, in_feature=block_in_feature),
         fuse_type=cfg.MODEL.FPN.FUSE_TYPE,
     )
     return backbone
@@ -350,22 +359,12 @@ def build_retinanet_mobilenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
 
 def build_retinanet_mobilenetv2_fpn_p5_backbone(cfg, input_shape: ShapeSpec):
     """
+    Will be deprecated in the future.
+
     Args:
         cfg: a cvpods config dict
 
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
     """
-    bottom_up = build_mobilenetv2_backbone(cfg, input_shape)
-    in_features = cfg.MODEL.FPN.IN_FEATURES
-    out_channels = cfg.MODEL.FPN.OUT_CHANNELS
-    in_channels_p6p7 = out_channels
-    backbone = FPN(
-        bottom_up=bottom_up,
-        in_features=in_features,
-        out_channels=out_channels,
-        norm=cfg.MODEL.FPN.NORM,
-        top_block=LastLevelP6P7(in_channels_p6p7, out_channels, "mobile5-last"),
-        fuse_type=cfg.MODEL.FPN.FUSE_TYPE,
-    )
-    return backbone
+    return build_retinanet_mobilenetv2_fpn_backbone(cfg, input_shape)
