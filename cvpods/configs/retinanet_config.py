@@ -8,7 +8,10 @@ _config_dict = dict(
     MODEL=dict(
         # Backbone NAME: "build_retinanet_resnet_fpn_backbone"
         RESNETS=dict(OUT_FEATURES=["res3", "res4", "res5"]),
-        FPN=dict(IN_FEATURES=["res3", "res4", "res5"]),
+        FPN=dict(
+            IN_FEATURES=["res3", "res4", "res5"],
+            BLOCK_IN_FEATURES="res5",
+        ),
         ANCHOR_GENERATOR=dict(
             SIZES=[
                 [x, x * 2 ** (1.0 / 3), x * 2 ** (2.0 / 3)]

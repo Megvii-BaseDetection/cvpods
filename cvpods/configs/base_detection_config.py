@@ -53,6 +53,7 @@ _config_dict = dict(
             NORM="",
             # Types for fusing the FPN top-down and lateral features. Can be either "sum" or "avg"
             FUSE_TYPE="sum",
+            BLOCK_IN_FEATURES="p5",
         ),
         ANCHOR_GENERATOR=dict(
             # NAME="DefaultAnchorGenerator",
