@@ -20,7 +20,6 @@ import glob
 import logging
 import os
 import re
-import sys
 from collections import OrderedDict
 from pprint import pformat
 
@@ -32,10 +31,8 @@ from cvpods.evaluation import build_evaluator, verify_results
 from cvpods.modeling import GeneralizedRCNN, GeneralizedRCNNWithTTA, TTAWarper
 from cvpods.utils import PathManager, comm
 
-from config import config  # noqa: E402
-from net import build_model  # noqa: E402
-
-sys.path.insert(0, '.')
+from config import config
+from net import build_model
 
 
 class Trainer(DefaultTrainer):

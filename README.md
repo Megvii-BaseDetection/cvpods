@@ -35,14 +35,14 @@ Welcome to **cvpods**, a versatile and efficient codebase for many computer visi
 
 ```shell
 # Install cvpods with GPU directly 
-pip install 'git+https://github.com/Megvii-BaseDetection/cvpods.git'
+pip install 'git+https://github.com/Megvii-BaseDetection/cvpods.git' --user
 
 # Or, to install it with GPU from a local clone:
 git clone https://github.com/Megvii-BaseDetection/cvpods.git
-pip install -e cvpods 
+pip install -e cvpods --user 
 
 # Or, to build it without GPU from a local clone:
-FORCE_CUDA=1 pip install -e cvpods 
+FORCE_CUDA=1 pip install -e cvpods --user
 
 ```
 
