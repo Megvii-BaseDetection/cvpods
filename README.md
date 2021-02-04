@@ -5,6 +5,10 @@
 
 Welcome to **cvpods**, a versatile and efficient codebase for many computer vision tasks: classification, segmentation, detection, self-supervised learning, keypoints and 3D(classification / segmentation / detection / representation learing), etc. The aim of cvpods is to achieve efficient experiments management and smooth tasks-switching.
 
+<div align=center><img src=".github/cvpods_tasks.png" title="xxx"><div align=left>
+
+>  Each sub-image denotes a task. All images are from search engine.
+
 ## Table of Contents
 
 - [Changelog](#changelog)
