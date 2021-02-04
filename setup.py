@@ -88,7 +88,7 @@ def get_extensions():
 
 def build_cvpods_script():
     cur_dir = os.getcwd()
-    head = "#!/bin/bash\n\nexport OMP_NUM_THREADS=1\n\nexport PYTHONPATH=./:$PYTHONPATH\n\n"
+    head = "#!/bin/bash\n\nOMP_NUM_THREADS=1 PYTHONPATH=./:$PYTHONPATH "
     with open("tools/pods_train", "w") as pods_train:
         pods_train.write(head + f"python3 {os.path.join(cur_dir, 'tools', 'train_net.py')} $@")
 
