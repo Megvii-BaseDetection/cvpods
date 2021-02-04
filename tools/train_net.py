@@ -29,8 +29,8 @@ from cvpods.evaluation import build_evaluator, verify_results
 from cvpods.modeling import GeneralizedRCNNWithTTA
 from cvpods.utils import comm
 
-from config import config  # noqa: E402
-from net import build_model  # noqa: E402
+from config import config
+from net import build_model
 
 
 class Trainer(DefaultTrainer):

@@ -7,17 +7,14 @@ Debuging Script.
 import logging
 import os
 import re
-import sys
 
 from cvpods.checkpoint import Checkpointer
 from cvpods.engine import TrainerBase, default_argument_parser, default_setup, launch
 from cvpods.solver import build_optimizer
 from cvpods.utils import comm
 
-from config import config  # noqa: E402
-from net import build_model  # noqa: E402
-
-sys.path.insert(0, '.')
+from config import config
+from net import build_model
 
 
 class DebugTrainer(TrainerBase):
