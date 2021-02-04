@@ -18,7 +18,6 @@ You may want to write your own script with your datasets and other customization
 import logging
 import os
 import pickle as pkl
-import sys
 from collections import OrderedDict
 from colorama import Fore, Style
 
@@ -32,8 +31,6 @@ from cvpods.utils import comm
 
 from config import config  # noqa: E402
 from net import build_model  # noqa: E402
-
-sys.path.insert(0, '.')
 
 
 class Trainer(DefaultTrainer):
