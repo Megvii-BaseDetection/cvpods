@@ -276,7 +276,7 @@ def build_retinanet_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
     if block_in_feature == "p5":
         in_channels_p6p7 = out_channels
     elif block_in_feature == "res5":
-        in_channels_p6p7 = bottom_up.output_shape()[in_features].channels
+        in_channels_p6p7 = bottom_up.output_shape()[block_in_feature].channels
     else:
         raise ValueError(block_in_feature)
 
@@ -342,7 +342,7 @@ def build_retinanet_mobilenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
     if block_in_feature == "p5":
         in_channels_p6p7 = out_channels
     elif block_in_feature == "mobile5-last" or block_in_feature == "mobile5":
-        in_channels_p6p7 = bottom_up.output_shape()[in_features].channels
+        in_channels_p6p7 = bottom_up.output_shape()[block_in_feature].channels
     else:
         raise ValueError(block_in_feature)
 

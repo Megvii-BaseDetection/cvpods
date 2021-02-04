@@ -5,6 +5,10 @@
 
 Welcome to **cvpods**, a versatile and efficient codebase for many computer vision tasks: classification, segmentation, detection, self-supervised learning, keypoints and 3D(classification / segmentation / detection / representation learing), etc. The aim of cvpods is to achieve efficient experiments management and smooth tasks-switching.
 
+<div align=center><img src=".github/cvpods_tasks.png"><div align=left>
+
+>  Each sub-image denotes a task. All images are from search engine.
+
 ## Table of Contents
 
 - [Changelog](#changelog)
@@ -35,14 +39,14 @@ Welcome to **cvpods**, a versatile and efficient codebase for many computer visi
 
 ```shell
 # Install cvpods with GPU directly 
-pip install 'git+https://github.com/Megvii-BaseDetection/cvpods.git'
+pip install 'git+https://github.com/Megvii-BaseDetection/cvpods.git' --user
 
 # Or, to install it with GPU from a local clone:
 git clone https://github.com/Megvii-BaseDetection/cvpods.git
-pip install -e cvpods 
+pip install -e cvpods --user 
 
 # Or, to build it without GPU from a local clone:
-FORCE_CUDA=1 pip install -e cvpods 
+FORCE_CUDA=1 pip install -e cvpods --user
 
 ```
 

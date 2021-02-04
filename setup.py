@@ -88,7 +88,7 @@ def get_extensions():
 
 def build_cvpods_script():
     cur_dir = os.getcwd()
-    head = "#!/bin/bash\n\n OMP_NUM_THREADS=1 PYTHONPATH=./:$PYTHONPATH "
+    head = "#!/bin/bash\n\nOMP_NUM_THREADS=1 PYTHONPATH=./:$PYTHONPATH "
     with open("tools/pods_train", "w") as pods_train:
         pods_train.write(head + f"python3 {os.path.join(cur_dir, 'tools', 'train_net.py')} $@")
 
@@ -141,13 +141,6 @@ if __name__ == "__main__":
                 "panopticapi @ https://github.com/cocodataset/panopticapi/archive/master.zip",
                 "lvis",
                 "cityscapesscripts",
-            ],
-            "dev": [
-                "flake8==3.8.1",
-                "isort==4.3.21",
-                "black==20.8b1",
-                "flake8-bugbear",
-                "flake8-comprehensions",
             ],
         },
         ext_modules=get_extensions(),
