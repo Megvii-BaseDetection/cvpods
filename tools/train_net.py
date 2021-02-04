@@ -23,8 +23,8 @@ from colorama import Fore, Style
 from cvpods.engine import RUNNERS, default_argument_parser, default_setup, hooks, launch
 from cvpods.modeling import GeneralizedRCNNWithTTA
 
-from config import config  # noqa: E402
-from net import build_model  # noqa: E402
+from config import config
+from net import build_model
 
 
 def trainer_decrator(cls):
@@ -70,8 +70,7 @@ def main(args):
     If you'd like to do anything fancier than the standard training logic,
     consider writing your own training loop or subclassing the trainer.
     """
-    trainer = trainer_decrator(RUNNERS.get(cfg.TRAINER.TYPE))(cfg, model_builder=build_model)
-
+    trainer = trainer_decrator(RUNNERS.get(cfg.TRAINER.TYPE))(cfg, build_model)
     trainer.resume_or_load(resume=args.resume)
 
     # check wheather worksapce has enough storeage space

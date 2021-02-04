@@ -35,7 +35,6 @@ _config_dict = dict(
         ),
     ),
     INPUT=dict(FORMAT="RGB"),
-    TRAINER=dict(TYPE="EpochRunner"),
     SOLVER=dict(
         IMS_PER_DEVICE=32,  # defalut: 8 gpus x 32 = 256
     ),

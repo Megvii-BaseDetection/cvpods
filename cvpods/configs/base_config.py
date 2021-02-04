@@ -175,7 +175,7 @@ _config_dict = dict(
     ),
     # Trainer is used to specify options related to control the training process
     TRAINER=dict(
-        TYPE="IterRunner",
+        TYPE="DefaultRunner",
         WINDOW_SIZE=20,
         LOG_INTERVAL=20,
         FP16=dict(
