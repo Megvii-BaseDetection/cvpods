@@ -4,7 +4,6 @@ from .hooks import *
 from .launch import *
 from .predictor import *
 from .setup import *
-# from .runner import *
-from .trainer import *
+from .runner import *
 
 __all__ = [k for k in globals().keys() if not k.startswith("_")]
