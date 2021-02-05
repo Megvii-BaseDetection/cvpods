@@ -1,15 +1,10 @@
 import logging
 import math
 import os
-import time
-import weakref
 from collections import OrderedDict
-from typing import Dict, Optional
-
-import numpy as np
 
 import torch
-from torch.nn.parallel import DataParallel, DistributedDataParallel
+from torch.nn.parallel import DistributedDataParallel
 
 from cvpods.checkpoint import DefaultCheckpointer
 from cvpods.data import build_test_loader, build_train_loader
@@ -23,363 +18,19 @@ from cvpods.modeling.nn_utils.module_converter import maybe_convert_module
 from cvpods.modeling.nn_utils.precise_bn import get_bn_modules
 from cvpods.solver import build_lr_scheduler, build_optimizer
 from cvpods.utils import comm, setup_logger
-from cvpods.utils.dump.events import (
-    CommonMetricPrinter,
-    EventStorage,
-    JSONWriter,
-    TensorboardXWriter,
-    get_event_storage
-)
+from cvpods.utils.dump.events import CommonMetricPrinter, JSONWriter, TensorboardXWriter
 from cvpods.utils.env import TORCH_VERSION
-from cvpods.utils.registry import Registry
 
 from . import hooks
-from .hooks import HookBase
-
-RUNNERS = Registry("runners")
-
-
-def default_writers(output_dir: str,
-                    max_iter: Optional[int] = None,
-                    window_size: Optional[int] = None,
-                    max_epoch: Optional[int] = None):
-    """
-    Build a list of :class:`EventWriter` to be used.
-    It now consists of a :class:`CommonMetricPrinter`,
-    :class:`TensorboardXWriter` and :class:`JSONWriter`.
-
-    Args:
-        output_dir: directory to store JSON metrics and tensorboard events
-        max_iter: the total number of iterations
-
-    Returns:
-        list[EventWriter]: a list of :class:`EventWriter` objects.
-    """
-    return [
-        # It may not always print what you want to see, since it prints "common" metrics only.
-        CommonMetricPrinter(
-            max_iter,
-            window_size=window_size,
-            epoch=max_epoch,
-        ),
-        JSONWriter(os.path.join(output_dir, "metrics.json")),
-        TensorboardXWriter(output_dir),
-    ]
+from .base_runner import RUNNERS, IterationRunner
 
 
 @RUNNERS.register()
-class RunnerBase:
-    """
-    Base class for iterative runner with hooks.
-
-    The only assumption we made here is: the training runs in a loop.
-    A subclass can implement what the loop is.
-    We made no assumptions about the existence of dataloader, optimizer, model, etc.
-
-    Attributes:
-        iter(int): the current iteration.
-
-        start_iter(int): The iteration to start with.
-            By convention the minimum possible value is 0.
-
-        max_iter(int): The iteration to end training.
-
-        storage(EventStorage): An EventStorage that's opened during the course of training.
-    """
-
-    def __init__(self):
-        self._hooks = []
-
-    def register_hooks(self, hooks):
-        """
-        Register hooks to the runner. The hooks are executed in the order
-        they are registered.
-
-        Args:
-            hooks (list[Optional[HookBase]]): list of hooks
-        """
-        hooks = [h for h in hooks if h is not None]
-        for h in hooks:
-            assert isinstance(h, HookBase)
-            # To avoid circular reference, hooks and runner cannot own each other.
-            # This normally does not matter, but will cause memory leak if the
-            # involved objects contain __del__:
-            # See http://engineering.hearsaysocial.com/2013/06/16/circular-references-in-python/
-            h.trainer = weakref.proxy(self)
-        self._hooks.extend(hooks)
-
-    def train(self, start_iter: int, max_iter: int, max_epoch):
-        """
-        Args:
-            start_iter, max_iter (int): See docs above
-        """
-        logger = logging.getLogger(__name__)
-        logger.info("Starting training from iteration {}".format(start_iter))
-
-        self.iter = self.start_iter = start_iter
-        self.epoch = int(start_iter / len(self.data_loader))
-        self.max_iter = max_iter
-        self.max_epoch = max_epoch
-
-        with EventStorage(start_iter) as self.storage:
-            try:
-                self.before_train()
-                for self.iter in range(start_iter, max_iter):
-                    self.before_step()
-                    self.run_step()
-                    self.after_step()
-                # self.iter == max_iter can be used by `after_train` to
-                # tell whether the training successfully finished or failed
-                # due to exceptions.
-                self.iter += 1
-            except Exception:
-                logger.exception("Exception during training:")
-                raise
-            finally:
-                self.after_train()
-
-    def before_train(self):
-        for h in self._hooks:
-            h.before_train()
-
-    def after_train(self):
-        self.storage._iter = self.iter
-        for h in self._hooks:
-            h.after_train()
-
-    def before_step(self):
-        # Maintain the invariant that storage.iter == runner.iter
-        # for the entire execution of each step
-        self.storage._iter = self.iter
-
-        for h in self._hooks:
-            h.before_step()
-
-    def after_step(self):
-        for h in self._hooks:
-            h.after_step()
-
-    def run_step(self):
-        raise NotImplementedError
-
-
-@RUNNERS.register()
-class SimpleRunner(RunnerBase):
-    """
-    A simple runner for the most common type of task:
-    single-cost single-optimizer single-data-source iterative optimization,
-    optionally using data-parallelism.
-    It assumes that every step, you:
-
-    1. Compute the loss with a data from the data_loader.
-    2. Compute the gradients with the above loss.
-    3. Update the model with the optimizer.
-
-    All other tasks during training (checkpointing, logging, evaluation, LR schedule)
-    are maintained by hooks, which can be registered by :meth:`RunnerBase.register_hooks`.
-
-    If you want to do anything fancier than this,
-    either subclass RunnerBase and implement your own `run_step`,
-    or write your own training loop.
-    """
-
-    def __init__(self, model, data_loader, optimizer, batch_subdivisions=1):
-        """
-        Args:
-            model: a torch Module. Takes a data from data_loader and returns a
-                dict of losses.
-            data_loader: an iterable. Contains data to be used to call model.
-            optimizer: a torch optimizer.
-        """
-        super().__init__()
-
-        """
-        We set the model to training mode in the runner.
-        However it's valid to train a model that's in eval mode.
-        If you want your model (or a submodule of it) to behave
-        like evaluation during training, you can overwrite its train() method.
-        """
-        model.train()
-
-        self.model = model
-        self.data_loader = data_loader
-        self._data_loader_iter = iter(data_loader)
-        self.optimizer = optimizer
-        self.batch_subdivisions = batch_subdivisions
-
-    def run_step(self):
-        """
-        Implement the standard training logic described above.
-        """
-        assert self.model.training, "[SimpleRunner] model was changed to eval mode!"
-        data_time_sum = 0.
-        """
-        If you want to do something with the data, you can wrap the dataloader.
-        """
-        # for each mini step
-        for division_iter in range(self.batch_subdivisions):
-            start = time.perf_counter()
-            try:
-                data = next(self._data_loader_iter)
-            except StopIteration:
-                self.epoch += 1
-                if hasattr(self.data_loader.sampler, 'set_epoch'):
-                    self.data_loader.sampler.set_epoch(self.epoch)
-                self._data_loader_iter = iter(self.data_loader)
-                data = next(self._data_loader_iter)
-
-            data_time = time.perf_counter() - start
-            data_time_sum += data_time
-
-            """
-            If you want to do something with the losses, you can wrap the model.
-            """
-            loss_dict = self.model(data)
-            for metrics_name, metrics_value in loss_dict.items():
-                # Actually, some metrics are not loss, such as
-                # top1_acc, top5_acc in classification, filter them out
-                if metrics_value.requires_grad:
-                    loss_dict[metrics_name] = metrics_value / self.batch_subdivisions
-
-            losses = sum([
-                metrics_value for metrics_value in loss_dict.values()
-                if metrics_value.requires_grad
-            ])
-            self._detect_anomaly(losses, loss_dict)
-            """
-            If you need to accumulate gradients or do something similar, you can
-            wrap the optimizer with your custom `zero_grad()` method.
-            """
-            self.optimizer.zero_grad()
-
-            if (division_iter != self.batch_subdivisions - 1
-                    and isinstance(self.model, DistributedDataParallel)):
-                with self.model.no_sync():
-                    losses.backward()
-            else:
-                losses.backward()
-
-        self._write_metrics(loss_dict, data_time)
-
-        """
-        If you need gradient clipping/scaling or other processing, you can
-        wrap the optimizer with your custom `step()` method. But it is
-        suboptimal as explained in https://arxiv.org/abs/2006.15704 Sec 3.2.4
-        """
-        self.optimizer.step()
-
-    def _detect_anomaly(self, losses, loss_dict):
-        if not torch.isfinite(losses).all():
-            raise FloatingPointError(
-                "Loss became infinite or NaN at iteration={}!\nloss_dict = {}".format(
-                    self.iter, loss_dict
-                )
-            )
-
-    def _write_metrics(
-        self,
-        loss_dict: Dict[str, torch.Tensor],
-        data_time: float,
-        prefix: str = "",
-    ):
-        """
-        Args:
-            loss_dict (dict): dict of scalar losses
-            data_time (float): time taken by the dataloader iteration
-        """
-        device = next(iter(loss_dict.values())).device
-
-        # Use a new stream so these ops don't wait for DDP or backward
-        with torch.cuda.stream(torch.cuda.Stream() if device.type == "cuda" else None):
-            metrics_dict = {k: v.detach().cpu().item() for k, v in loss_dict.items()}
-            metrics_dict["data_time"] = data_time
-
-            # Gather metrics among all workers for logging
-            # This assumes we do DDP-style training, which is currently the only
-            # supported method in cvpods.
-            all_metrics_dict = comm.gather(metrics_dict)
-
-        if comm.is_main_process():
-            storage = get_event_storage()
-
-            # data_time among workers can have high variance. The actual latency
-            # caused by data_time is the maximum among workers.
-            data_time = np.max([x.pop("data_time") for x in all_metrics_dict])
-            storage.put_scalar("data_time", data_time)
-
-            # average the rest metrics
-            metrics_dict = {
-                k: np.mean([x[k] for x in all_metrics_dict]) for k in all_metrics_dict[0].keys()
-            }
-            total_losses_reduced = sum(metrics_dict.values())
-            if not np.isfinite(total_losses_reduced):
-                raise FloatingPointError(
-                    f"Loss became infinite or NaN at iteration={self.iter}!\n"
-                    f"loss_dict = {metrics_dict}"
-                )
-
-            storage.put_scalar("{}total_loss".format(prefix), total_losses_reduced)
-            if len(metrics_dict) > 1:
-                storage.put_scalars(**metrics_dict)
-
-
-@RUNNERS.register()
-class AMPRunner(SimpleRunner):
-    """
-    Like :class:`SimpleRunner`, but uses PyTorch's native automatic mixed precision
-    in the training loop.
-    """
-
-    def __init__(self, model, data_loader, optimizer, grad_scaler=None):
-        """
-        Args:
-            model, data_loader, optimizer: same as in :class:`SimpleRunner`.
-            grad_scaler: torch GradScaler to automatically scale gradients.
-        """
-        unsupported = "AMPRunner does not support single-process multi-device training!"
-        if isinstance(model, DistributedDataParallel):
-            assert not (model.device_ids and len(model.device_ids) > 1), unsupported
-        assert not isinstance(model, DataParallel), unsupported
-
-        super().__init__(model, data_loader, optimizer)
-
-        if grad_scaler is None:
-            from torch.cuda.amp import GradScaler
-
-            grad_scaler = GradScaler()
-        self.grad_scaler = grad_scaler
-
-    def run_step(self):
-        """
-        Implement the AMP training logic.
-        """
-        assert self.model.training, "[AMPRunner] model was changed to eval mode!"
-        assert torch.cuda.is_available(), "[AMPRunner] CUDA is required for AMP training!"
-        from torch.cuda.amp import autocast
-
-        start = time.perf_counter()
-        data = next(self._data_loader_iter)
-        data_time = time.perf_counter() - start
-
-        with autocast():
-            loss_dict = self.model(data)
-            losses = sum(loss_dict.values())
-
-        self.optimizer.zero_grad()
-        self.grad_scaler.scale(losses).backward()
-
-        self._write_metrics(loss_dict, data_time)
-
-        self.grad_scaler.step(self.optimizer)
-        self.grad_scaler.update()
-
-
-@RUNNERS.register()
-class DefaultRunner(RunnerBase):
+class DefaultRunner(IterationRunner):
     """
     A runner with default training logic. It does the following:
 
-    1. Create a :class:`SimpleRunner` using model, optimizer, dataloader
+    1. Create a :class:`IterRunner` using model, optimizer, dataloader
        defined by the given config. Create a LR scheduler defined by the config.
     2. Load the last checkpoint or `cfg.MODEL.WEIGHTS`, if exists, when
        `resume_or_load` is called.
@@ -389,13 +40,13 @@ class DefaultRunner(RunnerBase):
     for users who only need the standard training workflow, with standard features.
     It means this class makes *many assumptions* about your training logic that
     may easily become invalid in a new research. In fact, any assumptions beyond those made in the
-    :class:`SimpleRunner` are too much for research.
+    :class:`IterRunner` are too much for research.
 
     The code of this class has been annotated about restrictive assumptions it makes.
     When they do not work for you, you're encouraged to:
 
     1. Overwrite methods of this class, OR:
-    2. Use :class:`SimpleRunner`, which only does minimal SGD training and
+    2. Use :class:`IterRunner`, which only does minimal SGD training and
        nothing else. You can then add your own hooks if needed. OR:
     3. Write your own training loop similar to `tools/plain_train_net.py`.
 
@@ -423,7 +74,6 @@ class DefaultRunner(RunnerBase):
         Args:
             cfg (config dict):
         """
-        super().__init__()
         logger = logging.getLogger("cvpods")
         if not logger.isEnabledFor(logging.INFO):  # setup_logger is not called for cvpods
             setup_logger()
@@ -440,6 +90,15 @@ class DefaultRunner(RunnerBase):
 
         # For training, wrap with DDP. But don't need this for inference.
         if comm.get_world_size() > 1:
+            if cfg.TRAINER.FP16.ENABLED:
+                self.mixed_precision = True
+                if cfg.TRAINER.FP16.TYPE == "APEX":
+                    from apex import amp
+                    self.model, self.optimizer = amp.initialize(
+                        self.model, self.optimizer, opt_level=cfg.TRAINER.FP16.OPTS.OPT_LEVEL
+                    )
+            else:
+                self.mixed_precision = False
             torch.cuda.set_device(comm.get_local_rank())
             self.model = DistributedDataParallel(
                 self.model,
@@ -447,8 +106,10 @@ class DefaultRunner(RunnerBase):
                 broadcast_buffers=False,
                 find_unused_parameters=True)
 
-        self._runner = SimpleRunner(
-            self.model, self.data_loader, self.optimizer, cfg.SOLVER.BATCH_SUBDIVISIONS
+        super().__init__(
+            self.model,
+            self.data_loader,
+            self.optimizer,
         )
 
         if not cfg.SOLVER.LR_SCHEDULER.get("EPOCH_WISE", False):
@@ -516,8 +177,13 @@ class DefaultRunner(RunnerBase):
         # cfg.DATALOADER.NUM_WORKERS = 0  # save some memory and time for PreciseBN
 
         ret = [
-            hooks.IterationTimer(),
+            hooks.OptimizationHook(
+                accumulate_grad_steps=cfg.SOLVER.BATCH_SUBDIVISIONS,
+                grad_clipper=None,
+                mixed_precision=cfg.TRAINER.FP16.ENABLED
+            ),
             hooks.LRScheduler(self.optimizer, self.scheduler),
+            hooks.IterationTimer(),
             hooks.PreciseBN(
                 # Run at the same freq as (but before) evaluation.
                 cfg.TEST.EVAL_PERIOD,
@@ -553,14 +219,27 @@ class DefaultRunner(RunnerBase):
 
     def build_writers(self):
         """
-        Build a list of writers to be used using :func:`default_writers()`.
-        If you'd like a different list of writers, you can overwrite it in
-        your runner.
+        Build a list of :class:`EventWriter` to be used.
+        It now consists of a :class:`CommonMetricPrinter`,
+        :class:`TensorboardXWriter` and :class:`JSONWriter`.
+
+        Args:
+            output_dir: directory to store JSON metrics and tensorboard events
+            max_iter: the total number of iterations
 
         Returns:
             list[EventWriter]: a list of :class:`EventWriter` objects.
         """
-        return default_writers(self.cfg.OUTPUT_DIR, self.max_iter, self.window_size, self.max_epoch)
+        return [
+            # It may not always print what you want to see, since it prints "common" metrics only.
+            CommonMetricPrinter(
+                self.max_iter,
+                window_size=self.window_size,
+                epoch=self.max_epoch,
+            ),
+            JSONWriter(os.path.join(self.cfg.OUTPUT_DIR, "metrics.json")),
+            TensorboardXWriter(self.cfg.OUTPUT_DIR),
+        ]
 
     def train(self):
         """
@@ -576,11 +255,6 @@ class DefaultRunner(RunnerBase):
             ), "No evaluation results obtained during training!"
             verify_results(self.cfg, self._last_eval_results)
             return self._last_eval_results
-
-    def run_step(self):
-        self._runner.iter = self.iter
-        self._runner.epoch = self.epoch
-        self._runner.run_step()
 
     @classmethod
     def build_optimizer(cls, cfg, model):

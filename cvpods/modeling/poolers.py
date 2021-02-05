@@ -10,7 +10,6 @@ from torchvision.ops import PSRoIAlign, PSRoIPool, RoIPool
 from cvpods.layers import ROIAlign, ROIAlignRotated, cat
 from cvpods.utils.apex_wrapper import float_function
 
-
 __all__ = ["ROIPooler"]
 
 
