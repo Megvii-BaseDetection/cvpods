@@ -5,7 +5,7 @@ import unittest
 import torch
 from torch import nn
 
-from cvpods.engine import SimpleTrainer
+from cvpods.engine import IterationRunner 
 
 
 class SimpleModel(nn.Sequential):
@@ -22,7 +22,7 @@ class TestTrainer(unittest.TestCase):
             while True:
                 yield torch.rand(3, 3).to(device)
 
-        trainer = SimpleTrainer(model, data_loader(), torch.optim.SGD(model.parameters(), 0.1))
+        trainer = IterationRunner(model, data_loader(), torch.optim.SGD(model.parameters(), 0.1))
         # trainer.train(0, 10, 0)
         return trainer
 

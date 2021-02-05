@@ -2,7 +2,6 @@
 import itertools
 import math
 from collections import defaultdict
-from typing import Optional
 
 import numpy as np
 

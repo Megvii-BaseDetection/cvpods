@@ -133,7 +133,7 @@ class IterationRunner(RunnerBase):
     or write your own training loop.
     """
 
-    def __init__(self, model, data_loader, optimizer, mixed_precision=False, **kwargs):
+    def __init__(self, model, data_loader, optimizer):
         """
         Args:
             model: a torch Module. Takes a data from data_loader and returns a
