@@ -248,7 +248,7 @@ class DefaultRunner(IterationRunner):
         Returns:
             OrderedDict of results, if evaluation is enabled. Otherwise None.
         """
-        super().train(self.start_iter, self.max_iter, self.max_epoch)
+        super().train(self.start_iter, self.max_iter)
         if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
             assert hasattr(
                 self, "_last_eval_results"
@@ -287,7 +287,7 @@ class DefaultRunner(IterationRunner):
         return build_train_loader(cfg)
 
     @classmethod
-    def build_test_loader(cls, cfg, dataset_name):
+    def build_test_loader(cls, cfg):
         """
         Returns:
             iterable
@@ -295,7 +295,7 @@ class DefaultRunner(IterationRunner):
         It now calls :func:`cvpods.data.build_test_loader`.
         Overwrite it if you'd like a different data loader.
         """
-        return build_test_loader(cfg, dataset_name)
+        return build_test_loader(cfg)
 
     @classmethod
     def build_evaluator(cls, cfg, dataset_name):
@@ -314,7 +314,7 @@ Alternatively, you can call evaluation functions yourself (see Colab balloon tut
         )
 
     @classmethod
-    def test(cls, cfg, model, evaluators=None):
+    def test(cls, cfg, model, evaluators=None, output_folder=None):
         """
         Args:
             cfg (config dict):
@@ -336,19 +336,19 @@ Alternatively, you can call evaluation functions yourself (see Colab balloon tut
 
         results = OrderedDict()
         for idx, dataset_name in enumerate(cfg.DATASETS.TEST):
-            data_loader = cls.build_test_loader(cfg, dataset_name)
+            data_loader = cls.build_test_loader(cfg)
             # When evaluators are passed in as arguments,
             # implicitly assume that evaluators can be created before data_loader.
             if evaluators is not None:
                 evaluator = evaluators[idx]
             else:
                 try:
-                    evaluator = cls.build_evaluator(cfg, dataset_name)
+                    evaluator = cls.build_evaluator(
+                        cfg, dataset_name, data_loader.dataset, output_folder=output_folder)
                 except NotImplementedError:
                     logger.warn(
-                        "No evaluator found. Use `DefaultRunner.test(evaluators=)`, "
-                        "or implement its `build_evaluator` method."
-                    )
+                        "No evaluator found. Use `DefaultTrainer.test(evaluators=)`, "
+                        "or implement its `build_evaluator` method.")
                     results[dataset_name] = {}
                     continue
             results_i = inference_on_dataset(model, data_loader, evaluator)

@@ -2,26 +2,23 @@
 # Modified by BaseDetection, Inc. and its affiliates. All Rights Reserved
 """
 Detection Training Script.
-
 This scripts reads a given config file and runs the training or evaluation.
 It is an entry point that is made to train standard models in cvpods.
-
 In order to let one script support training of many models,
 this script contains logic that are specific to these built-in models and therefore
 may not be suitable for your own project.
 For example, your research project perhaps only needs a single "evaluator".
-
 Therefore, we recommend you to use cvpods as an library and take
 this file as an example of how to use the library.
 You may want to write your own script with your datasets and other customizations.
 """
 import logging
 import os
-
 from collections import OrderedDict
 from colorama import Fore, Style
 
 from cvpods.engine import RUNNERS, default_argument_parser, default_setup, hooks, launch
+from cvpods.evaluation import build_evaluator
 from cvpods.modeling import GeneralizedRCNNWithTTA
 
 from config import config
@@ -37,7 +34,7 @@ def trainer_decrator(cls):
     "tools/plain_train_net.py" as an example.
     """
 
-    def build_evaluator(cfg, dataset_name, dataset, output_folder=None):
+    def custom_build_evaluator(cfg, dataset_name, dataset, output_folder=None):
         """
         Create evaluator(s) for a given dataset.
         This uses the special metadata "evaluator_type" associated with each builtin dataset.
@@ -47,7 +44,7 @@ def trainer_decrator(cls):
         dump_train = config.GLOBAL.DUMP_TRAIN
         return build_evaluator(cfg, dataset_name, dataset, output_folder, dump=dump_train)
 
-    def test_with_TTA(cls, cfg, model):
+    def custom_test_with_TTA(cls, cfg, model):
         logger = logging.getLogger("cvpods.trainer")
         # In the end of training, run an evaluation with TTA
         # Only support some R-CNN models.
@@ -57,8 +54,8 @@ def trainer_decrator(cls):
         res = OrderedDict({k + "_TTA": v for k, v in res.items()})
         return res
 
-    cls.build_evaluator = build_evaluator
-    cls.test_with_TTA = test_with_TTA
+    cls.build_evaluator = classmethod(custom_build_evaluator)
+    cls.test_with_TTA = classmethod(custom_test_with_TTA)
 
     return cls
 
