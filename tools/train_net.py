@@ -1,5 +1,8 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 # Modified by BaseDetection, Inc. and its affiliates. All Rights Reserved
+
+# pylint: disable=W0613
+
 """
 Detection Training Script.
 This scripts reads a given config file and runs the training or evaluation.
@@ -34,7 +37,7 @@ def trainer_decrator(cls):
     "tools/plain_train_net.py" as an example.
     """
 
-    def custom_build_evaluator(cfg, dataset_name, dataset, output_folder=None):
+    def custom_build_evaluator(cls, cfg, dataset_name, dataset, output_folder=None):
         """
         Create evaluator(s) for a given dataset.
         This uses the special metadata "evaluator_type" associated with each builtin dataset.
