@@ -5,7 +5,17 @@ import unittest
 import torch
 from torch import nn
 
+
 from cvpods.engine import IterationRunner
+from torch.utils.data import Dataset
+
+
+class SimpleDataset(Dataset):
+    def __init__(self, length=100):
+        self.data_list = torch.rand(length, 3, 3)
+
+    def __getitem__(self, index):
+        return self.data_list[index]
 
 
 class SimpleModel(nn.Sequential):
@@ -18,12 +28,16 @@ class TestTrainer(unittest.TestCase):
         device = torch.device(device)
         model = SimpleModel(nn.Linear(10, 10)).to(device)
 
-        def data_loader():
-            while True:
-                yield torch.rand(3, 3).to(device)
+        class DataLoader:
+            def __len__(self):
+                return 10000
 
-        trainer = IterationRunner(model, data_loader(), torch.optim.SGD(model.parameters(), 0.1))
-        # trainer.train(0, 10, 0)
+            def __iter__(self):
+                while True:
+                    yield torch.rand(3, 3).to(device)
+
+        trainer = IterationRunner(model, DataLoader(), torch.optim.SGD(model.parameters(), 0.1))
+        trainer.train(0, 10)
         return trainer
 
     @unittest.skipIf(not torch.cuda.is_available(), "CUDA not available")

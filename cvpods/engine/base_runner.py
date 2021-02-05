@@ -57,7 +57,7 @@ class RunnerBase:
             h.trainer = weakref.proxy(self)
         self._hooks.extend(hooks)
 
-    def train(self, start_iter: int, max_iter: int, max_epoch):
+    def train(self, start_iter: int, max_iter: int):
         """
         Args:
             start_iter, max_iter (int): See docs above
@@ -66,9 +66,6 @@ class RunnerBase:
         logger.info("Starting training from iteration {}".format(start_iter))
 
         self.iter = self.start_iter = start_iter
-        self.epoch = int(start_iter / len(self.data_loader))
-        self.max_iter = max_iter
-        self.max_epoch = max_epoch
 
         with EventStorage(start_iter) as self.storage:
             try:
@@ -155,6 +152,10 @@ class IterationRunner(RunnerBase):
         self.data_loader = data_loader
         self._data_loader_iter = iter(data_loader)
         self.optimizer = optimizer
+
+    def train(self, start_iter: int, max_iter: int):
+        self.epoch = start_iter // len(self.data_loader)
+        super().train(start_iter, max_iter)
 
     def run_step(self):
         """
