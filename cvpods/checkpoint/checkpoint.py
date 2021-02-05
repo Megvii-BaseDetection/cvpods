@@ -309,9 +309,9 @@ class PeriodicCheckpointer:
             if self.max_epoch is not None:
                 epoch_iters = self.max_iter // self.max_epoch
                 curr_epoch = (iteration + 1) // epoch_iters
-                ckpt_name = "model_epoch_{:04d}".format(curr_epoch + 1)
+                ckpt_name = "model_epoch_{:04d}".format(curr_epoch)
             else:
-                ckpt_name = "model_{:07d}".format(iteration + 1)
+                ckpt_name = "model_iter_{:07d}".format(iteration + 1)
             self.checkpointer.save(ckpt_name, **additional_state)
         if iteration >= self.max_iter - 1:
             self.checkpointer.save("model_final", **additional_state)

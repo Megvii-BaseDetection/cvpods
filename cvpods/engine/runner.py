@@ -194,7 +194,12 @@ class DefaultRunner(IterationRunner):
         # This is not always the best: if checkpointing has a different frequency,
         # some checkpoints may have more precise statistics than others.
         if comm.is_main_process():
-            ret.append(hooks.PeriodicCheckpointer(self.checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD))
+            ret.append(hooks.PeriodicCheckpointer(
+                self.checkpointer,
+                cfg.SOLVER.CHECKPOINT_PERIOD,
+                max_iter=self.max_iter,
+                max_epoch=self.max_epoch
+            ))
 
         def test_and_save_results():
             self._last_eval_results = self.test(self.cfg, self.model)
