@@ -5,7 +5,7 @@ import unittest
 import torch
 from torch import nn
 
-from cvpods.engine import IterationRunner 
+from cvpods.engine import IterationRunner
 
 
 class SimpleModel(nn.Sequential):
