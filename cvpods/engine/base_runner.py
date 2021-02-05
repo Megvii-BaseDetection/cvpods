@@ -14,6 +14,7 @@ from cvpods.utils.registry import Registry
 from .hooks import HookBase
 
 RUNNERS = Registry("runners")
+logger = logging.getLogger(__name__)
 
 
 @RUNNERS.register()
@@ -62,9 +63,6 @@ class RunnerBase:
         Args:
             start_iter, max_iter (int): See docs above
         """
-        logger = logging.getLogger(__name__)
-        logger.info("Starting training from iteration {}".format(start_iter))
-
         self.iter = self.start_iter = start_iter
 
         with EventStorage(start_iter) as self.storage:
@@ -154,7 +152,14 @@ class IterationRunner(RunnerBase):
         self.optimizer = optimizer
 
     def train(self, start_iter: int, max_iter: int):
+
         self.epoch = start_iter // len(self.data_loader)
+
+        if self.max_epoch is None:
+            logger.info("Starting training from iteration {}".format(start_iter))
+        else:
+            logger.info("Starting training from epoch {}".format(self.epoch))
+
         super().train(start_iter, max_iter)
 
     def run_step(self):
