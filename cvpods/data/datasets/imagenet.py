@@ -36,7 +36,7 @@ class ImageNetDataset(BaseDataset):
             if "://" not in image_root else image_root
 
         self.meta = self._get_metadata()
-        self.dataset_dicts = self._load_annotations()
+        self.dataset_dicts = self._load_annotations()[:100 * 256]
         self._set_group_flag()
 
         self.eval_with_gt = cfg.TEST.get("WITH_GT", False)
