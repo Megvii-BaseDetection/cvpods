@@ -1,12 +1,10 @@
-import argparse
 import logging
+import math
 import os
-import sys
 import time
 import weakref
 from collections import OrderedDict
 from typing import Dict, Optional
-from cvpods.modeling.nn_utils.precise_bn import get_bn_modules
 
 import numpy as np
 
@@ -14,33 +12,29 @@ import torch
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
 from cvpods.checkpoint import DefaultCheckpointer
-from cvpods.data import (
-    build_test_loader,
-    build_train_loader
-)
+from cvpods.data import build_test_loader, build_train_loader
 from cvpods.evaluation import (
     DatasetEvaluator,
     inference_on_dataset,
     print_csv_format,
     verify_results
 )
+from cvpods.modeling.nn_utils.module_converter import maybe_convert_module
+from cvpods.modeling.nn_utils.precise_bn import get_bn_modules
 from cvpods.solver import build_lr_scheduler, build_optimizer
-from cvpods.utils import comm
-from cvpods.utils.env import TORCH_VERSION, seed_all_rng
+from cvpods.utils import comm, setup_logger
 from cvpods.utils.dump.events import (
     CommonMetricPrinter,
     EventStorage,
     JSONWriter,
     TensorboardXWriter,
-    get_event_storage,
+    get_event_storage
 )
-from cvpods.utils import setup_logger
+from cvpods.utils.env import TORCH_VERSION
 from cvpods.utils.registry import Registry
-from cvpods.modeling.nn_utils.module_converter import maybe_convert_module
 
-from .hooks import HookBase
 from . import hooks
-
+from .hooks import HookBase
 
 RUNNERS = Registry("runners")
 
@@ -107,7 +101,7 @@ class RunnerBase:
             h.trainer = weakref.proxy(self)
         self._hooks.extend(hooks)
 
-    def train(self, start_iter: int, max_iter: int):
+    def train(self, start_iter: int, max_iter: int, max_epoch):
         """
         Args:
             start_iter, max_iter (int): See docs above
@@ -116,7 +110,9 @@ class RunnerBase:
         logger.info("Starting training from iteration {}".format(start_iter))
 
         self.iter = self.start_iter = start_iter
+        self.epoch = int(start_iter / len(self.data_loader))
         self.max_iter = max_iter
+        self.max_epoch = max_epoch
 
         with EventStorage(start_iter) as self.storage:
             try:
@@ -212,13 +208,12 @@ class SimpleRunner(RunnerBase):
         """
         If you want to do something with the data, you can wrap the dataloader.
         """
-        data = next(self._data_loader_iter)
         try:
             data = next(self._data_loader_iter)
         except StopIteration:
-            self._epoch += 1
+            self.epoch += 1
             if hasattr(self.data_loader.sampler, 'set_epoch'):
-                self.data_loader.sampler.set_epoch(self._epoch)
+                self.data_loader.sampler.set_epoch(self.epoch)
             self._data_loader_iter = iter(self.data_loader)
             data = next(self._data_loader_iter)
 
@@ -395,7 +390,7 @@ class DefaultRunner(RunnerBase):
         """
         super().__init__()
         logger = logging.getLogger("cvpods")
-        if not logger.isEnabledFor(logging.INFO):  # setup_logger is not called for cvpods 
+        if not logger.isEnabledFor(logging.INFO):  # setup_logger is not called for cvpods
             setup_logger()
         self.logger = logger
 
@@ -440,6 +435,7 @@ class DefaultRunner(RunnerBase):
         )
         self.start_iter = 0
         self.max_iter = cfg.SOLVER.LR_SCHEDULER.MAX_ITER
+        self.max_epoch = cfg.SOLVER.LR_SCHEDULER.MAX_EPOCH
         self.cfg = cfg
 
         self.register_hooks(self.build_hooks())
@@ -535,7 +531,7 @@ class DefaultRunner(RunnerBase):
         Returns:
             OrderedDict of results, if evaluation is enabled. Otherwise None.
         """
-        super().train(self.start_iter, self.max_iter)
+        super().train(self.start_iter, self.max_iter, self.max_epoch)
         if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
             assert hasattr(
                 self, "_last_eval_results"
@@ -598,9 +594,9 @@ class DefaultRunner(RunnerBase):
         """
         raise NotImplementedError(
             """
-            If you want DefaultRunner to automatically run evaluation,
-            please implement `build_evaluator()` in subclasses (see train_net.py for example).
-            Alternatively, you can call evaluation functions yourself (see Colab balloon tutorial for example).
+If you want DefaultRunner to automatically run evaluation,
+please implement `build_evaluator()` in subclasses (see train_net.py for example).
+Alternatively, you can call evaluation functions yourself (see Colab balloon tutorial for example).
             """
         )
 
