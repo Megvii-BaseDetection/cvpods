@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates.
+# Copyright (c) Facebook, Inc. and its affiliates.
+# Modified by BaseDetection, Inc. and its affiliates.
 
 import contextlib
 import copy
