@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
+# Copyright (c) BaseDetection, Inc. and its affiliates.
 
 import copy
 import pylab as plt

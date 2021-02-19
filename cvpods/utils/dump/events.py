@@ -1,4 +1,5 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Facebook, Inc. and its affiliates
+# Modified by BaseDetection, Inc. and its affiliates.
 
 # pylint: disable=W0613
 

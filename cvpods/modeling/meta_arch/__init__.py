@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Facebook, Inc. and its affiliates.
+# Modified by BaseDetection, Inc. and its affiliates.
 
 # import all the meta_arch, so they will be registered
 

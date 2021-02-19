@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates.
+# Modified by BaseDetection, Inc. and its affiliates.
+
 import logging
 import math
 import os

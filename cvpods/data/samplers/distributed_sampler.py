@@ -1,4 +1,7 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Copyright (c) BaseDetection, Inc. and its affiliates
+
 import itertools
 import math
 from collections import defaultdict
