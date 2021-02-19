@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Copyright (c) BaseDetection, Inc. and its affiliates.
+
 import logging
 import math
 from typing import List

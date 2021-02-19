@@ -1,4 +1,3 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 from torch import nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable

@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
 from copy import deepcopy
 
 import numpy as np

@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# -*- coding:utf-8 -*-
+# Copyright (c) BaseDetection, Inc. and its affiliates.
+
 import torch.nn as nn
 
 from cvpods.layers import get_norm

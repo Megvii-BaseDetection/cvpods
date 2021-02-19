@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates.
+# Modified by BaseDetection, Inc. and its affiliates.
 
 import math
 from bisect import bisect_right
