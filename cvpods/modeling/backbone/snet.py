@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# -*- coding:utf-8 -*-
+# Copyright (c) BaseDetection, Inc. and its affiliates.
+
 import numpy as np
 
 import torch.nn as nn

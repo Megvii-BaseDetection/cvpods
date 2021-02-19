@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
+# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
 
 
 def gather_feature(fmap, index, mask=None, use_transform=False):

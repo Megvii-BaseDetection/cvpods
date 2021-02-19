@@ -1,4 +1,5 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Modified by BaseDetection, Inc. and its affiliates. All Rights Reserved
 from .activation_funcs import MemoryEfficientSwish, Swish
 from .batch_norm import FrozenBatchNorm2d, NaiveSyncBatchNorm, get_activation, get_norm
 from .deform_conv import DeformConv, ModulatedDeformConv

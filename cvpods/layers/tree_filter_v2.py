@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+# -*- coding:utf-8 -*-
+# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
