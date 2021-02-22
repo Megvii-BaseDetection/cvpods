@@ -229,16 +229,23 @@ class CommonMetricPrinter(EventWriter):
             ]
         )
 
+        if self._epoch_iters is not None:
+            progress_tring = "epoch: {cur_epoch}/{max_epoch}  iter: {cur_iter}/{max_iter}".format(
+                cur_epoch=(iteration + 1) % self._epoch_iters,
+                max_epoch=self._max_iter // self._epoch_iters,
+                cur_iter=iteration + 1,
+                max_iter=self._max_iter,
+            )
+        else:
+            progress_tring = "iter: {cur_iter}/{max_iter}".format(
+                cur_iter=iteration + 1,
+                max_iter=self._max_iter,
+            )
         self.logger.info(
-            ("eta: {eta}  {name}: {iter}|{max_iter}  {losses}  {other_metrics}  {time}  "
+            ("eta: {eta}  {progress}  {losses}  {other_metrics}  {time}  "
              "{data_time}  lr: {lr}  {memory}").format(
                  eta=eta_string,
-                 name='epoch|iter' if self._epoch_iters is not None else 'iter',
-                 iter=iteration + 1 if self._epoch_iters is None
-                 else f"[{(iteration + 1) // self._epoch_iters + 1}"
-                 f"/{self._max_iter // self._epoch_iters}]",
-                 max_iter=self._max_iter if self._epoch_iters is None
-                 else f"[{(iteration + 1) % self._epoch_iters}/{self._epoch_iters}]",
+                 progress_string=progress_tring,
                  losses=losses,
                  other_metrics=other_metrics,
                  time="time: {:.4f}".format(iter_time) if iter_time is not None else "",

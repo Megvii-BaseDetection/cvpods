@@ -38,7 +38,7 @@ from config import config
 from net import build_model
 
 
-def trainer_decrator(cls):
+def runner_decrator(cls):
     """
     We use the "DefaultTrainer" which contains a number pre-defined logic for
     standard training workflow. They may not work for you, especially if you
@@ -57,7 +57,7 @@ def trainer_decrator(cls):
         return build_evaluator(cfg, dataset_name, dataset, output_folder, dump=dump_test)
 
     def custom_test_with_TTA(cls, cfg, model):
-        logger = logging.getLogger("cvpods.trainer")
+        logger = logging.getLogger("cvpods.runner")
         # In the end of training, run an evaluation with TTA
         # Only support some R-CNN models.
         logger.info("Running inference with test-time augmentation ...")
@@ -167,9 +167,9 @@ def main(args):
             cfg.MODEL.WEIGHTS, resume=args.resume
         )
         if cfg.TEST.AUG.ENABLED:
-            res = trainer_decrator(RUNNERS.get(cfg.TRAINER.NAME)).test_with_TTA(cfg, model)
+            res = runner_decrator(RUNNERS.get(cfg.TRAINER.NAME)).test_with_TTA(cfg, model)
         else:
-            res = trainer_decrator(RUNNERS.get(cfg.TRAINER.NAME)).test(cfg, model)
+            res = runner_decrator(RUNNERS.get(cfg.TRAINER.NAME)).test(cfg, model)
 
         if comm.is_main_process():
             verify_results(cfg, res)

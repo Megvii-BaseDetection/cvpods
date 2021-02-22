@@ -28,7 +28,7 @@ from config import config
 from net import build_model
 
 
-def trainer_decrator(cls):
+def runner_decrator(cls):
     """
     We use the "DefaultRunner" which contains pre-defined default logic for
     standard training workflow. They may not work for you, especially if you
@@ -48,7 +48,7 @@ def trainer_decrator(cls):
         return build_evaluator(cfg, dataset_name, dataset, output_folder, dump=dump_train)
 
     def custom_test_with_TTA(cls, cfg, model):
-        logger = logging.getLogger("cvpods.trainer")
+        logger = logging.getLogger("cvpods.runner")
         # In the end of training, run an evaluation with TTA
         # Only support some R-CNN models.
         logger.info("Running inference with test-time augmentation ...")
@@ -69,10 +69,10 @@ def main(args):
 
     """
     If you'd like to do anything fancier than the standard training logic,
-    consider writing your own training loop or subclassing the trainer.
+    consider writing your own training loop or subclassing the runner.
     """
-    trainer = trainer_decrator(RUNNERS.get(cfg.TRAINER.NAME))(cfg, build_model)
-    trainer.resume_or_load(resume=args.resume)
+    runner = runner_decrator(RUNNERS.get(cfg.TRAINER.NAME))(cfg, build_model)
+    runner.resume_or_load(resume=args.resume)
 
     # check wheather worksapce has enough storeage space
     # assume that a single dumped model is 700Mb
@@ -84,15 +84,15 @@ def main(args):
                        f"is less than ({eval_space_Gb}GB){Style.RESET_ALL}")
 
     if cfg.TEST.AUG.ENABLED:
-        trainer.register_hooks(
-            [hooks.EvalHook(0, lambda: trainer.test_with_TTA(cfg, trainer.model))]
+        runner.register_hooks(
+            [hooks.EvalHook(0, lambda: runner.test_with_TTA(cfg, runner.model))]
         )
 
     logger.info("Running with full config:\n{}".format(cfg))
     base_config = cfg.__class__.__base__()
     logger.info("different config with base class:\n{}".format(cfg.diff(base_config)))
 
-    trainer.train()
+    runner.train()
 
 
 if __name__ == "__main__":

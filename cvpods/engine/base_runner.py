@@ -122,17 +122,15 @@ class RunnerBase:
 @RUNNERS.register()
 class SimpleRunner(RunnerBase):
     """
-    A interation-based runner for the most common type of task:
-    single-cost single-optimizer single-data-source iterative optimization,
-    optionally using data-parallelism.
+    A simple runner for the most common type of task:
+    fetch a data batch and execute model forwarding, optionally using data-parallelism.
     It assumes that every step, you:
 
     1. Compute the loss with a data from the data_loader.
-    2. Compute the gradients with the above loss.
-    3. Update the model with the optimizer.
 
-    All other tasks during training (checkpointing, logging, evaluation, LR schedule)
-    are maintained by hooks, which can be registered by :meth:`RunnerBase.register_hooks`.
+    Note that all other tasks during training (checkpointing, logging, evaluation, 
+    LR schedule, gradients compute, parameters udpate) are maintained by hooks, 
+    which can be registered by :meth:`RunnerBase.register_hooks`.
 
     If you want to do anything fancier than this,
     either subclass RunnerBase and implement your own `run_step`,
