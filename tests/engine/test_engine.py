@@ -37,6 +37,7 @@ class TestTrainer(unittest.TestCase):
                     yield torch.rand(3, 3).to(device)
 
         trainer = IterationRunner(model, DataLoader(), torch.optim.SGD(model.parameters(), 0.1))
+        trainer.max_epoch = 1
         trainer.train(0, 10)
         return trainer
 
