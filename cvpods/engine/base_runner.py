@@ -71,6 +71,8 @@ class RunnerBase:
                 for self.iter in range(start_iter, max_iter):
                     self.inner_iter = 0
                     self.before_step()
+                    # by default, a step contains data_loading and model forward,
+                    # loss backward is executed in after_step for better expansibility
                     self.run_step()
                     self.after_step()
                 # self.iter == max_iter can be used by `after_train` to
