@@ -1,7 +1,7 @@
 import logging
 import time
 import weakref
-from typing import Dict, Optional
+from typing import Dict
 
 import numpy as np
 
@@ -59,10 +59,10 @@ class RunnerBase:
         self._hooks.extend(hooks)
 
     def train(
-        self, 
-        start_iter: int, 
-        start_epoch: int, 
-        max_iter: int, 
+        self,
+        start_iter: int,
+        start_epoch: int,
+        max_iter: int,
     ):
         """
         Args:

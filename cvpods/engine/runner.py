@@ -27,6 +27,8 @@ from cvpods.utils.dump.events import CommonMetricPrinter, JSONWriter, Tensorboar
 from . import hooks
 from .base_runner import RUNNERS, SimpleRunner
 
+logger = logging.getLogger(__name__)
+
 
 @RUNNERS.register()
 class DefaultRunner(SimpleRunner):
@@ -163,7 +165,7 @@ class DefaultRunner(SimpleRunner):
         self.start_iter = (self.checkpointer.resume_or_load(
             self.cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1)
         if self.max_epoch is not None:
-            self.start_epoch = self.start_iter // len(self.data_loader) 
+            self.start_epoch = self.start_iter // len(self.data_loader)
 
     def build_hooks(self):
         """
@@ -262,7 +264,7 @@ class DefaultRunner(SimpleRunner):
             OrderedDict of results, if evaluation is enabled. Otherwise None.
         """
         if self.max_epoch is None:
-            logger.info("Starting training from iteration {}".format(start_iter))
+            logger.info("Starting training from iteration {}".format(self.start_iter))
         else:
             logger.info("Starting training from epoch {}".format(self.start_epoch))
 
