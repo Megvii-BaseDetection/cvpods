@@ -177,7 +177,6 @@ _config_dict = dict(
     TRAINER=dict(
         TYPE="DefaultRunner",
         WINDOW_SIZE=20,
-        LOG_INTERVAL=20,
         FP16=dict(
             ENABLED=False,
             # options: [APEX, PyTorch]
@@ -207,7 +206,6 @@ _config_dict = dict(
     # Do not commit any configs into it.
     GLOBAL=dict(
         HACK=1.0,
-        LOG_INTERVAL=20,
         DUMP_TRAIN=True,
         DUMP_TEST=False,
     ),

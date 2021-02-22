@@ -103,7 +103,7 @@ class JSONWriter(EventWriter):
     def write(self):
         storage = get_event_storage()
         to_save = {"iteration": storage.iter}
-        to_save.update(storage.latest_with_smoothing_hint(self._window_size))
+        to_save.update(storage.latest_with_smoothing_hint())
         self._file_handle.write(json.dumps(to_save, sort_keys=True) + "\n")
         self._file_handle.flush()
         try:
@@ -120,7 +120,7 @@ class TensorboardXWriter(EventWriter):
     Write all scalars to a tensorboard file.
     """
 
-    def __init__(self, log_dir: str, window_size: int = 1, **kwargs):
+    def __init__(self, log_dir: str, window_size: int = 20, **kwargs):
         """
         Args:
             log_dir (str): the directory to save the output events
@@ -173,7 +173,7 @@ class CommonMetricPrinter(EventWriter):
         self._window_size = window_size
         self._last_write = None
 
-    def write(self, window_size=20):
+    def write(self):
 
         storage = get_event_storage()
         iteration = storage.iter
@@ -352,7 +352,7 @@ class EventStorage:
         """
         return self._latest_scalars
 
-    def latest_with_smoothing_hint(self, window_size=20):
+    def latest_with_smoothing_hint(self):
         """
         Similar to :meth:`latest`, but the returned values
         are either the un-smoothed original latest value,

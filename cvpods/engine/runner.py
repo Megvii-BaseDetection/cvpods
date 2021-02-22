@@ -216,7 +216,9 @@ class DefaultRunner(IterationRunner):
         if comm.is_main_process():
             # Here the default print/log frequency of each writer is used.
             # run writers in the end, so that evaluation metrics are written
-            ret.append(hooks.PeriodicWriter(self.build_writers(), period=20))
+            ret.append(hooks.PeriodicWriter(
+                self.build_writers(), 
+                period=self.window_size))
         return ret
 
     def build_writers(self):
@@ -239,8 +241,14 @@ class DefaultRunner(IterationRunner):
                 window_size=self.window_size,
                 epoch=self.max_epoch,
             ),
-            JSONWriter(os.path.join(self.cfg.OUTPUT_DIR, "metrics.json")),
-            TensorboardXWriter(self.cfg.OUTPUT_DIR),
+            JSONWriter(
+                os.path.join(self.cfg.OUTPUT_DIR, "metrics.json"),
+                window_size=self.window_size
+            ),
+            TensorboardXWriter(
+                self.cfg.OUTPUT_DIR, 
+                window_size=self.window_size
+            ),
         ]
 
     def train(self):
