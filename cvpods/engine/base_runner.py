@@ -128,8 +128,8 @@ class SimpleRunner(RunnerBase):
 
     1. Compute the loss with a data from the data_loader.
 
-    Note that all other tasks during training (checkpointing, logging, evaluation, 
-    LR schedule, gradients compute, parameters udpate) are maintained by hooks, 
+    Note that all other tasks during training (checkpointing, logging, evaluation,
+    LR schedule, gradients compute, parameters udpate) are maintained by hooks,
     which can be registered by :meth:`RunnerBase.register_hooks`.
 
     If you want to do anything fancier than this,
