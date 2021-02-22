@@ -245,7 +245,7 @@ class CommonMetricPrinter(EventWriter):
             ("eta: {eta}  {progress}  {losses}  {other_metrics}  {time}  "
              "{data_time}  lr: {lr}  {memory}").format(
                  eta=eta_string,
-                 progress_string=progress_tring,
+                 progress=progress_tring,
                  losses=losses,
                  other_metrics=other_metrics,
                  time="time: {:.4f}".format(iter_time) if iter_time is not None else "",
