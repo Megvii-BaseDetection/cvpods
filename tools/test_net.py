@@ -167,9 +167,9 @@ def main(args):
             cfg.MODEL.WEIGHTS, resume=args.resume
         )
         if cfg.TEST.AUG.ENABLED:
-            res = trainer_decrator(RUNNERS.get(cfg.TRAINER.TYPE)).test_with_TTA(cfg, model)
+            res = trainer_decrator(RUNNERS.get(cfg.TRAINER.NAME)).test_with_TTA(cfg, model)
         else:
-            res = trainer_decrator(RUNNERS.get(cfg.TRAINER.TYPE)).test(cfg, model)
+            res = trainer_decrator(RUNNERS.get(cfg.TRAINER.NAME)).test(cfg, model)
 
         if comm.is_main_process():
             verify_results(cfg, res)
