@@ -25,11 +25,11 @@ from cvpods.utils import comm, setup_logger
 from cvpods.utils.dump.events import CommonMetricPrinter, JSONWriter, TensorboardXWriter
 
 from . import hooks
-from .base_runner import RUNNERS, IterationRunner
+from .base_runner import RUNNERS, SimpleRunner
 
 
 @RUNNERS.register()
-class DefaultRunner(IterationRunner):
+class DefaultRunner(SimpleRunner):
     """
     A runner with default training logic. It does the following:
 

@@ -109,7 +109,7 @@ class RunnerBase:
 
 
 @RUNNERS.register()
-class IterationRunner(RunnerBase):
+class SimpleRunner(RunnerBase):
     """
     A interation-based runner for the most common type of task:
     single-cost single-optimizer single-data-source iterative optimization,

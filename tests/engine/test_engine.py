@@ -6,7 +6,7 @@ import torch
 from torch import nn
 
 
-from cvpods.engine import IterationRunner
+from cvpods.engine import SimpleRunner
 from torch.utils.data import Dataset
 
 
@@ -36,7 +36,7 @@ class TestTrainer(unittest.TestCase):
                 while True:
                     yield torch.rand(3, 3).to(device)
 
-        trainer = IterationRunner(model, DataLoader(), torch.optim.SGD(model.parameters(), 0.1))
+        trainer = SimpleRunner(model, DataLoader(), torch.optim.SGD(model.parameters(), 0.1))
         trainer.max_epoch = 1
         trainer.train(0, 10)
         return trainer
