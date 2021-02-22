@@ -217,7 +217,7 @@ class DefaultRunner(IterationRunner):
             # Here the default print/log frequency of each writer is used.
             # run writers in the end, so that evaluation metrics are written
             ret.append(hooks.PeriodicWriter(
-                self.build_writers(), 
+                self.build_writers(),
                 period=self.window_size))
         return ret
 
@@ -246,7 +246,7 @@ class DefaultRunner(IterationRunner):
                 window_size=self.window_size
             ),
             TensorboardXWriter(
-                self.cfg.OUTPUT_DIR, 
+                self.cfg.OUTPUT_DIR,
                 window_size=self.window_size
             ),
         ]
