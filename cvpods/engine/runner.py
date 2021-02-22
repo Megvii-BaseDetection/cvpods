@@ -266,7 +266,7 @@ class DefaultRunner(SimpleRunner):
         else:
             logger.info("Starting training from epoch {}".format(self.start_epoch))
 
-        super().train(self.start_iter, self.max_iter, start_epoch)
+        super().train(self.start_iter, self.start_epoch, self.max_iter)
 
         if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
             assert hasattr(
