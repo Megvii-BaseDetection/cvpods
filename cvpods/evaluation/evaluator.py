@@ -105,15 +105,17 @@ def inference_on_dataset(model, data_loader, evaluator):
     """
     num_devices = torch.distributed.get_world_size() if torch.distributed.is_initialized() else 1
     logger = logging.getLogger(__name__)
-    logger.info("Start inference on {} images".format(len(data_loader)))
+    logger.info("Start inference on {} data samples".format(len(data_loader.dataset)))
 
-    total = len(data_loader)  # inference data loader must have a fixed length
+    total = len(data_loader.dataset)  # inference data loader must have a fixed length
+    total_iters = len(data_loader)
+    bs = total // total_iters
     if evaluator is None:
         # create a no-op evaluator
         evaluator = DatasetEvaluators([])
     evaluator.reset()
 
-    num_warmup = min(5, total - 1)
+    num_warmup = min(5, total_iters - 1)
 
     start_time = time.perf_counter()
     total_compute_time = 0
@@ -130,15 +132,16 @@ def inference_on_dataset(model, data_loader, evaluator):
             total_compute_time += time.perf_counter() - start_compute_time
             evaluator.process(inputs, outputs)
 
-            iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)
+            iters_after_start = (idx + 1) * bs - num_warmup * bs * int(idx >= num_warmup)
             seconds_per_img = total_compute_time / iters_after_start
             if idx >= num_warmup * 2 or seconds_per_img > 5:
                 total_seconds_per_img = (time.perf_counter() - start_time) / iters_after_start
-                eta = datetime.timedelta(seconds=int(total_seconds_per_img * (total - idx - 1)))
+                eta = datetime.timedelta(
+                    seconds=int(total_seconds_per_img * (total - (idx + 1) * bs)))
                 log_every_n_seconds(
                     logging.INFO,
-                    "Inference done {}/{}. {:.4f} s / img. ETA={}".format(
-                        idx + 1, total, seconds_per_img, str(eta)
+                    "Inference done {}/{}. {:.4f} s / sample. ETA={}".format(
+                        (idx + 1) * bs, total, seconds_per_img, str(eta)
                     ),
                     n=5,
                 )
@@ -148,14 +151,15 @@ def inference_on_dataset(model, data_loader, evaluator):
     total_time_str = str(datetime.timedelta(seconds=total_time))
     # NOTE this format is parsed by grep
     logger.info(
-        "Total inference time: {} ({:.6f} s / img per device, on {} devices)".format(
-            total_time_str, total_time / (total - num_warmup), num_devices
+        "Total inference time: {} ({:.6f} s / sample per device, on {} devices)".format(
+            total_time_str, total_time / (total_iters - num_warmup), num_devices
         )
     )
     total_compute_time_str = str(datetime.timedelta(seconds=int(total_compute_time)))
     logger.info(
-        "Total inference pure compute time: {} ({:.6f} s / img per device, on {} devices)".format(
-            total_compute_time_str, total_compute_time / (total - num_warmup), num_devices
+        "Total inference pure compute time: {} ({:.6f} s / sample per device, "
+        "on {} devices)".format(
+            total_compute_time_str, total_compute_time / (total_iters - num_warmup), num_devices
         )
     )
 
