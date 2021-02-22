@@ -134,7 +134,7 @@ class TensorboardXWriter(EventWriter):
 
     def write(self):
         storage = get_event_storage()
-        for k, v in storage.latest_with_smoothing_hint(self._window_size).items():
+        for k, v in storage.latest_with_smoothing_hint().items():
             self._writer.add_scalar(k, v, storage.iter)
 
         if len(storage.vis_data) >= 1:
