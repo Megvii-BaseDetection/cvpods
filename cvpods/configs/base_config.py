@@ -149,7 +149,7 @@ _config_dict = dict(
         # For end-to-end tests to verify the expected accuracy.
         # Each item is [task, metric, value, tolerance]
         # e.g.: [['bbox', 'AP', 38.5, 0.2]]
-        EXPECTEDNORM_TYPE_RESULTS=[],
+        EXPECTED_RESULTS=[],
         # The period (in terms of steps) to evaluate the model during training.
         # If using positive EVAL_PERIOD, every #EVAL_PERIOD iter will evaluate automaticly.
         # If EVAL_PERIOD = 0, model will be evaluated after training.
