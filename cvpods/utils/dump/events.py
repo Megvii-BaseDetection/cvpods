@@ -231,10 +231,10 @@ class CommonMetricPrinter(EventWriter):
 
         if self._epoch_iters is not None:
             progress_tring = "epoch: {cur_epoch}/{max_epoch}  iter: {cur_iter}/{max_iter}".format(
-                cur_epoch=(iteration + 1) % self._epoch_iters,
+                cur_epoch=(iteration + 1) // self._epoch_iters + 1,
                 max_epoch=self._max_iter // self._epoch_iters,
-                cur_iter=iteration + 1,
-                max_iter=self._max_iter,
+                cur_iter=(iteration + 1) % self._epoch_iters,
+                max_iter=self._epoch_iters,
             )
         else:
             progress_tring = "iter: {cur_iter}/{max_iter}".format(
