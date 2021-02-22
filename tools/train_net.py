@@ -71,7 +71,7 @@ def main(args):
     If you'd like to do anything fancier than the standard training logic,
     consider writing your own training loop or subclassing the trainer.
     """
-    trainer = trainer_decrator(RUNNERS.get(cfg.TRAINER.TYPE))(cfg, build_model)
+    trainer = trainer_decrator(RUNNERS.get(cfg.TRAINER.NAME))(cfg, build_model)
     trainer.resume_or_load(resume=args.resume)
 
     # check wheather worksapce has enough storeage space
