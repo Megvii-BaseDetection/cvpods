@@ -134,6 +134,7 @@ class DefaultRunner(SimpleRunner):
         )
 
         self.start_iter = 0
+        self.start_epoch = 0
         self.max_iter = cfg.SOLVER.LR_SCHEDULER.MAX_ITER
         self.max_epoch = cfg.SOLVER.LR_SCHEDULER.MAX_EPOCH
         self.window_size = cfg.TRAINER.WINDOW_SIZE
@@ -161,6 +162,8 @@ class DefaultRunner(SimpleRunner):
         # at the next iteration (or iter zero if there's no checkpoint).
         self.start_iter = (self.checkpointer.resume_or_load(
             self.cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1)
+        if self.max_epoch is not None:
+            self.start_epoch = self.start_iter // len(self.data_loader) 
 
     def build_hooks(self):
         """
@@ -258,7 +261,13 @@ class DefaultRunner(SimpleRunner):
         Returns:
             OrderedDict of results, if evaluation is enabled. Otherwise None.
         """
-        super().train(self.start_iter, self.max_iter)
+        if self.max_epoch is None:
+            logger.info("Starting training from iteration {}".format(start_iter))
+        else:
+            logger.info("Starting training from epoch {}".format(self.start_epoch))
+
+        super().train(self.start_iter, self.max_iter, start_epoch)
+
         if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
             assert hasattr(
                 self, "_last_eval_results"

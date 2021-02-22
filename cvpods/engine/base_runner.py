@@ -1,7 +1,7 @@
 import logging
 import time
 import weakref
-from typing import Dict
+from typing import Dict, Optional
 
 import numpy as np
 
@@ -58,12 +58,18 @@ class RunnerBase:
             h.trainer = weakref.proxy(self)
         self._hooks.extend(hooks)
 
-    def train(self, start_iter: int, max_iter: int):
+    def train(
+        self, 
+        start_iter: int, 
+        start_epoch: int, 
+        max_iter: int, 
+    ):
         """
         Args:
             start_iter, max_iter (int): See docs above
         """
         self.iter = self.start_iter = start_iter
+        self.epoch = self.start_epoch = start_epoch
 
         with EventStorage(start_iter) as self.storage:
             try:
@@ -152,17 +158,6 @@ class SimpleRunner(RunnerBase):
         self.data_loader = data_loader
         self._data_loader_iter = iter(data_loader)
         self.optimizer = optimizer
-
-    def train(self, start_iter: int, max_iter: int):
-
-        self.epoch = start_iter // len(self.data_loader)
-
-        if self.max_epoch is None:
-            logger.info("Starting training from iteration {}".format(start_iter))
-        else:
-            logger.info("Starting training from epoch {}".format(self.epoch))
-
-        super().train(start_iter, max_iter)
 
     def run_step(self):
         """
