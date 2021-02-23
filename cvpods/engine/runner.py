@@ -34,7 +34,7 @@ class DefaultRunner(SimpleRunner):
     """
     A runner with default training logic. It does the following:
 
-    1. Create a :class:`IterRunner` using model, optimizer, dataloader
+    1. Create a :class:`DefaultRunner` using model, optimizer, dataloader
        defined by the given config. Create a LR scheduler defined by the config.
     2. Load the last checkpoint or `cfg.MODEL.WEIGHTS`, if exists, when
        `resume_or_load` is called.
@@ -44,13 +44,13 @@ class DefaultRunner(SimpleRunner):
     for users who only need the standard training workflow, with standard features.
     It means this class makes *many assumptions* about your training logic that
     may easily become invalid in a new research. In fact, any assumptions beyond those made in the
-    :class:`IterRunner` are too much for research.
+    :class:`DefaultRunner` are too much for research.
 
     The code of this class has been annotated about restrictive assumptions it makes.
     When they do not work for you, you're encouraged to:
 
     1. Overwrite methods of this class, OR:
-    2. Use :class:`IterRunner`, which only does minimal SGD training and
+    2. Use :class:`DefaultRunner`, which only does minimal SGD training and
        nothing else. You can then add your own hooks if needed. OR:
     3. Write your own training loop similar to `tools/plain_train_net.py`.
 
