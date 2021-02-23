@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+
+# pylint: disable=W0613
+
 """
 Testing Script for cvpods.
 
@@ -26,7 +29,7 @@ from pprint import pformat
 from torch.nn.parallel import DistributedDataParallel
 
 from cvpods.checkpoint import DefaultCheckpointer
-from cvpods.engine import DefaultTrainer, default_argument_parser, default_setup, launch
+from cvpods.engine import RUNNERS, default_argument_parser, default_setup, launch
 from cvpods.evaluation import build_evaluator, verify_results
 from cvpods.modeling import GeneralizedRCNN, GeneralizedRCNNWithTTA, TTAWarper
 from cvpods.utils import PathManager, comm
@@ -35,7 +38,7 @@ from config import config
 from net import build_model
 
 
-class Trainer(DefaultTrainer):
+def runner_decrator(cls):
     """
     We use the "DefaultTrainer" which contains a number pre-defined logic for
     standard training workflow. They may not work for you, especially if you
@@ -43,8 +46,7 @@ class Trainer(DefaultTrainer):
     "SimpleTrainer", or write your own training loop.
     """
 
-    @classmethod
-    def build_evaluator(cls, cfg, dataset_name, dataset, output_folder=None):
+    def custom_build_evaluator(cls, cfg, dataset_name, dataset, output_folder=None):
         """
         Create evaluator(s) for a given dataset.
         This uses the special metadata "evaluator_type" associated with each builtin dataset.
@@ -54,9 +56,8 @@ class Trainer(DefaultTrainer):
         dump_test = config.GLOBAL.DUMP_TEST
         return build_evaluator(cfg, dataset_name, dataset, output_folder, dump=dump_test)
 
-    @classmethod
-    def test_with_TTA(cls, cfg, model):
-        logger = logging.getLogger("cvpods.trainer")
+    def custom_test_with_TTA(cls, cfg, model):
+        logger = logging.getLogger("cvpods.runner")
         # In the end of training, run an evaluation with TTA
         # Only support some R-CNN models.
         logger.info("Running inference with test-time augmentation ...")
@@ -71,6 +72,11 @@ class Trainer(DefaultTrainer):
         res = cls.test(cfg, model, output_folder=os.path.join(cfg.OUTPUT_DIR, "inference_TTA"))
         res = OrderedDict({k + "_TTA": v for k, v in res.items()})
         return res
+
+    cls.build_evaluator = classmethod(custom_build_evaluator)
+    cls.test_with_TTA = classmethod(custom_test_with_TTA)
+
+    return cls
 
 
 def test_argument_parser():
@@ -161,9 +167,9 @@ def main(args):
             cfg.MODEL.WEIGHTS, resume=args.resume
         )
         if cfg.TEST.AUG.ENABLED:
-            res = Trainer.test_with_TTA(cfg, model)
+            res = runner_decrator(RUNNERS.get(cfg.TRAINER.NAME)).test_with_TTA(cfg, model)
         else:
-            res = Trainer.test(cfg, model)
+            res = runner_decrator(RUNNERS.get(cfg.TRAINER.NAME)).test(cfg, model)
 
         if comm.is_main_process():
             verify_results(cfg, res)

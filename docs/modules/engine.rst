@@ -31,10 +31,18 @@ cvpods.engine.setup module
     :undoc-members:
     :show-inheritance:
 
-cvpods.engine.trainer module
+cvpods.engine.base_runner module
 ---------------------------------
 
-.. automodule:: cvpods.engine.trainer
+.. automodule:: cvpods.engine.base_runner
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cvpods.engine.runner module
+---------------------------------
+
+.. automodule:: cvpods.engine.runner
     :members:
     :undoc-members:
     :show-inheritance:

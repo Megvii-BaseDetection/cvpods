@@ -34,9 +34,7 @@ _config_dict = dict(
             DEEP_STEM=False,
         ),
     ),
-    INPUT=dict(
-        FORMAT="RGB",
-    ),
+    INPUT=dict(FORMAT="RGB"),
     SOLVER=dict(
         IMS_PER_DEVICE=32,  # defalut: 8 gpus x 32 = 256
     ),

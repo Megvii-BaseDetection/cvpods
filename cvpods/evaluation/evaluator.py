@@ -105,7 +105,7 @@ def inference_on_dataset(model, data_loader, evaluator):
     """
     num_devices = torch.distributed.get_world_size() if torch.distributed.is_initialized() else 1
     logger = logging.getLogger(__name__)
-    logger.info("Start inference on {} images".format(len(data_loader)))
+    logger.info("Start inference on {} data samples".format(len(data_loader)))
 
     total = len(data_loader)  # inference data loader must have a fixed length
     if evaluator is None:
@@ -137,7 +137,7 @@ def inference_on_dataset(model, data_loader, evaluator):
                 eta = datetime.timedelta(seconds=int(total_seconds_per_img * (total - idx - 1)))
                 log_every_n_seconds(
                     logging.INFO,
-                    "Inference done {}/{}. {:.4f} s / img. ETA={}".format(
+                    "Inference done {}/{}. {:.4f} s / sample. ETA={}".format(
                         idx + 1, total, seconds_per_img, str(eta)
                     ),
                     n=5,
@@ -148,13 +148,14 @@ def inference_on_dataset(model, data_loader, evaluator):
     total_time_str = str(datetime.timedelta(seconds=total_time))
     # NOTE this format is parsed by grep
     logger.info(
-        "Total inference time: {} ({:.6f} s / img per device, on {} devices)".format(
+        "Total inference time: {} ({:.6f} s / sample per device, on {} devices)".format(
             total_time_str, total_time / (total - num_warmup), num_devices
         )
     )
     total_compute_time_str = str(datetime.timedelta(seconds=int(total_compute_time)))
     logger.info(
-        "Total inference pure compute time: {} ({:.6f} s / img per device, on {} devices)".format(
+        "Total inference pure compute time: {} ({:.6f} s / sample per device, "
+        "on {} devices)".format(
             total_compute_time_str, total_compute_time / (total - num_warmup), num_devices
         )
     )

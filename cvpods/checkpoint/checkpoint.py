@@ -5,7 +5,7 @@ import copy
 import logging
 import os
 import pickle
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 
@@ -275,7 +275,11 @@ class PeriodicCheckpointer:
     multiple of period or if `max_iter` is reached.
     """
 
-    def __init__(self, checkpointer: Any, period: int, max_iter: int = None):
+    def __init__(self,
+                 checkpointer: Any,
+                 period: int,
+                 max_iter: int = None,
+                 max_epoch: Optional[int] = None):
         """
         Args:
             checkpointer (Any): the checkpointer object used to save
@@ -287,6 +291,7 @@ class PeriodicCheckpointer:
         self.checkpointer = checkpointer
         self.period = int(period)
         self.max_iter = max_iter
+        self.max_epoch = max_epoch
 
     def step(self, iteration: int, **kwargs: Any):
         """
@@ -301,9 +306,13 @@ class PeriodicCheckpointer:
         additional_state = {"iteration": iteration}
         additional_state.update(kwargs)
         if (iteration + 1) % self.period == 0:
-            self.checkpointer.save(
-                "model_{:07d}".format(iteration), **additional_state
-            )
+            if self.max_epoch is not None:
+                epoch_iters = self.max_iter // self.max_epoch
+                curr_epoch = (iteration + 1) // epoch_iters
+                ckpt_name = "model_epoch_{:04d}".format(curr_epoch)
+            else:
+                ckpt_name = "model_iter_{:07d}".format(iteration + 1)
+            self.checkpointer.save(ckpt_name, **additional_state)
         if iteration >= self.max_iter - 1:
             self.checkpointer.save("model_final", **additional_state)
 

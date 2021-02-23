@@ -1,4 +1,8 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
+# Copyright (c) Facebook, Inc. and its affiliates
+# Modified by BaseDetection, Inc. and its affiliates.
+
+# pylint: disable=W0613
+
 import datetime
 import json
 import logging
@@ -99,7 +103,7 @@ class JSONWriter(EventWriter):
     def write(self):
         storage = get_event_storage()
         to_save = {"iteration": storage.iter}
-        to_save.update(storage.latest_with_smoothing_hint(self._window_size))
+        to_save.update(storage.latest_with_smoothing_hint())
         self._file_handle.write(json.dumps(to_save, sort_keys=True) + "\n")
         self._file_handle.flush()
         try:
@@ -130,7 +134,7 @@ class TensorboardXWriter(EventWriter):
 
     def write(self):
         storage = get_event_storage()
-        for k, v in storage.latest_with_smoothing_hint(self._window_size).items():
+        for k, v in storage.latest_with_smoothing_hint().items():
             self._writer.add_scalar(k, v, storage.iter)
 
         if len(storage.vis_data) >= 1:
@@ -151,7 +155,7 @@ class CommonMetricPrinter(EventWriter):
     To print something different, please implement a similar printer by yourself.
     """
 
-    def __init__(self, max_iter):
+    def __init__(self, max_iter, window_size=20, **kwargs):
         """
         Args:
             max_iter (int): the maximum number of iterations to train.
@@ -159,14 +163,23 @@ class CommonMetricPrinter(EventWriter):
         """
         self.logger = logging.getLogger(__name__)
         self._max_iter = max_iter
+        if "epoch" in kwargs:
+            self._epoch = kwargs["epoch"]
+            self._epoch_iters = self._max_iter // self._epoch if self._epoch is not None else None
+        else:
+            self._epoch = None
+            self._epoch_iters = None
+
+        self._window_size = window_size
         self._last_write = None
 
     def write(self):
+
         storage = get_event_storage()
         iteration = storage.iter
 
         try:
-            data_time = storage.history("data_time").avg(20)
+            data_time = storage.history("data_time").avg(self._window_size)
         except KeyError:
             # they may not exist in the first few iterations (due to warmup)
             # or when SimpleTrainer is not used
@@ -203,30 +216,42 @@ class CommonMetricPrinter(EventWriter):
         # NOTE: max_mem is parsed by grep in "dev/parse_results.sh"
         losses = "  ".join(
             [
-                "{}: {:.3f}".format(k, v.median(20))
+                "{}: {:.3f}".format(k, v.median(self._window_size))
                 for k, v in storage.histories().items()
                 if "loss" in k
             ]
         )
         other_metrics = "  ".join(
             [
-                "{}: {:.3f}".format(k, v.median(20))
+                "{}: {:.3f}".format(k, v.median(self._window_size))
                 for k, v in storage.histories().items()
                 if "loss" not in k and k not in ["data_time", "time", "lr"] and "/" not in k
             ]
         )
-        self.logger.info(
-            ("eta: {eta}  iter: {iter}/{max_iter}  {losses}  {other_metrics}  {time}  "
-             "{data_time}  lr: {lr}  {memory}").format(
-                eta=eta_string,
-                iter=iteration + 1,
+
+        if self._epoch_iters is not None:
+            progress_string = "epoch: {cur_epoch}/{max_epoch}  iter: {cur_iter}/{max_iter}".format(
+                cur_epoch=(iteration + 1) // self._epoch_iters + 1,
+                max_epoch=self._max_iter // self._epoch_iters,
+                cur_iter=(iteration + 1) % self._epoch_iters,
+                max_iter=self._epoch_iters,
+            )
+        else:
+            progress_string = "iter: {cur_iter}/{max_iter}".format(
+                cur_iter=iteration + 1,
                 max_iter=self._max_iter,
-                losses=losses,
-                other_metrics=other_metrics,
-                time="time: {:.4f}".format(iter_time) if iter_time is not None else "",
-                data_time="data_time: {:.4f}".format(data_time) if data_time is not None else "",
-                lr=lr,
-                memory="max_mem: {:.0f}M".format(max_mem_mb) if max_mem_mb is not None else "",
+            )
+        self.logger.info(
+            ("eta: {eta}  {progress}  {losses}  {other_metrics}  {time}  "
+             "{data_time}  lr: {lr}  {memory}").format(
+                 eta=eta_string,
+                 progress=progress_string,
+                 losses=losses,
+                 other_metrics=other_metrics,
+                 time="time: {:.4f}".format(iter_time) if iter_time is not None else "",
+                 data_time="data_time: {:.4f}".format(data_time) if data_time is not None else "",
+                 lr=lr,
+                 memory="max_mem: {:.0f}M".format(max_mem_mb) if max_mem_mb is not None else "",
             )
         )
 
@@ -238,7 +263,7 @@ class EventStorage:
     In the future we may add support for storing / logging other types of data if needed.
     """
 
-    def __init__(self, start_iter=0):
+    def __init__(self, start_iter=0, window_size=20):
         """
         Args:
             start_iter (int): the iteration number to start with
@@ -246,6 +271,7 @@ class EventStorage:
         self._history = defaultdict(HistoryBuffer)
         self._smoothing_hints = {}
         self._latest_scalars = {}
+        self._window_size = window_size
         self._iter = start_iter
         self._current_prefix = ""
         self._vis_data = []
@@ -333,7 +359,7 @@ class EventStorage:
         """
         return self._latest_scalars
 
-    def latest_with_smoothing_hint(self, window_size=20):
+    def latest_with_smoothing_hint(self):
         """
         Similar to :meth:`latest`, but the returned values
         are either the un-smoothed original latest value,
@@ -345,7 +371,7 @@ class EventStorage:
         result = {}
         for k, v in self._latest_scalars.items():
             result[k] = (
-                self._history[k].median(window_size) if self._smoothing_hints[k] else v
+                self._history[k].median(self._window_size) if self._smoothing_hints[k] else v
             )
         return result
 

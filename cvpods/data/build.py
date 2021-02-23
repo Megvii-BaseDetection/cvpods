@@ -137,14 +137,12 @@ def build_train_loader(cfg):
     logger.info("Using training sampler {}".format(sampler_name))
 
     assert sampler_name in SAMPLERS, "{} not found in SAMPLERS".format(sampler_name)
-    if sampler_name == "TrainingSampler":
-        sampler = SAMPLERS.get(sampler_name)(len(dataset))
+    if sampler_name == "DistributedGroupSampler":
+        sampler = SAMPLERS.get(sampler_name)(
+            dataset, images_per_minibatch, num_devices, rank)
     elif sampler_name == "RepeatFactorTrainingSampler":
         sampler = SAMPLERS.get(sampler_name)(
             dataset, cfg.DATALOADER.REPEAT_THRESHOLD)
-    elif sampler_name == "DistributedGroupSampler":
-        sampler = SAMPLERS.get(sampler_name)(
-            dataset, images_per_minibatch, num_devices, rank)
 
     data_loader = torch.utils.data.DataLoader(
         dataset,

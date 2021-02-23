@@ -2,10 +2,10 @@
 # -*- encoding: utf-8 -*-
 # Copyright (c) BaseDetection, Inc. and its affiliates.
 
-import numpy as np
-
 import copy
 import pylab as plt
+
+import numpy as np
 
 
 def draw_box(ax, vertices, color='black'):

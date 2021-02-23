@@ -40,7 +40,7 @@ _config_dict = dict(
         )
     ),
     TEST=dict(
-        EVAL_PEROID=10000,
+        EVAL_PERIOD=10000,
     ),
     OUTPUT_DIR=osp.join(
         '/data/Outputs/model_logs/cvpods_playground',

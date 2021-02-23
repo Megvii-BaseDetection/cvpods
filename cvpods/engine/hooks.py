@@ -20,6 +20,7 @@ __all__ = [
     "HookBase",
     "CallbackHook",
     "IterationTimer",
+    "OptimizationHook",
     "PeriodicWriter",
     "PeriodicCheckpointer",
     "LRScheduler",
@@ -127,6 +128,33 @@ class CallbackHook(HookBase):
     def after_step(self):
         if self._after_step:
             self._after_step(self.trainer)
+
+
+class OptimizationHook(HookBase):
+    def __init__(self, accumulate_grad_steps=1, grad_clipper=None, mixed_precision=False):
+        self.accumulate_grad_steps = accumulate_grad_steps
+        self.grad_clipper = grad_clipper
+        self.mixed_precision = mixed_precision
+
+    def before_step(self):
+        self.trainer.optimizer.zero_grad()
+
+    def after_step(self):
+        losses = self.trainer.step_outputs["loss_for_backward"]
+        losses /= self.accumulate_grad_steps
+
+        if self.mixed_precision:
+            from apex import amp
+            with amp.scale_loss(losses, self.trainer.optimizer) as scaled_loss:
+                scaled_loss.backward()
+        else:
+            losses.backward()
+
+        if self.trainer.inner_iter == self.accumulate_grad_steps:
+            if self.grad_clipper is not None:
+                self.grad_clipper(self.tariner.model.paramters())
+            self.trainer.optimizer.step()
+            self.trainer.optimizer.zero_grad()
 
 
 class IterationTimer(HookBase):
