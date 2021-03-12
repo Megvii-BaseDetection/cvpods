@@ -395,7 +395,8 @@ class DefaultTransorm(Transform):
                     keypoints[:, :2] = self.apply_coords(keypoints[:, :2])
 
                     # This assumes that HorizFlipTransform is the only one that does flip
-                    do_hflip = isinstance(self, cvpods.data.transforms.transform.HFlipTransform)
+                    do_hflip = isinstance(self, cvpods.data.transforms.augmentations.RandomFlip) \
+                        and self.horizontal
 
                     # Alternative way: check if probe points was horizontally flipped.
                     # probe = np.asarray([[0.0, 0.0], [image_width, 0.0]])
