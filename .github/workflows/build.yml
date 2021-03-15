@@ -63,6 +63,9 @@ jobs:
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Build and install
         run: |
+          apt -y install gcc-8
+          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
+          sudo update-alternatives --config gcc
           pip install opencv-python-headless ninja
           FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="Pascal;Volta;Turing" pip install -e .[all] 
       - name: Run unittests
