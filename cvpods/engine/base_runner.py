@@ -78,7 +78,6 @@ class RunnerBase:
             try:
                 self.before_train()
                 for self.iter in range(start_iter, max_iter):
-                    self.inner_iter = 0
                     self.before_step()
                     # by default, a step contains data_loading and model forward,
                     # loss backward is executed in after_step for better expansibility
@@ -194,8 +193,6 @@ class SimpleRunner(RunnerBase):
         self.step_outputs = {
             "loss_for_backward": losses,
         }
-
-        self.inner_iter += 1
 
     def _detect_anomaly(self, losses, loss_dict):
         if not torch.isfinite(losses).all():
