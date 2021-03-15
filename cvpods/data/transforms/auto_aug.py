@@ -9,7 +9,8 @@ import numpy as np
 import PIL
 from PIL import Image, ImageEnhance, ImageOps
 
-from cvpods.data.transforms import Transform
+from ..registry import TRANSFORMS
+from .augmentations import Transform
 
 _PIL_VER = tuple([int(x) for x in PIL.__version__.split('.')[:2]])
 
@@ -277,7 +278,8 @@ NAME_TO_OP = {
 }
 
 
-class AutoAugmentTransform(Transform):
+@TRANSFORMS.register()
+class AutoAugment(Transform):
     """
     AutoAugment from Google.
     Implementation adapted from:
@@ -310,19 +312,16 @@ class AutoAugmentTransform(Transform):
         # NOTE This is my own hack, being tested, not in papers or reference impls.
         self.magnitude_std = self.hparams.get('magnitude_std', 0)
 
-    def apply_image(self, img: np.ndarray) -> np.ndarray:
-        if random.random() > self.prob:
-            return img
-        magnitude = self.magnitude
-        if self.magnitude_std and self.magnitude_std > 0:
-            magnitude = random.gauss(magnitude, self.magnitude_std)
-        magnitude = min(_MAX_LEVEL, max(0, magnitude))  # clip to valid range
-        level_args = self.level_fn(
-            magnitude, self.hparams) if self.level_fn is not None else tuple()
-        return np.array(self.aug_fn(Image.fromarray(img), *level_args, **self.kwargs))
-
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        return coords
+    def __call__(self, img: np.ndarray, annotations: list = None, **kwargs):
+        if random.random() < self.prob:
+            magnitude = self.magnitude
+            if self.magnitude_std and self.magnitude_std > 0:
+                magnitude = random.gauss(magnitude, self.magnitude_std)
+            magnitude = min(_MAX_LEVEL, max(0, magnitude))  # clip to valid range
+            level_args = self.level_fn(
+                magnitude, self.hparams) if self.level_fn is not None else tuple()
+            img = np.array(self.aug_fn(Image.fromarray(img), *level_args, **self.kwargs))
+        return img, annotations
 
 
 _RAND_TRANSFORMS = [
