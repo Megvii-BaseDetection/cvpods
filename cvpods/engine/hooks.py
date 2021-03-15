@@ -150,7 +150,7 @@ class OptimizationHook(HookBase):
         else:
             losses.backward()
 
-        if self.trainer.inner_iter == self.accumulate_grad_steps:
+        if self.trainer.iter % self.accumulate_grad_steps == 0:
             if self.grad_clipper is not None:
                 self.grad_clipper(self.tariner.model.paramters())
             self.trainer.optimizer.step()
