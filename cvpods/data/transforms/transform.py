@@ -319,7 +319,7 @@ class ComposeTransform(object):
         return img, annotations
 
     def __repr__(self):
-        return "".join([tfm for tfm in self.transforms])
+        return "".join([tfm.__repr__() for tfm in self.transforms])
 
 
 # TODO: Deprecated
