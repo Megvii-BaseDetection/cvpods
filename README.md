@@ -101,6 +101,19 @@ Any kind of contributions (new models / bug report / typo / docs) are welcomed. 
 
 [Apache v2](LICENSE) © Base Detection 
 
-## Acknowledgement
+## Acknowledgement and special thanks
 
 cvpods adopts many components (e.g. network layers) of Detectron2, while cvpods has many advantanges in task support, speed, usability, etc. For more details about official detectron2, please check [DETECTRON2](https://github.com/facebookresearch/detectron2/blob/master/README.md)
+
+## Citing cvpods
+
+If you are using cvpods in your research or wish to refer to the baseline results published in this repo, please use the following BibTeX entry.
+
+```BibTeX
+@misc{zhu2020cvpods,
+  author =       {Benjin, Zhu* and Feng, Wang* and Jianfeng, Wang and Siwei, Yang and Jianhu, Chen and Zeming Li},
+  title =        {cvpods},
+  howpublished = {\url{https://github.com/Megvii-BaseDetection/cvpods}},
+  year =         {2020}
+}
+```
