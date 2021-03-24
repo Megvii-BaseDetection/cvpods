@@ -111,9 +111,8 @@ If you are using cvpods in your research or wish to refer to the baseline result
 
 ```BibTeX
 @misc{zhu2020cvpods,
-  author =       {Benjin, Zhu* and Feng, Wang* and Jianfeng, Wang and Siwei, Yang and Jianhu, Chen and Zeming, Li},
-  title =        {cvpods},
-  howpublished = {\url{https://github.com/Megvii-BaseDetection/cvpods}},
-  year =         {2020}
+  title={cvpods: All-in-one Toolbox for Computer Vision Research},
+  author={Zhu*, Benjin and Wang*, Feng and Wang, Jianfeng and Yang, Siwei and Chen, Jianhu and Li, Zeming},
+  year={2020}
 }
 ```
