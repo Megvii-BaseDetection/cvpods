@@ -17,7 +17,10 @@
 #         string = string.replace(string[left], "\"", 1)
 #         string = string.replace(string[right], "\"", 1)
 #     return string
-# a = json.load(open("objects365_categories.json"))
+# a = json.load(open("cvpods/datasets/lvis/lvis_v1_val.json"))['categories']
+# for x in a:
+#     del x["image_count"]
+#     del x["instance_count"]
 # string = ""
 # string = pprint.pformat(
 #     a,
