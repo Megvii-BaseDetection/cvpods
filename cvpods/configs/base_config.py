@@ -172,6 +172,8 @@ _config_dict = dict(
             SCALE_RANGES=(),
         ),
         PRECISE_BN=dict(ENABLED=False, NUM_ITER=200),
+        # If True, evaluate the dumped prediction without run the inference on dataset.
+        ON_FILES=False,
     ),
     # Trainer is used to specify options related to control the training process
     TRAINER=dict(

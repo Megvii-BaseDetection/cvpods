@@ -168,6 +168,40 @@ def inference_on_dataset(model, data_loader, evaluator):
     return results
 
 
+def inference_on_files(evaluator):
+    """
+    Evaluate the metrics with evaluator on the predicted files
+
+    Args:
+        evaluator (DatasetEvaluator): the evaluator to run. Use `None` if you only want
+            to benchmark, but don't want to do any evaluation.
+
+    Returns:
+        The return value of `evaluator.evaluate()`
+    """
+    # num_devices = torch.distributed.get_world_size() if torch.distributed.is_initialized() else 1
+    logger = logging.getLogger(__name__)
+    logger.info("Start evaluate on dumped prediction")
+
+    if evaluator is None:
+        # create a no-op evaluator
+        evaluator = DatasetEvaluators([])
+    evaluator.reset()
+
+    start_time = time.perf_counter()
+    results = evaluator.evaluate_files()
+    total_time = time.perf_counter() - start_time
+    total_time_str = str(datetime.timedelta(seconds=total_time))
+    # NOTE this format is parsed by grep
+    logger.info("Total inference time: {}".format(total_time_str))
+
+    # An evaluator may return None when not in main process.
+    # Replace it by an empty dict instead to make it easier for downstream code to handle
+    if results is None:
+        results = {}
+    return results
+
+
 @contextmanager
 def inference_context(model):
     """

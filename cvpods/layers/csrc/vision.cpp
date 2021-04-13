@@ -6,6 +6,7 @@
 #include "box_iou_rotated/box_iou_rotated.h"
 #include "cocoeval/cocoeval.h"
 #include "deformable/deform_conv.h"
+#include "lviseval/lviseval.h"
 #include "nms_rotated/nms_rotated.h"
 #include "sigmoid_focal_loss/SigmoidFocalLoss.h"
 #include "ml_nms/ml_nms.h"
@@ -139,7 +140,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
       "COCOevalEvaluateImages",
       &COCOeval::EvaluateImages,
       "COCOeval::EvaluateImages");
-
+  m.def("LVISevalAccumulate", &LVISeval::Accumulate, "LVISeval::Accumulate");
+  m.def(
+      "LVISevalEvaluateImages",
+      &LVISeval::EvaluateImages,
+      "LVISeval::EvaluateImages");
   m.def("rst_forward", &rst_forward, "rst forward");
   m.def("mst_forward", &mst_forward, "mst forward");
   m.def("bfs_forward", &bfs_forward, "bfs forward");
@@ -159,6 +164,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   pybind11::class_<COCOeval::InstanceAnnotation>(m, "InstanceAnnotation")
       .def(pybind11::init<uint64_t, double, double, bool, bool>());
   pybind11::class_<COCOeval::ImageEvaluation>(m, "ImageEvaluation")
+      .def(pybind11::init<>());
+  pybind11::class_<LVISeval::InstanceAnnotation>(m, "LVISInstanceAnnotation")
+      .def(pybind11::init<uint64_t, double, double, bool, bool, bool>());
+  pybind11::class_<LVISeval::ImageEvaluation>(m, "LVISImageEvaluation")
       .def(pybind11::init<>());
 }
 

@@ -32,6 +32,8 @@ from .wrappers import (
     Conv2dSamePadding,
     ConvTranspose2d,
     MaxPool2dSamePadding,
+    NormalizedConv2d,
+    NormalizedLinear,
     SeparableConvBlock,
     cat,
     interpolate
