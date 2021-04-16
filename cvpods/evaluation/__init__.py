@@ -5,7 +5,13 @@ from .cityscapes_evaluation import CityscapesEvaluator
 from .classification_evaluation import ClassificationEvaluator
 from .coco_evaluation import COCOEvaluator
 from .crowdhuman_evaluation import CrowdHumanEvaluator
-from .evaluator import DatasetEvaluator, DatasetEvaluators, inference_context, inference_on_dataset
+from .evaluator import (
+    DatasetEvaluator,
+    DatasetEvaluators,
+    inference_context,
+    inference_on_dataset,
+    inference_on_files
+)
 from .lvis_evaluation import LVISEvaluator
 from .panoptic_evaluation import COCOPanopticEvaluator
 from .pascal_voc_evaluation import PascalVOCDetectionEvaluator

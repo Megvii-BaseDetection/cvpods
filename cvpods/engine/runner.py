@@ -14,6 +14,7 @@ from cvpods.data import build_test_loader, build_train_loader
 from cvpods.evaluation import (
     DatasetEvaluator,
     inference_on_dataset,
+    inference_on_files,
     print_csv_format,
     verify_results
 )
@@ -371,7 +372,10 @@ Alternatively, you can call evaluation functions yourself (see Colab balloon tut
                         "or implement its `build_evaluator` method.")
                     results[dataset_name] = {}
                     continue
-            results_i = inference_on_dataset(model, data_loader, evaluator)
+            if cfg.TEST.ON_FILES:
+                results_i = inference_on_files(evaluator)
+            else:
+                results_i = inference_on_dataset(model, data_loader, evaluator)
             results[dataset_name] = results_i
             if comm.is_main_process():
                 assert isinstance(
