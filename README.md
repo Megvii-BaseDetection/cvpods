@@ -95,7 +95,6 @@ For all the models supported by cvpods, please refer to [MODEL_ZOO](https://gith
 * [LLA](https://github.com/Megvii-BaseDetection/LLA)
 * [OTA](https://github.com/Megvii-BaseDetection/OTA)
 * [SelfSup](https://github.com/poodarchu/SelfSup)
-* [DisAlign](https://github.com/Megvii-BaseDetection/DisAlign)
 * [YOLOF](https://github.com/megvii-model/YOLOF)
 
 
