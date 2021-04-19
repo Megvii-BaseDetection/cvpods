@@ -13,6 +13,7 @@ from lvis import LVISEval, LVISResults
 
 import torch
 
+from cvpods.evaluation.fast_lvis_eval_api import LVISEval_opt
 from cvpods.structures import Boxes, BoxMode, pairwise_iou
 from cvpods.utils import PathManager, comm, create_small_table
 
@@ -28,7 +29,8 @@ class LVISEvaluator(DatasetEvaluator):
     LVIS's metrics and evaluation API.
     """
 
-    def __init__(self, dataset_name, meta, cfg, distributed, output_dir=None, dump=False):
+    def __init__(self, dataset_name, meta, cfg, distributed,
+                 output_dir=None, dump=False, use_fast_impl=True):
         """
         Args:
             dataset_name (str): name of the dataset to be evaluated.
@@ -44,6 +46,8 @@ class LVISEvaluator(DatasetEvaluator):
             dump (bool): If True, after the evaluation is completed, a Markdown file
                 that records the model evaluation metrics and corresponding scores
                 will be generated in the working directory.
+            use_fast_impl (bool): If True, use the C++ version lvis evaluation api instead of
+                the python version, to reduce the time of the evalutation.
         """
         from lvis import LVIS
         # TODO: really use dataset_name
@@ -52,6 +56,8 @@ class LVISEvaluator(DatasetEvaluator):
         self._tasks = self._tasks_from_config(cfg)
         self._distributed = distributed
         self._output_dir = output_dir
+        self._use_fast_impl = use_fast_impl
+        self._max_dets = cfg.TEST.DETECTIONS_PER_IMAGE
 
         self._cpu_device = torch.device("cpu")
         self._logger = logging.getLogger(__name__)
@@ -128,6 +134,40 @@ class LVISEvaluator(DatasetEvaluator):
         # Copy so the caller can do whatever with results
         return copy.deepcopy(self._results)
 
+    def evaluate_files(self):
+        """
+        Only evaluate files without inference
+        """
+        if self._distributed:
+            comm.synchronize()
+
+            if not comm.is_main_process():
+                return
+
+        del self._predictions
+
+        if self._output_dir:
+            file_path = os.path.join(self._output_dir, "instances_predictions.pth")
+            self._predictions = torch.load(file_path)
+            self._logger.info("Read predictions from {}".format(file_path))
+        else:
+            self._logger.warning(
+                "Stored predictions is None, you need to run the inference_on_dataset"
+            )
+            raise NotImplementedError
+
+        self._results = OrderedDict()
+        if "proposals" in self._predictions[0]:
+            self._eval_box_proposals()
+        if "instances" in self._predictions[0]:
+            self._eval_predictions(set(self._tasks))
+
+        if self._dump:
+            _dump_to_markdown(self._dump_infos)
+
+        # Copy so the caller can do whatever with results
+        return copy.deepcopy(self._results)
+
     def _eval_predictions(self, tasks):
         """
         Evaluate self._predictions on the given tasks.
@@ -160,11 +200,15 @@ class LVISEvaluator(DatasetEvaluator):
             self._logger.info("Annotations are not available for evaluation.")
             return
 
-        self._logger.info("Evaluating predictions ...")
+        self._logger.info(
+            "Evaluating predictions with use_fast_impl={} ...".format(self._use_fast_impl)
+        )
         for task in sorted(tasks):
             lvis_eval, summary = (
                 _evaluate_predictions_on_lvis(
-                    self._lvis_api, self._lvis_results, task
+                    self._lvis_api, self._lvis_results, task,
+                    use_fast_impl=self._use_fast_impl,
+                    max_dets=self._max_dets
                 )
                 if len(self._lvis_results) > 0
                 else None
@@ -359,7 +403,8 @@ def _evaluate_box_proposals(dataset_predictions, lvis_api, thresholds=None, area
     }
 
 
-def _evaluate_predictions_on_lvis(lvis_gt, lvis_results, iou_type):
+def _evaluate_predictions_on_lvis(lvis_gt, lvis_results, iou_type,
+                                  use_fast_impl=True, max_dets=300):
     """
     Evaluate the lvis results using LVISEval API.
     """
@@ -374,8 +419,8 @@ def _evaluate_predictions_on_lvis(lvis_gt, lvis_results, iou_type):
         for c in lvis_results:
             c.pop("bbox", None)
 
-    lvis_results = LVISResults(lvis_gt, lvis_results)
-    lvis_eval = LVISEval(lvis_gt, lvis_results, iou_type)
+    lvis_results = LVISResults(lvis_gt, lvis_results, max_dets=max_dets)
+    lvis_eval = (LVISEval_opt if use_fast_impl else LVISEval)(lvis_gt, lvis_results, iou_type)
     lvis_eval.run()
     summary = io.StringIO()
     with contextlib.redirect_stdout(summary):

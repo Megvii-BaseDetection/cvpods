@@ -24,7 +24,8 @@ from ..detection_utils import (
     read_image
 )
 from ..registry import DATASETS
-from .lvis_categories import LVIS_CATEGORIES
+from .lvis_v0_5_categories import LVIS_CATEGORIES as LVIS_V0_5_CATEGORIES
+from .lvis_v1_categories import LVIS_CATEGORIES as LVIS_V1_CATEGORIES
 from .paths_route import _PREDEFINED_SPLITS_LVIS
 
 """
@@ -39,11 +40,10 @@ class LVISDataset(BaseDataset):
     def __init__(self, cfg, dataset_name, transforms=[], is_train=True):
         super(LVISDataset, self).__init__(cfg, dataset_name, transforms, is_train)
 
-        assert (
-            self.name.startswith("lvis_v0.5")
-        ), "Only lvis_v0.5 is now supported, lvis_v1 will be supported in the future."
+        assert self.name.startswith("lvis_v0.5") or self.name.startswith("lvis_v1")
 
-        image_root, json_file = _PREDEFINED_SPLITS_LVIS["lvis_v0.5"][self.name]
+        set_name = "_".join(self.name.split("_")[:2])
+        image_root, json_file = _PREDEFINED_SPLITS_LVIS[set_name][self.name]
         self.json_file = osp.join(self.data_root, json_file) \
             if "://" not in image_root else osp.join(image_root, json_file)
         self.image_root = osp.join(self.data_root, image_root) \
@@ -191,18 +191,26 @@ class LVISDataset(BaseDataset):
 
         imgs_anns = list(zip(imgs, anns))
 
+        def get_file_name(img_root, img_dict):
+            # Determine the path including the split folder ("train2017", "val2017", "test2017")
+            # from the coco_url field. Example:
+            #   'coco_url': 'http://images.cocodataset.org/train2017/000000155379.jpg'
+            split_folder, file_name = img_dict["coco_url"].split("/")[-2:]
+            return os.path.join(img_root, split_folder, file_name)
+
         logger.info("Loaded {} images in the LVIS format from {}".format(len(imgs_anns), json_file))
 
         dataset_dicts = []
         for (img_dict, anno_dict_list) in imgs_anns:
             record = {}
-            file_name = img_dict["file_name"]
-            if img_dict["file_name"].startswith("COCO"):
-                # Convert form the COCO 2014 file naming convention of
-                # COCO_[train/val/test]2014_000000000000.jpg to the 2017 naming convention of
-                # 000000000000.jpg (LVIS v1 will fix this naming issue)
-                file_name = file_name[-16:]
-            record["file_name"] = os.path.join(image_root, file_name)
+            record["file_name"] = get_file_name(image_root, img_dict)
+            # file_name = img_dict["file_name"]
+            # if img_dict["file_name"].startswith("COCO"):
+            #     # Convert form the COCO 2014 file naming convention of
+            #     # COCO_[train/val/test]2014_000000000000.jpg to the 2017 naming convention of
+            #     # 000000000000.jpg (LVIS v1 will fix this naming issue)
+            #     file_name = file_name[-16:]
+            # record["file_name"] = os.path.join(image_root, file_name)
             record["height"] = img_dict["height"]
             record["width"] = img_dict["width"]
             record["not_exhaustive_category_ids"] = img_dict.get("not_exhaustive_category_ids", [])
@@ -233,23 +241,33 @@ class LVISDataset(BaseDataset):
 
     def _get_metadata(self):
         if "lvis_v0.5" in self.name:
-            assert len(LVIS_CATEGORIES) == 1230
-            cat_ids = [k["id"] for k in LVIS_CATEGORIES]
+            assert len(LVIS_V0_5_CATEGORIES) == 1230
+            cat_ids = [k["id"] for k in LVIS_V0_5_CATEGORIES]
             assert min(cat_ids) == 1 and max(cat_ids) == len(
                 cat_ids
             ), "Category ids are not in [1, #categories], as expected"
             # Ensure that the category list is sorted by id
-            lvis_categories = sorted(LVIS_CATEGORIES, key=lambda x: x["id"])
+            lvis_categories = sorted(LVIS_V0_5_CATEGORIES, key=lambda x: x["id"])
             thing_classes = [k["synonyms"][0] for k in lvis_categories]
             meta = {
-                "thing_classes": thing_classes
+                "thing_classes": thing_classes,
+                "evaluator_type": _PREDEFINED_SPLITS_LVIS["evaluator_type"]["lvis_v0.5"]
             }
-        # There will be a v1 in the future
-        # elif "lvis_v1" in self.name:
-        #   return _get_lvis_instances_meta_v1()
+        elif "lvis_v1" in self.name:
+            assert len(LVIS_V1_CATEGORIES) == 1203
+            cat_ids = [k["id"] for k in LVIS_V1_CATEGORIES]
+            assert min(cat_ids) == 1 and max(cat_ids) == len(
+                cat_ids
+            ), "Category ids are not in [1, #categories], as expected"
+            # Ensure that the category list is sorted by id
+            lvis_categories = sorted(LVIS_V1_CATEGORIES, key=lambda x: x["id"])
+            thing_classes = [k["synonyms"][0] for k in lvis_categories]
+            meta = {
+                "thing_classes": thing_classes,
+                "evaluator_type": _PREDEFINED_SPLITS_LVIS["evaluator_type"]["lvis_v1"]
+            }
         else:
             raise ValueError("No built-in metadata for dataset {}.".format(self.name))
-        meta["evaluator_type"] = _PREDEFINED_SPLITS_LVIS["evaluator_type"]["lvis_v0.5"]
         meta["image_root"] = self.image_root
         meta["json_file"] = self.json_file
         return meta

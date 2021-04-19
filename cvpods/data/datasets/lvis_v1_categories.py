@@ -1,4 +1,4 @@
-# Autogen with
+# # Autogen with
 # import json
 # import pprint
 # def findall(string, sub):
@@ -17,7 +17,10 @@
 #         string = string.replace(string[left], "\"", 1)
 #         string = string.replace(string[right], "\"", 1)
 #     return string
-# a = json.load(open("objects365_categories.json"))
+# a = json.load(open("cvpods/datasets/lvis/lvis_v1_val.json"))['categories']
+# for x in a:
+#     del x["image_count"]
+#     del x["instance_count"]
 # string = ""
 # string = pprint.pformat(
 #     a,
@@ -27,7 +30,7 @@
 # string = string[:1] + "\n " + string[1:]
 # string = "LVIS_CATEGORIES = " + string[:-1] + "\n]"
 # flag = False
-# with open("lvis_categories.py", mode="w+") as f:
+# with open("lvis_v1_categories.py", mode="w+") as f:
 #     for line in string.split("\n"):
 #         if "[   " in line:
 #             line = line.replace("[   ", "[")
@@ -37,20 +40,11 @@
 #             flag = False
 #         print(convert_quotas(line), file=f)
 
-
 LVIS_CATEGORIES = [
-    {
-        "def": "nut from an oak tree",
-        "frequency": "r",
-        "id": 1,
-        "name": "acorn",
-        "synonyms": ["acorn"],
-        "synset": "acorn.n.01"
-    },
     {
         "def": "a dispenser that holds a substance under pressure",
         "frequency": "c",
-        "id": 2,
+        "id": 1,
         "name": "aerosol_can",
         "synonyms": ["aerosol_can", "spray_can"],
         "synset": "aerosol.n.02"
@@ -58,7 +52,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a machine that keeps air cool and dry",
         "frequency": "f",
-        "id": 3,
+        "id": 2,
         "name": "air_conditioner",
         "synonyms": ["air_conditioner"],
         "synset": "air_conditioner.n.01"
@@ -66,15 +60,15 @@ LVIS_CATEGORIES = [
     {
         "def": "an aircraft that has a fixed wing and is powered by propellers or jets",
         "frequency": "f",
-        "id": 4,
+        "id": 3,
         "name": "airplane",
         "synonyms": ["airplane", "aeroplane"],
         "synset": "airplane.n.01"
     },
     {
         "def": "a clock that wakes a sleeper at some preset time",
-        "frequency": "c",
-        "id": 5,
+        "frequency": "f",
+        "id": 4,
         "name": "alarm_clock",
         "synonyms": ["alarm_clock"],
         "synset": "alarm_clock.n.01"
@@ -82,15 +76,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a liquor or brew containing alcohol as the active agent",
         "frequency": "c",
-        "id": 6,
+        "id": 5,
         "name": "alcohol",
         "synonyms": ["alcohol", "alcoholic_beverage"],
         "synset": "alcohol.n.01"
     },
     {
         "def": "amphibious reptiles related to crocodiles but with shorter broader snouts",
-        "frequency": "r",
-        "id": 7,
+        "frequency": "c",
+        "id": 6,
         "name": "alligator",
         "synonyms": ["alligator", "gator"],
         "synset": "alligator.n.02"
@@ -98,7 +92,7 @@ LVIS_CATEGORIES = [
     {
         "def": "oval-shaped edible seed of the almond tree",
         "frequency": "c",
-        "id": 8,
+        "id": 7,
         "name": "almond",
         "synonyms": ["almond"],
         "synset": "almond.n.02"
@@ -106,15 +100,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a vehicle that takes people to and from hospitals",
         "frequency": "c",
-        "id": 9,
+        "id": 8,
         "name": "ambulance",
         "synonyms": ["ambulance"],
         "synset": "ambulance.n.01"
     },
     {
         "def": "electronic equipment that increases strength of signals",
-        "frequency": "r",
-        "id": 10,
+        "frequency": "c",
+        "id": 9,
         "name": "amplifier",
         "synonyms": ["amplifier"],
         "synset": "amplifier.n.01"
@@ -122,7 +116,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an ornament worn around the ankle",
         "frequency": "c",
-        "id": 11,
+        "id": 10,
         "name": "anklet",
         "synonyms": ["anklet", "ankle_bracelet"],
         "synset": "anklet.n.03"
@@ -130,7 +124,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an electrical device that sends or receives radio or television signals",
         "frequency": "f",
-        "id": 12,
+        "id": 11,
         "name": "antenna",
         "synonyms": ["antenna", "aerial", "transmitting_aerial"],
         "synset": "antenna.n.01"
@@ -138,23 +132,15 @@ LVIS_CATEGORIES = [
     {
         "def": "fruit with red or yellow or green skin and sweet to tart crisp whitish flesh",
         "frequency": "f",
-        "id": 13,
+        "id": 12,
         "name": "apple",
         "synonyms": ["apple"],
         "synset": "apple.n.01"
     },
     {
-        "def": "the juice of apples",
-        "frequency": "r",
-        "id": 14,
-        "name": "apple_juice",
-        "synonyms": ["apple_juice"],
-        "synset": "apple_juice.n.01"
-    },
-    {
         "def": "puree of stewed apples usually sweetened and spiced",
         "frequency": "r",
-        "id": 15,
+        "id": 13,
         "name": "applesauce",
         "synonyms": ["applesauce"],
         "synset": "applesauce.n.01"
@@ -162,7 +148,7 @@ LVIS_CATEGORIES = [
     {
         "def": "downy yellow to rosy-colored fruit resembling a small peach",
         "frequency": "r",
-        "id": 16,
+        "id": 14,
         "name": "apricot",
         "synonyms": ["apricot"],
         "synset": "apricot.n.02"
@@ -170,7 +156,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a garment of cloth that is tied about the waist and worn to protect clothing",
         "frequency": "f",
-        "id": 17,
+        "id": 15,
         "name": "apron",
         "synonyms": ["apron"],
         "synset": "apron.n.01"
@@ -178,15 +164,24 @@ LVIS_CATEGORIES = [
     {
         "def": "a tank/pool/bowl filled with water for keeping live fish and underwater animals",
         "frequency": "c",
-        "id": 18,
+        "id": 16,
         "name": "aquarium",
         "synonyms": ["aquarium", "fish_tank"],
         "synset": "aquarium.n.01"
     },
     {
+        "def": "a waterproof overshoe that protects shoes from water or snow",
+        "frequency": "r",
+        "id": 17,
+        "name": "arctic_(type_of_shoe)",
+        "synonyms": ["arctic_(type_of_shoe)", "galosh", "golosh", "rubber_(type_of_shoe)",
+                     "gumshoe"],
+        "synset": "arctic.n.02"
+    },
+    {
         "def": "a band worn around the upper arm",
         "frequency": "c",
-        "id": 19,
+        "id": 18,
         "name": "armband",
         "synonyms": ["armband"],
         "synset": "armband.n.02"
@@ -194,7 +189,7 @@ LVIS_CATEGORIES = [
     {
         "def": "chair with a support on each side for arms",
         "frequency": "f",
-        "id": 20,
+        "id": 19,
         "name": "armchair",
         "synonyms": ["armchair"],
         "synset": "armchair.n.01"
@@ -202,7 +197,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a large wardrobe or cabinet",
         "frequency": "r",
-        "id": 21,
+        "id": 20,
         "name": "armoire",
         "synonyms": ["armoire"],
         "synset": "armoire.n.01"
@@ -210,7 +205,7 @@ LVIS_CATEGORIES = [
     {
         "def": "protective covering made of metal and used in combat",
         "frequency": "r",
-        "id": 22,
+        "id": 21,
         "name": "armor",
         "synonyms": ["armor", "armour"],
         "synset": "armor.n.01"
@@ -218,7 +213,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a thistlelike flower head with edible fleshy leaves and heart",
         "frequency": "c",
-        "id": 23,
+        "id": 22,
         "name": "artichoke",
         "synonyms": ["artichoke"],
         "synset": "artichoke.n.02"
@@ -226,7 +221,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a bin that holds rubbish until it is collected",
         "frequency": "f",
-        "id": 24,
+        "id": 23,
         "name": "trash_can",
         "synonyms": ["trash_can", "garbage_can", "wastebin", "dustbin", "trash_barrel",
                      "trash_bin"],
@@ -235,7 +230,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a receptacle for the ash from smokers' cigars or cigarettes",
         "frequency": "c",
-        "id": 25,
+        "id": 24,
         "name": "ashtray",
         "synonyms": ["ashtray"],
         "synset": "ashtray.n.01"
@@ -243,7 +238,7 @@ LVIS_CATEGORIES = [
     {
         "def": "edible young shoots of the asparagus plant",
         "frequency": "c",
-        "id": 26,
+        "id": 25,
         "name": "asparagus",
         "synonyms": ["asparagus"],
         "synset": "asparagus.n.02"
@@ -251,7 +246,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a dispenser that turns a liquid (such as perfume) into a fine mist",
         "frequency": "c",
-        "id": 27,
+        "id": 26,
         "name": "atomizer",
         "synonyms": ["atomizer", "atomiser", "spray", "sprayer", "nebulizer", "nebuliser"],
         "synset": "atomizer.n.01"
@@ -259,8 +254,8 @@ LVIS_CATEGORIES = [
     {
         "def": "a pear-shaped fruit with green or blackish skin and rich yellowish pulp enclosing "
                "a single large seed",
-        "frequency": "c",
-        "id": 28,
+        "frequency": "f",
+        "id": 27,
         "name": "avocado",
         "synonyms": ["avocado"],
         "synset": "avocado.n.01"
@@ -268,7 +263,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a tangible symbol signifying approval or distinction",
         "frequency": "c",
-        "id": 29,
+        "id": 28,
         "name": "award",
         "synonyms": ["award", "accolade"],
         "synset": "award.n.02"
@@ -276,7 +271,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a canopy made of canvas to shelter people or things from rain or sun",
         "frequency": "f",
-        "id": 30,
+        "id": 29,
         "name": "awning",
         "synonyms": ["awning"],
         "synset": "awning.n.01"
@@ -284,10 +279,18 @@ LVIS_CATEGORIES = [
     {
         "def": "an edge tool with a heavy bladed head mounted across a handle",
         "frequency": "r",
-        "id": 31,
+        "id": 30,
         "name": "ax",
         "synonyms": ["ax", "axe"],
         "synset": "ax.n.01"
+    },
+    {
+        "def": "large terrestrial monkeys having doglike muzzles",
+        "frequency": "r",
+        "id": 31,
+        "name": "baboon",
+        "synonyms": ["baboon"],
+        "synset": "baboon.n.01"
     },
     {
         "def": "a small vehicle with four wheels in which a baby or child is pushed around",
@@ -404,7 +407,7 @@ LVIS_CATEGORIES = [
     },
     {
         "def": "trade name for an adhesive bandage to cover small cuts or blisters",
-        "frequency": "r",
+        "frequency": "c",
         "id": 46,
         "name": "Band_Aid",
         "synonyms": ["Band_Aid"],
@@ -420,7 +423,7 @@ LVIS_CATEGORIES = [
     },
     {
         "def": "large and brightly colored handkerchief; often used as a neckerchief",
-        "frequency": "c",
+        "frequency": "f",
         "id": 48,
         "name": "bandanna",
         "synonyms": ["bandanna", "bandana"],
@@ -531,17 +534,9 @@ LVIS_CATEGORIES = [
         "synset": "basket.n.01"
     },
     {
-        "def": "metal hoop supporting a net through which players try to throw the basketball",
-        "frequency": "c",
-        "id": 62,
-        "name": "basketball_hoop",
-        "synonyms": ["basketball_hoop"],
-        "synset": "basket.n.03"
-    },
-    {
         "def": "an inflated ball used in playing basketball",
         "frequency": "c",
-        "id": 63,
+        "id": 62,
         "name": "basketball",
         "synonyms": ["basketball"],
         "synset": "basketball.n.02"
@@ -549,15 +544,15 @@ LVIS_CATEGORIES = [
     {
         "def": "the lowest brass wind instrument",
         "frequency": "r",
-        "id": 64,
+        "id": 63,
         "name": "bass_horn",
         "synonyms": ["bass_horn", "sousaphone", "tuba"],
         "synset": "bass_horn.n.01"
     },
     {
         "def": "nocturnal mouselike mammal with forelimbs modified to form membranous wings",
-        "frequency": "r",
-        "id": 65,
+        "frequency": "c",
+        "id": 64,
         "name": "bat_(animal)",
         "synonyms": ["bat_(animal)"],
         "synset": "bat.n.01"
@@ -565,7 +560,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a heavy towel or mat to stand on while drying yourself after a bath",
         "frequency": "f",
-        "id": 66,
+        "id": 65,
         "name": "bath_mat",
         "synonyms": ["bath_mat"],
         "synset": "bath_mat.n.01"
@@ -573,7 +568,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a large towel; to dry yourself after a bath",
         "frequency": "f",
-        "id": 67,
+        "id": 66,
         "name": "bath_towel",
         "synonyms": ["bath_towel"],
         "synset": "bath_towel.n.01"
@@ -581,7 +576,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a loose-fitting robe of towelling; worn after a bath or swim",
         "frequency": "c",
-        "id": 68,
+        "id": 67,
         "name": "bathrobe",
         "synonyms": ["bathrobe"],
         "synset": "bathrobe.n.01"
@@ -589,7 +584,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a large open container that you fill with water and use to wash the body",
         "frequency": "f",
-        "id": 69,
+        "id": 68,
         "name": "bathtub",
         "synonyms": ["bathtub", "bathing_tub"],
         "synset": "bathtub.n.01"
@@ -597,7 +592,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a liquid or semiliquid mixture, as of flour, eggs, and milk, used in cooking",
         "frequency": "r",
-        "id": 70,
+        "id": 69,
         "name": "batter_(food)",
         "synonyms": ["batter_(food)"],
         "synset": "batter.n.02"
@@ -605,7 +600,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a portable device that produces electricity",
         "frequency": "c",
-        "id": 71,
+        "id": 70,
         "name": "battery",
         "synonyms": ["battery"],
         "synset": "battery.n.02"
@@ -613,7 +608,7 @@ LVIS_CATEGORIES = [
     {
         "def": "large and light ball; for play at the seaside",
         "frequency": "r",
-        "id": 72,
+        "id": 71,
         "name": "beachball",
         "synonyms": ["beachball"],
         "synset": "beach_ball.n.01"
@@ -622,23 +617,15 @@ LVIS_CATEGORIES = [
         "def": "a small ball with a hole through the middle used for ornamentation, jewellery, "
                "etc.",
         "frequency": "c",
-        "id": 73,
+        "id": 72,
         "name": "bead",
         "synonyms": ["bead"],
         "synset": "bead.n.01"
     },
     {
-        "def": "a flatbottomed jar made of glass or plastic; used for chemistry",
-        "frequency": "r",
-        "id": 74,
-        "name": "beaker",
-        "synonyms": ["beaker"],
-        "synset": "beaker.n.01"
-    },
-    {
         "def": "cheeselike food made of curdled soybean milk",
         "frequency": "c",
-        "id": 75,
+        "id": 73,
         "name": "bean_curd",
         "synonyms": ["bean_curd", "tofu"],
         "synset": "bean_curd.n.01"
@@ -646,7 +633,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a bag filled with dried beans or similar items; used in games or to sit on",
         "frequency": "c",
-        "id": 76,
+        "id": 74,
         "name": "beanbag",
         "synonyms": ["beanbag"],
         "synset": "beanbag.n.01"
@@ -654,7 +641,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small skullcap; formerly worn by schoolboys and college freshmen",
         "frequency": "f",
-        "id": 77,
+        "id": 75,
         "name": "beanie",
         "synonyms": ["beanie", "beany"],
         "synset": "beanie.n.01"
@@ -662,7 +649,7 @@ LVIS_CATEGORIES = [
     {
         "def": "large carnivorous or omnivorous mammals with shaggy coats and claws",
         "frequency": "f",
-        "id": 78,
+        "id": 76,
         "name": "bear",
         "synonyms": ["bear"],
         "synset": "bear.n.01"
@@ -670,31 +657,39 @@ LVIS_CATEGORIES = [
     {
         "def": "a piece of furniture that provides a place to sleep",
         "frequency": "f",
-        "id": 79,
+        "id": 77,
         "name": "bed",
         "synonyms": ["bed"],
         "synset": "bed.n.01"
     },
     {
+        "def": "a shallow vessel used by a bedridden patient for defecation and urination",
+        "frequency": "r",
+        "id": 78,
+        "name": "bedpan",
+        "synonyms": ["bedpan"],
+        "synset": "bedpan.n.01"
+    },
+    {
         "def": "decorative cover for a bed",
-        "frequency": "c",
-        "id": 80,
+        "frequency": "f",
+        "id": 79,
         "name": "bedspread",
         "synonyms": ["bedspread", "bedcover", "bed_covering", "counterpane", "spread"],
         "synset": "bedspread.n.01"
     },
     {
-        "def": "cattle that are reared for their meat",
+        "def": "cattle/cow",
         "frequency": "f",
-        "id": 81,
+        "id": 80,
         "name": "cow",
         "synonyms": ["cow"],
         "synset": "beef.n.01"
     },
     {
         "def": "meat from an adult domestic bovine",
-        "frequency": "c",
-        "id": 82,
+        "frequency": "f",
+        "id": 81,
         "name": "beef_(food)",
         "synonyms": ["beef_(food)", "boeuf_(food)"],
         "synset": "beef.n.02"
@@ -702,7 +697,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an device that beeps when the person carrying it is being paged",
         "frequency": "r",
-        "id": 83,
+        "id": 82,
         "name": "beeper",
         "synonyms": ["beeper", "pager"],
         "synset": "beeper.n.01"
@@ -710,7 +705,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a bottle that holds beer",
         "frequency": "f",
-        "id": 84,
+        "id": 83,
         "name": "beer_bottle",
         "synonyms": ["beer_bottle"],
         "synset": "beer_bottle.n.01"
@@ -718,7 +713,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a can that holds beer",
         "frequency": "c",
-        "id": 85,
+        "id": 84,
         "name": "beer_can",
         "synonyms": ["beer_can"],
         "synset": "beer_can.n.01"
@@ -726,7 +721,7 @@ LVIS_CATEGORIES = [
     {
         "def": "insect with hard wing covers",
         "frequency": "r",
-        "id": 86,
+        "id": 85,
         "name": "beetle",
         "synonyms": ["beetle"],
         "synset": "beetle.n.01"
@@ -734,7 +729,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a hollow device made of metal that makes a ringing sound when struck",
         "frequency": "f",
-        "id": 87,
+        "id": 86,
         "name": "bell",
         "synonyms": ["bell"],
         "synset": "bell.n.01"
@@ -743,7 +738,7 @@ LVIS_CATEGORIES = [
         "def": "large bell-shaped sweet pepper in green or red or yellow or orange or black "
                "varieties",
         "frequency": "f",
-        "id": 88,
+        "id": 87,
         "name": "bell_pepper",
         "synonyms": ["bell_pepper", "capsicum"],
         "synset": "bell_pepper.n.02"
@@ -751,7 +746,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a band to tie or buckle around the body (usually at the waist)",
         "frequency": "f",
-        "id": 89,
+        "id": 88,
         "name": "belt",
         "synonyms": ["belt"],
         "synset": "belt.n.02"
@@ -759,7 +754,7 @@ LVIS_CATEGORIES = [
     {
         "def": "the buckle used to fasten a belt",
         "frequency": "f",
-        "id": 90,
+        "id": 89,
         "name": "belt_buckle",
         "synonyms": ["belt_buckle"],
         "synset": "belt_buckle.n.01"
@@ -767,7 +762,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a long seat for more than one person",
         "frequency": "f",
-        "id": 91,
+        "id": 90,
         "name": "bench",
         "synonyms": ["bench"],
         "synset": "bench.n.01"
@@ -775,7 +770,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cap with no brim or bill; made of soft cloth",
         "frequency": "c",
-        "id": 92,
+        "id": 91,
         "name": "beret",
         "synonyms": ["beret"],
         "synset": "beret.n.01"
@@ -783,7 +778,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a napkin tied under the chin of a child while eating",
         "frequency": "c",
-        "id": 93,
+        "id": 92,
         "name": "bib",
         "synonyms": ["bib"],
         "synset": "bib.n.02"
@@ -791,7 +786,7 @@ LVIS_CATEGORIES = [
     {
         "def": "the sacred writings of the Christian religions",
         "frequency": "r",
-        "id": 94,
+        "id": 93,
         "name": "Bible",
         "synonyms": ["Bible"],
         "synset": "bible.n.01"
@@ -799,7 +794,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a wheeled vehicle that has two wheels and is moved by foot pedals",
         "frequency": "f",
-        "id": 95,
+        "id": 94,
         "name": "bicycle",
         "synonyms": ["bicycle", "bike_(bicycle)"],
         "synset": "bicycle.n.01"
@@ -807,10 +802,18 @@ LVIS_CATEGORIES = [
     {
         "def": "a brim that projects to the front to shade the eyes",
         "frequency": "f",
-        "id": 96,
+        "id": 95,
         "name": "visor",
         "synonyms": ["visor", "vizor"],
         "synset": "bill.n.09"
+    },
+    {
+        "def": "large outdoor signboard",
+        "frequency": "f",
+        "id": 96,
+        "name": "billboard",
+        "synonyms": ["billboard"],
+        "synset": "billboard.n.01"
     },
     {
         "def": "holds loose papers or magazines",
@@ -838,7 +841,7 @@ LVIS_CATEGORIES = [
     },
     {
         "def": "an outdoor device that supplies food for wild birds",
-        "frequency": "r",
+        "frequency": "c",
         "id": 100,
         "name": "birdfeeder",
         "synonyms": ["birdfeeder"],
@@ -846,7 +849,7 @@ LVIS_CATEGORIES = [
     },
     {
         "def": "an ornamental basin (usually in a garden) for birds to bathe in",
-        "frequency": "r",
+        "frequency": "c",
         "id": 101,
         "name": "birdbath",
         "synonyms": ["birdbath"],
@@ -885,17 +888,9 @@ LVIS_CATEGORIES = [
         "synset": "birthday_card.n.01"
     },
     {
-        "def": "small round bread leavened with baking-powder or soda",
-        "frequency": "r",
-        "id": 106,
-        "name": "biscuit_(bread)",
-        "synonyms": ["biscuit_(bread)"],
-        "synset": "biscuit.n.01"
-    },
-    {
         "def": "a flag usually bearing a white skull and crossbones on a black background",
         "frequency": "r",
-        "id": 107,
+        "id": 106,
         "name": "pirate_flag",
         "synonyms": ["pirate_flag"],
         "synset": "black_flag.n.01"
@@ -903,14 +898,22 @@ LVIS_CATEGORIES = [
     {
         "def": "sheep with a black coat",
         "frequency": "c",
-        "id": 108,
+        "id": 107,
         "name": "black_sheep",
         "synonyms": ["black_sheep"],
         "synset": "black_sheep.n.02"
     },
     {
-        "def": "sheet of slate; for writing with chalk",
+        "def": "large sweet black or very dark purple edible aggregate fruit",
         "frequency": "c",
+        "id": 108,
+        "name": "blackberry",
+        "synonyms": ["blackberry"],
+        "synset": "blackberry.n.01"
+    },
+    {
+        "def": "sheet of slate; for writing with chalk",
+        "frequency": "f",
         "id": 109,
         "name": "blackboard",
         "synonyms": ["blackboard", "chalkboard"],
@@ -950,27 +953,27 @@ LVIS_CATEGORIES = [
     },
     {
         "def": "a light that flashes on and off; used as a signal or to send messages",
-        "frequency": "c",
+        "frequency": "f",
         "id": 114,
         "name": "blinker",
         "synonyms": ["blinker", "flasher"],
         "synset": "blinker.n.01"
     },
     {
-        "def": "sweet edible dark-blue berries of blueberry plants",
-        "frequency": "c",
+        "def": "a top worn by women",
+        "frequency": "f",
         "id": 115,
+        "name": "blouse",
+        "synonyms": ["blouse"],
+        "synset": "blouse.n.01"
+    },
+    {
+        "def": "sweet edible dark-blue berries of blueberry plants",
+        "frequency": "f",
+        "id": 116,
         "name": "blueberry",
         "synonyms": ["blueberry"],
         "synset": "blueberry.n.02"
-    },
-    {
-        "def": "an uncastrated male hog",
-        "frequency": "r",
-        "id": 116,
-        "name": "boar",
-        "synonyms": ["boar"],
-        "synset": "boar.n.02"
     },
     {
         "def": "a flat portable surface (usually rectangular) designed for board games",
@@ -989,17 +992,25 @@ LVIS_CATEGORIES = [
         "synset": "boat.n.01"
     },
     {
+        "def": "a small float usually made of cork; attached to a fishing line",
+        "frequency": "r",
+        "id": 119,
+        "name": "bob",
+        "synonyms": ["bob", "bobber", "bobfloat"],
+        "synset": "bob.n.05"
+    },
+    {
         "def": "a thing around which thread/tape/film or other flexible materials can be wound",
         "frequency": "c",
-        "id": 119,
+        "id": 120,
         "name": "bobbin",
         "synonyms": ["bobbin", "spool", "reel"],
         "synset": "bobbin.n.01"
     },
     {
         "def": "a flat wire hairpin used to hold bobbed hair in place",
-        "frequency": "r",
-        "id": 120,
+        "frequency": "c",
+        "id": 121,
         "name": "bobby_pin",
         "synonyms": ["bobby_pin", "hairgrip"],
         "synset": "bobby_pin.n.01"
@@ -1007,7 +1018,7 @@ LVIS_CATEGORIES = [
     {
         "def": "egg cooked briefly in the shell in gently boiling water",
         "frequency": "c",
-        "id": 121,
+        "id": 122,
         "name": "boiled_egg",
         "synonyms": ["boiled_egg", "coddled_egg"],
         "synset": "boiled_egg.n.01"
@@ -1015,7 +1026,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cord fastened around the neck with an ornamental clasp and worn as a necktie",
         "frequency": "r",
-        "id": 122,
+        "id": 123,
         "name": "bolo_tie",
         "synonyms": ["bolo_tie", "bolo", "bola_tie", "bola"],
         "synset": "bolo_tie.n.01"
@@ -1023,7 +1034,7 @@ LVIS_CATEGORIES = [
     {
         "def": "the part of a lock that is engaged or withdrawn with a key",
         "frequency": "c",
-        "id": 123,
+        "id": 124,
         "name": "deadbolt",
         "synonyms": ["deadbolt"],
         "synset": "bolt.n.03"
@@ -1031,7 +1042,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a screw that screws into a nut to form a fastener",
         "frequency": "f",
-        "id": 124,
+        "id": 125,
         "name": "bolt",
         "synonyms": ["bolt"],
         "synset": "bolt.n.06"
@@ -1039,7 +1050,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a hat tied under the chin",
         "frequency": "r",
-        "id": 125,
+        "id": 126,
         "name": "bonnet",
         "synonyms": ["bonnet"],
         "synset": "bonnet.n.01"
@@ -1047,18 +1058,10 @@ LVIS_CATEGORIES = [
     {
         "def": "a written work or composition that has been published",
         "frequency": "f",
-        "id": 126,
+        "id": 127,
         "name": "book",
         "synonyms": ["book"],
         "synset": "book.n.01"
-    },
-    {
-        "def": "a bag in which students carry their books",
-        "frequency": "r",
-        "id": 127,
-        "name": "book_bag",
-        "synonyms": ["book_bag"],
-        "synset": "book_bag.n.01"
     },
     {
         "def": "a piece of furniture with shelves for storing books",
@@ -1181,12 +1184,12 @@ LVIS_CATEGORIES = [
         "synset": "bowling_ball.n.01"
     },
     {
-        "def": "a club-shaped wooden object used in bowling",
-        "frequency": "r",
+        "def": "a (usually rectangular) container; may have a lid",
+        "frequency": "f",
         "id": 143,
-        "name": "bowling_pin",
-        "synonyms": ["bowling_pin"],
-        "synset": "bowling_pin.n.01"
+        "name": "box",
+        "synonyms": ["box"],
+        "synset": "box.n.01"
     },
     {
         "def": "large glove coverings the fists of a fighter worn for the sport of boxing",
@@ -1237,17 +1240,26 @@ LVIS_CATEGORIES = [
         "synset": "bread-bin.n.01"
     },
     {
+        "def": "food made from dough of flour or meal and usually raised with yeast or baking "
+               "powder and then baked",
+        "frequency": "f",
+        "id": 150,
+        "name": "bread",
+        "synonyms": ["bread"],
+        "synset": "bread.n.01"
+    },
+    {
         "def": "a garment that provides covering for the loins",
         "frequency": "r",
-        "id": 150,
+        "id": 151,
         "name": "breechcloth",
         "synonyms": ["breechcloth", "breechclout", "loincloth"],
         "synset": "breechcloth.n.01"
     },
     {
         "def": "a gown worn by the bride at a wedding",
-        "frequency": "c",
-        "id": 151,
+        "frequency": "f",
+        "id": 152,
         "name": "bridal_gown",
         "synonyms": ["bridal_gown", "wedding_gown", "wedding_dress"],
         "synset": "bridal_gown.n.01"
@@ -1255,18 +1267,10 @@ LVIS_CATEGORIES = [
     {
         "def": "a case with a handle; for carrying papers or files or books",
         "frequency": "c",
-        "id": 152,
+        "id": 153,
         "name": "briefcase",
         "synonyms": ["briefcase"],
         "synset": "briefcase.n.01"
-    },
-    {
-        "def": "a brush that is made with the short stiff hairs of an animal or plant",
-        "frequency": "c",
-        "id": 153,
-        "name": "bristle_brush",
-        "synonyms": ["bristle_brush"],
-        "synset": "bristle_brush.n.01"
     },
     {
         "def": "plant with dense clusters of tight green flower buds",
@@ -1333,16 +1337,16 @@ LVIS_CATEGORIES = [
         "synset": "buggy.n.01"
     },
     {
-        "def": "mature male cow",
+        "def": "a cow with horns",
         "frequency": "c",
         "id": 162,
         "name": "bull",
-        "synonyms": ["bull"],
+        "synonyms": ["horned_cow"],
         "synset": "bull.n.11"
     },
     {
         "def": "a thickset short-haired dog with a large head and strong undershot lower jaw",
-        "frequency": "r",
+        "frequency": "c",
         "id": 163,
         "name": "bulldog",
         "synonyms": ["bulldog"],
@@ -1389,17 +1393,9 @@ LVIS_CATEGORIES = [
         "synset": "bullhorn.n.01"
     },
     {
-        "def": "beef cured or pickled in brine",
-        "frequency": "r",
-        "id": 169,
-        "name": "corned_beef",
-        "synonyms": ["corned_beef", "corn_beef"],
-        "synset": "bully_beef.n.01"
-    },
-    {
         "def": "small rounded bread either plain or sweet",
         "frequency": "f",
-        "id": 170,
+        "id": 169,
         "name": "bun",
         "synonyms": ["bun", "roll"],
         "synset": "bun.n.01"
@@ -1407,7 +1403,7 @@ LVIS_CATEGORIES = [
     {
         "def": "beds built one above the other",
         "frequency": "c",
-        "id": 171,
+        "id": 170,
         "name": "bunk_bed",
         "synonyms": ["bunk_bed"],
         "synset": "bunk_bed.n.01"
@@ -1416,7 +1412,7 @@ LVIS_CATEGORIES = [
         "def": "a float attached by rope to the seabed to mark channels in a harbor or underwater "
                "hazards",
         "frequency": "f",
-        "id": 172,
+        "id": 171,
         "name": "buoy",
         "synonyms": ["buoy"],
         "synset": "buoy.n.01"
@@ -1424,7 +1420,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a flour tortilla folded around a filling",
         "frequency": "r",
-        "id": 173,
+        "id": 172,
         "name": "burrito",
         "synonyms": ["burrito"],
         "synset": "burrito.n.01"
@@ -1432,7 +1428,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a vehicle carrying many passengers; used for public transport",
         "frequency": "f",
-        "id": 174,
+        "id": 173,
         "name": "bus_(vehicle)",
         "synonyms": ["bus_(vehicle)", "autobus", "charabanc", "double-decker", "motorbus",
                      "motorcoach"],
@@ -1441,24 +1437,16 @@ LVIS_CATEGORIES = [
     {
         "def": "a card on which are printed the person's name and business affiliation",
         "frequency": "c",
-        "id": 175,
+        "id": 174,
         "name": "business_card",
         "synonyms": ["business_card"],
         "synset": "business_card.n.01"
     },
     {
-        "def": "a large sharp knife for cutting or trimming meat",
-        "frequency": "c",
-        "id": 176,
-        "name": "butcher_knife",
-        "synonyms": ["butcher_knife"],
-        "synset": "butcher_knife.n.01"
-    },
-    {
         "def": "an edible emulsion of fat globules made by churning milk or cream; for cooking and "
                "table use",
-        "frequency": "c",
-        "id": 177,
+        "frequency": "f",
+        "id": 175,
         "name": "butter",
         "synonyms": ["butter"],
         "synset": "butter.n.01"
@@ -1467,7 +1455,7 @@ LVIS_CATEGORIES = [
         "def": "insect typically having a slender body with knobbed antennae and broad colorful "
                "wings",
         "frequency": "c",
-        "id": 178,
+        "id": 176,
         "name": "butterfly",
         "synonyms": ["butterfly"],
         "synset": "butterfly.n.01"
@@ -1475,7 +1463,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a round fastener sewn to shirts and coats etc to fit through buttonholes",
         "frequency": "f",
-        "id": 179,
+        "id": 177,
         "name": "button",
         "synonyms": ["button"],
         "synset": "button.n.01"
@@ -1483,7 +1471,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a car that takes passengers where they want to go in exchange for money",
         "frequency": "f",
-        "id": 180,
+        "id": 178,
         "name": "cab_(taxi)",
         "synonyms": ["cab_(taxi)", "taxi", "taxicab"],
         "synset": "cab.n.03"
@@ -1491,7 +1479,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small tent used as a dressing room beside the sea or a swimming pool",
         "frequency": "r",
-        "id": 181,
+        "id": 179,
         "name": "cabana",
         "synonyms": ["cabana"],
         "synset": "cabana.n.01"
@@ -1499,8 +1487,8 @@ LVIS_CATEGORIES = [
     {
         "def": "a car on a freight train for use of the train crew; usually the last car on the "
                "train",
-        "frequency": "r",
-        "id": 182,
+        "frequency": "c",
+        "id": 180,
         "name": "cabin_car",
         "synonyms": ["cabin_car", "caboose"],
         "synset": "cabin_car.n.01"
@@ -1508,7 +1496,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a piece of furniture resembling a cupboard with doors and shelves and drawers",
         "frequency": "f",
-        "id": 183,
+        "id": 181,
         "name": "cabinet",
         "synonyms": ["cabinet"],
         "synset": "cabinet.n.01"
@@ -1516,7 +1504,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a storage compartment for clothes and valuables; usually it has a lock",
         "frequency": "r",
-        "id": 184,
+        "id": 182,
         "name": "locker",
         "synonyms": ["locker", "storage_locker"],
         "synset": "cabinet.n.03"
@@ -1524,7 +1512,7 @@ LVIS_CATEGORIES = [
     {
         "def": "baked goods made from or based on a mixture of flour, sugar, eggs, and fat",
         "frequency": "f",
-        "id": 185,
+        "id": 183,
         "name": "cake",
         "synonyms": ["cake"],
         "synset": "cake.n.03"
@@ -1532,7 +1520,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small machine that is used for mathematical calculations",
         "frequency": "c",
-        "id": 186,
+        "id": 184,
         "name": "calculator",
         "synonyms": ["calculator"],
         "synset": "calculator.n.02"
@@ -1540,7 +1528,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a list or register of events (appointments/social events/court cases, etc)",
         "frequency": "f",
-        "id": 187,
+        "id": 185,
         "name": "calendar",
         "synonyms": ["calendar"],
         "synset": "calendar.n.02"
@@ -1548,7 +1536,7 @@ LVIS_CATEGORIES = [
     {
         "def": "young of domestic cattle",
         "frequency": "c",
-        "id": 188,
+        "id": 186,
         "name": "calf",
         "synonyms": ["calf"],
         "synset": "calf.n.01"
@@ -1556,7 +1544,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a portable television camera and videocassette recorder",
         "frequency": "c",
-        "id": 189,
+        "id": 187,
         "name": "camcorder",
         "synonyms": ["camcorder"],
         "synset": "camcorder.n.01"
@@ -1564,7 +1552,7 @@ LVIS_CATEGORIES = [
     {
         "def": "cud-chewing mammal used as a draft or saddle animal in desert regions",
         "frequency": "c",
-        "id": 190,
+        "id": 188,
         "name": "camel",
         "synonyms": ["camel"],
         "synset": "camel.n.01"
@@ -1572,7 +1560,7 @@ LVIS_CATEGORIES = [
     {
         "def": "equipment for taking photographs",
         "frequency": "f",
-        "id": 191,
+        "id": 189,
         "name": "camera",
         "synonyms": ["camera"],
         "synset": "camera.n.01"
@@ -1580,7 +1568,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a lens that focuses the image in a camera",
         "frequency": "c",
-        "id": 192,
+        "id": 190,
         "name": "camera_lens",
         "synonyms": ["camera_lens"],
         "synset": "camera_lens.n.01"
@@ -1588,7 +1576,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a recreational vehicle equipped for camping out while traveling",
         "frequency": "c",
-        "id": 193,
+        "id": 191,
         "name": "camper_(vehicle)",
         "synonyms": ["camper_(vehicle)", "camping_bus", "motor_home"],
         "synset": "camper.n.02"
@@ -1596,7 +1584,7 @@ LVIS_CATEGORIES = [
     {
         "def": "airtight sealed metal container for food or drink or paint etc.",
         "frequency": "f",
-        "id": 194,
+        "id": 192,
         "name": "can",
         "synonyms": ["can", "tin_can"],
         "synset": "can.n.01"
@@ -1604,23 +1592,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a device for cutting cans open",
         "frequency": "c",
-        "id": 195,
+        "id": 193,
         "name": "can_opener",
         "synonyms": ["can_opener", "tin_opener"],
         "synset": "can_opener.n.01"
     },
     {
-        "def": "branched candlestick; ornamental; has several lights",
-        "frequency": "r",
-        "id": 196,
-        "name": "candelabrum",
-        "synonyms": ["candelabrum", "candelabra"],
-        "synset": "candelabrum.n.01"
-    },
-    {
         "def": "stick of wax with a wick in the middle",
         "frequency": "f",
-        "id": 197,
+        "id": 194,
         "name": "candle",
         "synonyms": ["candle", "candlestick"],
         "synset": "candle.n.01"
@@ -1628,7 +1608,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a holder with sockets for candles",
         "frequency": "f",
-        "id": 198,
+        "id": 195,
         "name": "candle_holder",
         "synonyms": ["candle_holder"],
         "synset": "candlestick.n.01"
@@ -1636,7 +1616,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a candy shaped as a bar",
         "frequency": "r",
-        "id": 199,
+        "id": 196,
         "name": "candy_bar",
         "synonyms": ["candy_bar"],
         "synset": "candy_bar.n.01"
@@ -1644,7 +1624,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a hard candy in the shape of a rod (usually with stripes)",
         "frequency": "c",
-        "id": 200,
+        "id": 197,
         "name": "candy_cane",
         "synonyms": ["candy_cane"],
         "synset": "candy_cane.n.01"
@@ -1652,7 +1632,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a stick that people can lean on to help them walk",
         "frequency": "c",
-        "id": 201,
+        "id": 198,
         "name": "walking_cane",
         "synonyms": ["walking_cane"],
         "synset": "cane.n.01"
@@ -1660,31 +1640,23 @@ LVIS_CATEGORIES = [
     {
         "def": "metal container for storing dry foods such as tea or flour",
         "frequency": "c",
-        "id": 202,
+        "id": 199,
         "name": "canister",
         "synonyms": ["canister", "cannister"],
         "synset": "canister.n.02"
     },
     {
-        "def": "heavy gun fired from a tank",
-        "frequency": "r",
-        "id": 203,
-        "name": "cannon",
-        "synonyms": ["cannon"],
-        "synset": "cannon.n.02"
-    },
-    {
         "def": "small and light boat; pointed at both ends; propelled with a paddle",
         "frequency": "c",
-        "id": 204,
+        "id": 200,
         "name": "canoe",
         "synonyms": ["canoe"],
         "synset": "canoe.n.01"
     },
     {
         "def": "the fruit of a cantaloup vine; small to medium-sized melon with yellowish flesh",
-        "frequency": "r",
-        "id": 205,
+        "frequency": "c",
+        "id": 201,
         "name": "cantaloup",
         "synonyms": ["cantaloup", "cantaloupe"],
         "synset": "cantaloup.n.02"
@@ -1692,15 +1664,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a flask for carrying water; used by soldiers or travelers",
         "frequency": "r",
-        "id": 206,
+        "id": 202,
         "name": "canteen",
         "synonyms": ["canteen"],
         "synset": "canteen.n.01"
     },
     {
         "def": "a tight-fitting headwear",
-        "frequency": "c",
-        "id": 207,
+        "frequency": "f",
+        "id": 203,
         "name": "cap_(headwear)",
         "synonyms": ["cap_(headwear)"],
         "synset": "cap.n.01"
@@ -1708,15 +1680,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a top (as for a bottle)",
         "frequency": "f",
-        "id": 208,
+        "id": 204,
         "name": "bottle_cap",
         "synonyms": ["bottle_cap", "cap_(container_lid)"],
         "synset": "cap.n.02"
     },
     {
         "def": "a sleeveless garment like a cloak but shorter",
-        "frequency": "r",
-        "id": 209,
+        "frequency": "c",
+        "id": 205,
         "name": "cape",
         "synonyms": ["cape"],
         "synset": "cape.n.02"
@@ -1724,7 +1696,7 @@ LVIS_CATEGORIES = [
     {
         "def": "equal parts of espresso and steamed milk",
         "frequency": "c",
-        "id": 210,
+        "id": 206,
         "name": "cappuccino",
         "synonyms": ["cappuccino", "coffee_cappuccino"],
         "synset": "cappuccino.n.01"
@@ -1732,15 +1704,16 @@ LVIS_CATEGORIES = [
     {
         "def": "a motor vehicle with four wheels",
         "frequency": "f",
-        "id": 211,
+        "id": 207,
         "name": "car_(automobile)",
         "synonyms": ["car_(automobile)", "auto_(automobile)", "automobile"],
         "synset": "car.n.01"
     },
     {
-        "def": "a wheeled vehicle adapted to the rails of railroad",
+        "def": "a wheeled vehicle adapted to the rails of railroad (mark each individual railcar "
+               "separately)",
         "frequency": "f",
-        "id": 212,
+        "id": 208,
         "name": "railcar_(part_of_a_train)",
         "synonyms": ["railcar_(part_of_a_train)", "railway_car_(part_of_a_train)",
                      "railroad_car_(part_of_a_train)"],
@@ -1749,7 +1722,7 @@ LVIS_CATEGORIES = [
     {
         "def": "where passengers ride up and down",
         "frequency": "r",
-        "id": 213,
+        "id": 209,
         "name": "elevator_car",
         "synonyms": ["elevator_car"],
         "synset": "car.n.04"
@@ -1757,7 +1730,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a battery in a motor vehicle",
         "frequency": "r",
-        "id": 214,
+        "id": 210,
         "name": "car_battery",
         "synonyms": ["car_battery", "automobile_battery"],
         "synset": "car_battery.n.01"
@@ -1765,7 +1738,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a card certifying the identity of the bearer",
         "frequency": "c",
-        "id": 215,
+        "id": 211,
         "name": "identity_card",
         "synonyms": ["identity_card"],
         "synset": "card.n.02"
@@ -1773,15 +1746,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a rectangular piece of paper used to send messages (e.g. greetings or pictures)",
         "frequency": "c",
-        "id": 216,
+        "id": 212,
         "name": "card",
         "synonyms": ["card"],
         "synset": "card.n.03"
     },
     {
         "def": "knitted jacket that is fastened up the front with buttons or a zipper",
-        "frequency": "r",
-        "id": 217,
+        "frequency": "c",
+        "id": 213,
         "name": "cardigan",
         "synonyms": ["cardigan"],
         "synset": "cardigan.n.01"
@@ -1789,7 +1762,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a ship designed to carry cargo",
         "frequency": "r",
-        "id": 218,
+        "id": 214,
         "name": "cargo_ship",
         "synonyms": ["cargo_ship", "cargo_vessel"],
         "synset": "cargo_ship.n.01"
@@ -1797,7 +1770,7 @@ LVIS_CATEGORIES = [
     {
         "def": "plant with pink to purple-red spice-scented usually double flowers",
         "frequency": "r",
-        "id": 219,
+        "id": 215,
         "name": "carnation",
         "synonyms": ["carnation"],
         "synset": "carnation.n.01"
@@ -1805,7 +1778,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a vehicle with wheels drawn by one or more horses",
         "frequency": "c",
-        "id": 220,
+        "id": 216,
         "name": "horse_carriage",
         "synonyms": ["horse_carriage"],
         "synset": "carriage.n.02"
@@ -1813,15 +1786,15 @@ LVIS_CATEGORIES = [
     {
         "def": "deep orange edible root of the cultivated carrot plant",
         "frequency": "f",
-        "id": 221,
+        "id": 217,
         "name": "carrot",
         "synonyms": ["carrot"],
         "synset": "carrot.n.01"
     },
     {
         "def": "a capacious bag or basket",
-        "frequency": "c",
-        "id": 222,
+        "frequency": "f",
+        "id": 218,
         "name": "tote_bag",
         "synonyms": ["tote_bag"],
         "synset": "carryall.n.01"
@@ -1829,15 +1802,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a heavy open wagon usually having two wheels and drawn by an animal",
         "frequency": "c",
-        "id": 223,
+        "id": 219,
         "name": "cart",
         "synonyms": ["cart"],
         "synset": "cart.n.01"
     },
     {
-        "def": "a box made of cardboard; opens by flaps on top",
+        "def": "a container made of cardboard for holding food or drink",
         "frequency": "c",
-        "id": 224,
+        "id": 220,
         "name": "carton",
         "synonyms": ["carton"],
         "synset": "carton.n.02"
@@ -1845,7 +1818,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cashbox with an adding machine to register transactions",
         "frequency": "c",
-        "id": 225,
+        "id": 221,
         "name": "cash_register",
         "synonyms": ["cash_register", "register_(for_cash_transactions)"],
         "synset": "cash_register.n.01"
@@ -1853,7 +1826,7 @@ LVIS_CATEGORIES = [
     {
         "def": "food cooked and served in a casserole",
         "frequency": "r",
-        "id": 226,
+        "id": 222,
         "name": "casserole",
         "synonyms": ["casserole"],
         "synset": "casserole.n.01"
@@ -1862,7 +1835,7 @@ LVIS_CATEGORIES = [
         "def": "a container that holds a magnetic tape used for recording or playing sound or "
                "video",
         "frequency": "r",
-        "id": 227,
+        "id": 223,
         "name": "cassette",
         "synonyms": ["cassette"],
         "synset": "cassette.n.01"
@@ -1871,7 +1844,7 @@ LVIS_CATEGORIES = [
         "def": "bandage consisting of a firm covering that immobilizes broken bones while they "
                "heal",
         "frequency": "c",
-        "id": 228,
+        "id": 224,
         "name": "cast",
         "synonyms": ["cast", "plaster_cast", "plaster_bandage"],
         "synset": "cast.n.05"
@@ -1879,31 +1852,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a domestic house cat",
         "frequency": "f",
-        "id": 229,
+        "id": 225,
         "name": "cat",
         "synonyms": ["cat"],
         "synset": "cat.n.01"
     },
     {
         "def": "edible compact head of white undeveloped flowers",
-        "frequency": "c",
-        "id": 230,
+        "frequency": "f",
+        "id": 226,
         "name": "cauliflower",
         "synonyms": ["cauliflower"],
         "synset": "cauliflower.n.02"
     },
     {
-        "def": "salted roe of sturgeon or other large fish; usually served as an hors d'oeuvre",
-        "frequency": "r",
-        "id": 231,
-        "name": "caviar",
-        "synonyms": ["caviar", "caviare"],
-        "synset": "caviar.n.01"
-    },
-    {
         "def": "ground pods and seeds of pungent red peppers of the genus Capsicum",
         "frequency": "c",
-        "id": 232,
+        "id": 227,
         "name": "cayenne_(spice)",
         "synonyms": ["cayenne_(spice)", "cayenne_pepper_(spice)", "red_pepper_(spice)"],
         "synset": "cayenne.n.02"
@@ -1911,15 +1876,15 @@ LVIS_CATEGORIES = [
     {
         "def": "electronic equipment for playing compact discs (CDs)",
         "frequency": "c",
-        "id": 233,
+        "id": 228,
         "name": "CD_player",
         "synonyms": ["CD_player"],
         "synset": "cd_player.n.01"
     },
     {
         "def": "widely cultivated herb with aromatic leaf stalks that are eaten raw or cooked",
-        "frequency": "c",
-        "id": 234,
+        "frequency": "f",
+        "id": 229,
         "name": "celery",
         "synonyms": ["celery"],
         "synset": "celery.n.01"
@@ -1927,7 +1892,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a hand-held mobile telephone",
         "frequency": "f",
-        "id": 235,
+        "id": 230,
         "name": "cellular_telephone",
         "synonyms": ["cellular_telephone", "cellular_phone", "cellphone", "mobile_phone",
                      "smart_phone"],
@@ -1936,7 +1901,7 @@ LVIS_CATEGORIES = [
     {
         "def": "(Middle Ages) flexible armor made of interlinked metal rings",
         "frequency": "r",
-        "id": 236,
+        "id": 231,
         "name": "chain_mail",
         "synonyms": ["chain_mail", "ring_mail", "chain_armor", "chain_armour", "ring_armor",
                      "ring_armour"],
@@ -1945,7 +1910,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a seat for one person, with a support for the back",
         "frequency": "f",
-        "id": 237,
+        "id": 232,
         "name": "chair",
         "synonyms": ["chair"],
         "synset": "chair.n.01"
@@ -1953,23 +1918,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a long chair; for reclining",
         "frequency": "r",
-        "id": 238,
+        "id": 233,
         "name": "chaise_longue",
         "synonyms": ["chaise_longue", "chaise", "daybed"],
         "synset": "chaise_longue.n.01"
     },
     {
-        "def": "a white sparkling wine produced in Champagne or resembling that produced there",
+        "def": "a bowl-shaped drinking vessel; especially the Eucharistic cup",
         "frequency": "r",
-        "id": 239,
-        "name": "champagne",
-        "synonyms": ["champagne"],
-        "synset": "champagne.n.01"
+        "id": 234,
+        "name": "chalice",
+        "synonyms": ["chalice"],
+        "synset": "chalice.n.01"
     },
     {
         "def": "branched lighting fixture; often ornate; hangs from the ceiling",
         "frequency": "f",
-        "id": 240,
+        "id": 235,
         "name": "chandelier",
         "synonyms": ["chandelier"],
         "synset": "chandelier.n.01"
@@ -1978,7 +1943,7 @@ LVIS_CATEGORIES = [
         "def": "leather leggings without a seat; worn over trousers by cowboys to protect their "
                "legs",
         "frequency": "r",
-        "id": 241,
+        "id": 236,
         "name": "chap",
         "synonyms": ["chap"],
         "synset": "chap.n.04"
@@ -1986,7 +1951,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a book issued to holders of checking accounts",
         "frequency": "r",
-        "id": 242,
+        "id": 237,
         "name": "checkbook",
         "synonyms": ["checkbook", "chequebook"],
         "synset": "checkbook.n.01"
@@ -1994,7 +1959,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a board having 64 squares of two alternating colors",
         "frequency": "r",
-        "id": 243,
+        "id": 238,
         "name": "checkerboard",
         "synonyms": ["checkerboard"],
         "synset": "checkerboard.n.01"
@@ -2002,7 +1967,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a red fruit with a single hard stone",
         "frequency": "c",
-        "id": 244,
+        "id": 239,
         "name": "cherry",
         "synonyms": ["cherry"],
         "synset": "cherry.n.03"
@@ -2010,55 +1975,31 @@ LVIS_CATEGORIES = [
     {
         "def": "a checkerboard used to play chess",
         "frequency": "r",
-        "id": 245,
+        "id": 240,
         "name": "chessboard",
         "synonyms": ["chessboard"],
         "synset": "chessboard.n.01"
     },
     {
-        "def": "furniture with drawers for keeping clothes",
-        "frequency": "r",
-        "id": 246,
-        "name": "chest_of_drawers_(furniture)",
-        "synonyms": ["chest_of_drawers_(furniture)", "bureau_(furniture)", "chest_(furniture)"],
-        "synset": "chest_of_drawers.n.01"
-    },
-    {
         "def": "a domestic fowl bred for flesh or eggs",
         "frequency": "c",
-        "id": 247,
+        "id": 241,
         "name": "chicken_(animal)",
         "synonyms": ["chicken_(animal)"],
         "synset": "chicken.n.02"
     },
     {
-        "def": "a galvanized wire network with a hexagonal mesh; used to build fences",
-        "frequency": "c",
-        "id": 248,
-        "name": "chicken_wire",
-        "synonyms": ["chicken_wire"],
-        "synset": "chicken_wire.n.01"
-    },
-    {
         "def": "the seed of the chickpea plant; usually dried",
-        "frequency": "r",
-        "id": 249,
+        "frequency": "c",
+        "id": 242,
         "name": "chickpea",
         "synonyms": ["chickpea", "garbanzo"],
         "synset": "chickpea.n.01"
     },
     {
-        "def": "an old breed of tiny short-haired dog with protruding eyes from Mexico",
-        "frequency": "r",
-        "id": 250,
-        "name": "Chihuahua",
-        "synonyms": ["Chihuahua"],
-        "synset": "chihuahua.n.03"
-    },
-    {
         "def": "very hot and finely tapering pepper of special pungency",
-        "frequency": "r",
-        "id": 251,
+        "frequency": "c",
+        "id": 243,
         "name": "chili_(vegetable)",
         "synonyms": ["chili_(vegetable)", "chili_pepper_(vegetable)", "chilli_(vegetable)",
                      "chilly_(vegetable)", "chile_(vegetable)"],
@@ -2067,7 +2008,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an instrument consisting of a set of bells that are struck with a hammer",
         "frequency": "r",
-        "id": 252,
+        "id": 244,
         "name": "chime",
         "synonyms": ["chime", "gong"],
         "synset": "chime.n.01"
@@ -2075,7 +2016,7 @@ LVIS_CATEGORIES = [
     {
         "def": "dishware made of high quality porcelain",
         "frequency": "r",
-        "id": 253,
+        "id": 245,
         "name": "chinaware",
         "synonyms": ["chinaware"],
         "synset": "chinaware.n.01"
@@ -2083,7 +2024,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a thin crisp slice of potato fried in deep fat",
         "frequency": "c",
-        "id": 254,
+        "id": 246,
         "name": "crisp_(potato_chip)",
         "synonyms": ["crisp_(potato_chip)", "potato_chip"],
         "synset": "chip.n.04"
@@ -2091,7 +2032,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small disk-shaped counter used to represent money when gambling",
         "frequency": "r",
-        "id": 255,
+        "id": 247,
         "name": "poker_chip",
         "synonyms": ["poker_chip"],
         "synset": "chip.n.06"
@@ -2099,7 +2040,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a bar of chocolate candy",
         "frequency": "c",
-        "id": 256,
+        "id": 248,
         "name": "chocolate_bar",
         "synonyms": ["chocolate_bar"],
         "synset": "chocolate_bar.n.01"
@@ -2107,7 +2048,7 @@ LVIS_CATEGORIES = [
     {
         "def": "cake containing chocolate",
         "frequency": "c",
-        "id": 257,
+        "id": 249,
         "name": "chocolate_cake",
         "synonyms": ["chocolate_cake"],
         "synset": "chocolate_cake.n.01"
@@ -2115,7 +2056,7 @@ LVIS_CATEGORIES = [
     {
         "def": "milk flavored with chocolate syrup",
         "frequency": "r",
-        "id": 258,
+        "id": 250,
         "name": "chocolate_milk",
         "synonyms": ["chocolate_milk"],
         "synset": "chocolate_milk.n.01"
@@ -2123,15 +2064,15 @@ LVIS_CATEGORIES = [
     {
         "def": "dessert mousse made with chocolate",
         "frequency": "r",
-        "id": 259,
+        "id": 251,
         "name": "chocolate_mousse",
         "synonyms": ["chocolate_mousse"],
         "synset": "chocolate_mousse.n.01"
     },
     {
-        "def": "necklace that fits tightly around the neck",
+        "def": "shirt collar, animal collar, or tight-fitting necklace",
         "frequency": "f",
-        "id": 260,
+        "id": 252,
         "name": "choker",
         "synonyms": ["choker", "collar", "neckband"],
         "synset": "choker.n.03"
@@ -2139,15 +2080,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a wooden board where meats or vegetables can be cut",
         "frequency": "f",
-        "id": 261,
+        "id": 253,
         "name": "chopping_board",
         "synonyms": ["chopping_board", "cutting_board", "chopping_block"],
         "synset": "chopping_board.n.01"
     },
     {
         "def": "one of a pair of slender sticks used as oriental tableware to eat food with",
-        "frequency": "c",
-        "id": 262,
+        "frequency": "f",
+        "id": 254,
         "name": "chopstick",
         "synonyms": ["chopstick"],
         "synset": "chopstick.n.01"
@@ -2155,7 +2096,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an ornamented evergreen used as a Christmas decoration",
         "frequency": "f",
-        "id": 263,
+        "id": 255,
         "name": "Christmas_tree",
         "synonyms": ["Christmas_tree"],
         "synset": "christmas_tree.n.05"
@@ -2163,7 +2104,7 @@ LVIS_CATEGORIES = [
     {
         "def": "sloping channel through which things can descend",
         "frequency": "c",
-        "id": 264,
+        "id": 256,
         "name": "slide",
         "synonyms": ["slide"],
         "synset": "chute.n.02"
@@ -2171,7 +2112,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a beverage made from juice pressed from apples",
         "frequency": "r",
-        "id": 265,
+        "id": 257,
         "name": "cider",
         "synonyms": ["cider", "cyder"],
         "synset": "cider.n.01"
@@ -2179,15 +2120,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a box for holding cigars",
         "frequency": "r",
-        "id": 266,
+        "id": 258,
         "name": "cigar_box",
         "synonyms": ["cigar_box"],
         "synset": "cigar_box.n.01"
     },
     {
         "def": "finely ground tobacco wrapped in paper; for smoking",
-        "frequency": "c",
-        "id": 267,
+        "frequency": "f",
+        "id": 259,
         "name": "cigarette",
         "synonyms": ["cigarette"],
         "synset": "cigarette.n.01"
@@ -2195,7 +2136,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small flat case for holding cigarettes",
         "frequency": "c",
-        "id": 268,
+        "id": 260,
         "name": "cigarette_case",
         "synonyms": ["cigarette_case", "cigarette_pack"],
         "synset": "cigarette_case.n.01"
@@ -2203,7 +2144,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a tank that holds the water used to flush a toilet",
         "frequency": "f",
-        "id": 269,
+        "id": 261,
         "name": "cistern",
         "synonyms": ["cistern", "water_tank"],
         "synset": "cistern.n.02"
@@ -2211,15 +2152,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a single-reed instrument with a straight tube",
         "frequency": "r",
-        "id": 270,
+        "id": 262,
         "name": "clarinet",
         "synonyms": ["clarinet"],
         "synset": "clarinet.n.01"
     },
     {
         "def": "a fastener (as a buckle or hook) that is used to hold two things together",
-        "frequency": "r",
-        "id": 271,
+        "frequency": "c",
+        "id": 263,
         "name": "clasp",
         "synonyms": ["clasp"],
         "synset": "clasp.n.01"
@@ -2227,15 +2168,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a preparation used in cleaning something",
         "frequency": "c",
-        "id": 272,
+        "id": 264,
         "name": "cleansing_agent",
         "synonyms": ["cleansing_agent", "cleanser", "cleaner"],
         "synset": "cleansing_agent.n.01"
     },
     {
+        "def": "a fastener (usually with two projecting horns) around which a rope can be secured",
+        "frequency": "r",
+        "id": 265,
+        "name": "cleat_(for_securing_rope)",
+        "synonyms": ["cleat_(for_securing_rope)"],
+        "synset": "cleat.n.02"
+    },
+    {
         "def": "a variety of mandarin orange",
         "frequency": "r",
-        "id": 273,
+        "id": 266,
         "name": "clementine",
         "synonyms": ["clementine"],
         "synset": "clementine.n.01"
@@ -2243,7 +2192,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any of various small fasteners used to hold loose articles together",
         "frequency": "c",
-        "id": 274,
+        "id": 267,
         "name": "clip",
         "synonyms": ["clip"],
         "synset": "clip.n.03"
@@ -2251,15 +2200,31 @@ LVIS_CATEGORIES = [
     {
         "def": "a small writing board with a clip at the top for holding papers",
         "frequency": "c",
-        "id": 275,
+        "id": 268,
         "name": "clipboard",
         "synonyms": ["clipboard"],
         "synset": "clipboard.n.01"
     },
     {
+        "def": "shears for cutting grass or shrubbery (often used in the plural)",
+        "frequency": "r",
+        "id": 269,
+        "name": "clippers_(for_plants)",
+        "synonyms": ["clippers_(for_plants)"],
+        "synset": "clipper.n.03"
+    },
+    {
+        "def": "a loose outer garment",
+        "frequency": "r",
+        "id": 270,
+        "name": "cloak",
+        "synonyms": ["cloak"],
+        "synset": "cloak.n.02"
+    },
+    {
         "def": "a timepiece that shows the time of day",
         "frequency": "f",
-        "id": 276,
+        "id": 271,
         "name": "clock",
         "synonyms": ["clock", "timepiece", "timekeeper"],
         "synset": "clock.n.01"
@@ -2267,7 +2232,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a tower with a large clock visible high up on an outside face",
         "frequency": "f",
-        "id": 277,
+        "id": 272,
         "name": "clock_tower",
         "synonyms": ["clock_tower"],
         "synset": "clock_tower.n.01"
@@ -2275,7 +2240,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a hamper that holds dirty clothes to be washed or wet clothes to be dried",
         "frequency": "c",
-        "id": 278,
+        "id": 273,
         "name": "clothes_hamper",
         "synonyms": ["clothes_hamper", "laundry_basket", "clothes_basket"],
         "synset": "clothes_hamper.n.01"
@@ -2283,7 +2248,7 @@ LVIS_CATEGORIES = [
     {
         "def": "wood or plastic fastener; for holding clothes on a clothesline",
         "frequency": "c",
-        "id": 279,
+        "id": 274,
         "name": "clothespin",
         "synonyms": ["clothespin", "clothes_peg"],
         "synset": "clothespin.n.01"
@@ -2291,7 +2256,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a woman's strapless purse that is carried in the hand",
         "frequency": "r",
-        "id": 280,
+        "id": 275,
         "name": "clutch_bag",
         "synonyms": ["clutch_bag"],
         "synset": "clutch_bag.n.01"
@@ -2299,7 +2264,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a covering (plate or mat) that protects the surface of a table",
         "frequency": "f",
-        "id": 281,
+        "id": 276,
         "name": "coaster",
         "synonyms": ["coaster"],
         "synset": "coaster.n.03"
@@ -2307,7 +2272,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an outer garment that has sleeves and covers the body from shoulder down",
         "frequency": "f",
-        "id": 282,
+        "id": 277,
         "name": "coat",
         "synonyms": ["coat"],
         "synset": "coat.n.01"
@@ -2315,15 +2280,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a hanger that is shaped like a person's shoulders",
         "frequency": "c",
-        "id": 283,
+        "id": 278,
         "name": "coat_hanger",
         "synonyms": ["coat_hanger", "clothes_hanger", "dress_hanger"],
         "synset": "coat_hanger.n.01"
     },
     {
         "def": "a rack with hooks for temporarily holding coats and hats",
-        "frequency": "r",
-        "id": 284,
+        "frequency": "c",
+        "id": 279,
         "name": "coatrack",
         "synonyms": ["coatrack", "hatrack"],
         "synset": "coatrack.n.01"
@@ -2331,31 +2296,39 @@ LVIS_CATEGORIES = [
     {
         "def": "adult male chicken",
         "frequency": "c",
-        "id": 285,
+        "id": 280,
         "name": "cock",
         "synonyms": ["cock", "rooster"],
         "synset": "cock.n.04"
     },
     {
+        "def": "any of numerous chiefly nocturnal insects; some are domestic pests",
+        "frequency": "r",
+        "id": 281,
+        "name": "cockroach",
+        "synonyms": ["cockroach"],
+        "synset": "cockroach.n.01"
+    },
+    {
+        "def": "a beverage made from cocoa powder and milk and sugar; usually drunk hot",
+        "frequency": "r",
+        "id": 282,
+        "name": "cocoa_(beverage)",
+        "synonyms": ["cocoa_(beverage)", "hot_chocolate_(beverage)", "drinking_chocolate"],
+        "synset": "cocoa.n.01"
+    },
+    {
         "def": "large hard-shelled brown oval nut with a fibrous husk",
         "frequency": "c",
-        "id": 286,
+        "id": 283,
         "name": "coconut",
         "synonyms": ["coconut", "cocoanut"],
         "synset": "coconut.n.02"
     },
     {
-        "def": "filter (usually of paper) that passes the coffee and retains the coffee grounds",
-        "frequency": "r",
-        "id": 287,
-        "name": "coffee_filter",
-        "synonyms": ["coffee_filter"],
-        "synset": "coffee_filter.n.01"
-    },
-    {
         "def": "a kitchen appliance for brewing coffee automatically",
         "frequency": "f",
-        "id": 288,
+        "id": 284,
         "name": "coffee_maker",
         "synonyms": ["coffee_maker", "coffee_machine"],
         "synset": "coffee_maker.n.01"
@@ -2363,7 +2336,7 @@ LVIS_CATEGORIES = [
     {
         "def": "low table where magazines can be placed and coffee or cocktails are served",
         "frequency": "f",
-        "id": 289,
+        "id": 285,
         "name": "coffee_table",
         "synonyms": ["coffee_table", "cocktail_table"],
         "synset": "coffee_table.n.01"
@@ -2371,7 +2344,7 @@ LVIS_CATEGORIES = [
     {
         "def": "tall pot in which coffee is brewed",
         "frequency": "c",
-        "id": 290,
+        "id": 286,
         "name": "coffeepot",
         "synonyms": ["coffeepot"],
         "synset": "coffeepot.n.01"
@@ -2379,7 +2352,7 @@ LVIS_CATEGORIES = [
     {
         "def": "tubing that is wound in a spiral",
         "frequency": "r",
-        "id": 291,
+        "id": 287,
         "name": "coil",
         "synonyms": ["coil"],
         "synset": "coil.n.05"
@@ -2387,15 +2360,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a flat metal piece (usually a disc) used as money",
         "frequency": "c",
-        "id": 292,
+        "id": 288,
         "name": "coin",
         "synonyms": ["coin"],
         "synset": "coin.n.01"
     },
     {
         "def": "bowl-shaped strainer; used to wash or drain foods",
-        "frequency": "r",
-        "id": 293,
+        "frequency": "c",
+        "id": 289,
         "name": "colander",
         "synonyms": ["colander", "cullender"],
         "synset": "colander.n.01"
@@ -2403,7 +2376,7 @@ LVIS_CATEGORIES = [
     {
         "def": "basically shredded cabbage",
         "frequency": "c",
-        "id": 294,
+        "id": 290,
         "name": "coleslaw",
         "synonyms": ["coleslaw", "slaw"],
         "synset": "coleslaw.n.01"
@@ -2411,7 +2384,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any material used for its color",
         "frequency": "r",
-        "id": 295,
+        "id": 291,
         "name": "coloring_material",
         "synonyms": ["coloring_material", "colouring_material"],
         "synset": "coloring_material.n.01"
@@ -2419,7 +2392,7 @@ LVIS_CATEGORIES = [
     {
         "def": "lock that can be opened only by turning dials in a special sequence",
         "frequency": "r",
-        "id": 296,
+        "id": 292,
         "name": "combination_lock",
         "synonyms": ["combination_lock"],
         "synset": "combination_lock.n.01"
@@ -2427,7 +2400,7 @@ LVIS_CATEGORIES = [
     {
         "def": "device used for an infant to suck or bite on",
         "frequency": "c",
-        "id": 297,
+        "id": 293,
         "name": "pacifier",
         "synonyms": ["pacifier", "teething_ring"],
         "synset": "comforter.n.04"
@@ -2435,31 +2408,39 @@ LVIS_CATEGORIES = [
     {
         "def": "a magazine devoted to comic strips",
         "frequency": "r",
-        "id": 298,
+        "id": 294,
         "name": "comic_book",
         "synonyms": ["comic_book"],
         "synset": "comic_book.n.01"
     },
     {
+        "def": "navigational instrument for finding directions",
+        "frequency": "r",
+        "id": 295,
+        "name": "compass",
+        "synonyms": ["compass"],
+        "synset": "compass.n.01"
+    },
+    {
         "def": "a keyboard that is a data input device for computers",
         "frequency": "f",
-        "id": 299,
+        "id": 296,
         "name": "computer_keyboard",
         "synonyms": ["computer_keyboard", "keyboard_(computer)"],
         "synset": "computer_keyboard.n.01"
     },
     {
-        "def": "a machine with a large revolving drum in which cement/concrete is mixed",
-        "frequency": "r",
-        "id": 300,
-        "name": "concrete_mixer",
-        "synonyms": ["concrete_mixer", "cement_mixer"],
-        "synset": "concrete_mixer.n.01"
+        "def": "a preparation (a sauce or relish or spice) to enhance flavor or enjoyment",
+        "frequency": "f",
+        "id": 297,
+        "name": "condiment",
+        "synonyms": ["condiment"],
+        "synset": "condiment.n.01"
     },
     {
         "def": "a cone-shaped object used to direct traffic",
         "frequency": "f",
-        "id": 301,
+        "id": 298,
         "name": "cone",
         "synonyms": ["cone", "traffic_cone"],
         "synset": "cone.n.01"
@@ -2467,7 +2448,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a mechanism that controls the operation of a machine",
         "frequency": "f",
-        "id": 302,
+        "id": 299,
         "name": "control",
         "synonyms": ["control", "controller"],
         "synset": "control.n.09"
@@ -2475,7 +2456,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a car that has top that can be folded or removed",
         "frequency": "r",
-        "id": 303,
+        "id": 300,
         "name": "convertible_(automobile)",
         "synonyms": ["convertible_(automobile)"],
         "synset": "convertible.n.01"
@@ -2483,31 +2464,31 @@ LVIS_CATEGORIES = [
     {
         "def": "a sofa that can be converted into a bed",
         "frequency": "r",
-        "id": 304,
+        "id": 301,
         "name": "sofa_bed",
         "synonyms": ["sofa_bed"],
         "synset": "convertible.n.03"
     },
     {
+        "def": "a utensil for cooking",
+        "frequency": "r",
+        "id": 302,
+        "name": "cooker",
+        "synonyms": ["cooker"],
+        "synset": "cooker.n.01"
+    },
+    {
         "def": "any of various small flat sweet cakes (`biscuit' is the British term)",
-        "frequency": "c",
-        "id": 305,
+        "frequency": "f",
+        "id": 303,
         "name": "cookie",
         "synonyms": ["cookie", "cooky", "biscuit_(cookie)"],
         "synset": "cookie.n.01"
     },
     {
-        "def": "a jar in which cookies are kept (and sometimes money is hidden)",
-        "frequency": "r",
-        "id": 306,
-        "name": "cookie_jar",
-        "synonyms": ["cookie_jar", "cooky_jar"],
-        "synset": "cookie_jar.n.01"
-    },
-    {
         "def": "a kitchen utensil made of material that does not melt easily; used for cooking",
         "frequency": "r",
-        "id": 307,
+        "id": 304,
         "name": "cooking_utensil",
         "synonyms": ["cooking_utensil"],
         "synset": "cooking_utensil.n.01"
@@ -2515,15 +2496,15 @@ LVIS_CATEGORIES = [
     {
         "def": "an insulated box for storing food often with ice",
         "frequency": "f",
-        "id": 308,
+        "id": 305,
         "name": "cooler_(for_food)",
         "synonyms": ["cooler_(for_food)", "ice_chest"],
         "synset": "cooler.n.01"
     },
     {
         "def": "the plug in the mouth of a bottle (especially a wine bottle)",
-        "frequency": "c",
-        "id": 309,
+        "frequency": "f",
+        "id": 306,
         "name": "cork_(bottle_plug)",
         "synonyms": ["cork_(bottle_plug)", "bottle_cork"],
         "synset": "cork.n.04"
@@ -2531,23 +2512,24 @@ LVIS_CATEGORIES = [
     {
         "def": "a sheet consisting of cork granules",
         "frequency": "r",
-        "id": 310,
+        "id": 307,
         "name": "corkboard",
         "synonyms": ["corkboard"],
         "synset": "corkboard.n.01"
     },
     {
         "def": "a bottle opener that pulls corks",
-        "frequency": "r",
-        "id": 311,
+        "frequency": "c",
+        "id": 308,
         "name": "corkscrew",
         "synonyms": ["corkscrew", "bottle_screw"],
         "synset": "corkscrew.n.01"
     },
     {
-        "def": "ears of corn that can be prepared and served for human food",
-        "frequency": "c",
-        "id": 312,
+        "def": "ears or kernels of corn that can be prepared and served for human food (only mark "
+               "individual ears or kernels)",
+        "frequency": "f",
+        "id": 309,
         "name": "edible_corn",
         "synonyms": ["edible_corn", "corn", "maize"],
         "synset": "corn.n.03"
@@ -2555,7 +2537,7 @@ LVIS_CATEGORIES = [
     {
         "def": "bread made primarily of cornmeal",
         "frequency": "r",
-        "id": 313,
+        "id": 310,
         "name": "cornbread",
         "synonyms": ["cornbread"],
         "synset": "cornbread.n.01"
@@ -2563,7 +2545,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a brass musical instrument with a narrow tube and a flared bell and many valves",
         "frequency": "c",
-        "id": 314,
+        "id": 311,
         "name": "cornet",
         "synonyms": ["cornet", "horn", "trumpet"],
         "synset": "cornet.n.01"
@@ -2571,7 +2553,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a decorative framework to conceal curtain fixtures at the top of a window casing",
         "frequency": "c",
-        "id": 315,
+        "id": 312,
         "name": "cornice",
         "synonyms": ["cornice", "valance", "valance_board", "pelmet"],
         "synset": "cornice.n.01"
@@ -2579,31 +2561,23 @@ LVIS_CATEGORIES = [
     {
         "def": "coarsely ground corn",
         "frequency": "r",
-        "id": 316,
+        "id": 313,
         "name": "cornmeal",
         "synonyms": ["cornmeal"],
         "synset": "cornmeal.n.01"
     },
     {
         "def": "a woman's close-fitting foundation garment",
-        "frequency": "r",
-        "id": 317,
+        "frequency": "c",
+        "id": 314,
         "name": "corset",
         "synonyms": ["corset", "girdle"],
         "synset": "corset.n.01"
     },
     {
-        "def": "lettuce with long dark-green leaves in a loosely packed elongated head",
-        "frequency": "r",
-        "id": 318,
-        "name": "romaine_lettuce",
-        "synonyms": ["romaine_lettuce"],
-        "synset": "cos.n.02"
-    },
-    {
         "def": "the attire characteristic of a country or a time or a social class",
         "frequency": "c",
-        "id": 319,
+        "id": 315,
         "name": "costume",
         "synonyms": ["costume"],
         "synset": "costume.n.04"
@@ -2611,7 +2585,7 @@ LVIS_CATEGORIES = [
     {
         "def": "large American feline resembling a lion",
         "frequency": "r",
-        "id": 320,
+        "id": 316,
         "name": "cougar",
         "synonyms": ["cougar", "puma", "catamount", "mountain_lion", "panther"],
         "synset": "cougar.n.01"
@@ -2619,15 +2593,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a loose-fitting protective garment that is worn over other clothing",
         "frequency": "r",
-        "id": 321,
+        "id": 317,
         "name": "coverall",
         "synonyms": ["coverall"],
         "synset": "coverall.n.01"
     },
     {
         "def": "a bell hung around the neck of cow so that the cow can be easily located",
-        "frequency": "r",
-        "id": 322,
+        "frequency": "c",
+        "id": 318,
         "name": "cowbell",
         "synonyms": ["cowbell"],
         "synset": "cowbell.n.01"
@@ -2635,23 +2609,31 @@ LVIS_CATEGORIES = [
     {
         "def": "a hat with a wide brim and a soft crown; worn by American ranch hands",
         "frequency": "f",
-        "id": 323,
+        "id": 319,
         "name": "cowboy_hat",
         "synonyms": ["cowboy_hat", "ten-gallon_hat"],
         "synset": "cowboy_hat.n.01"
     },
     {
         "def": "decapod having eyes on short stalks and a broad flattened shell and pincers",
-        "frequency": "r",
-        "id": 324,
+        "frequency": "c",
+        "id": 320,
         "name": "crab_(animal)",
         "synonyms": ["crab_(animal)"],
         "synset": "crab.n.01"
     },
     {
+        "def": "the edible flesh of any of various crabs",
+        "frequency": "r",
+        "id": 321,
+        "name": "crabmeat",
+        "synonyms": ["crabmeat"],
+        "synset": "crab.n.05"
+    },
+    {
         "def": "a thin crisp wafer",
         "frequency": "c",
-        "id": 325,
+        "id": 322,
         "name": "cracker",
         "synonyms": ["cracker"],
         "synset": "cracker.n.01"
@@ -2659,7 +2641,7 @@ LVIS_CATEGORIES = [
     {
         "def": "small very thin pancake",
         "frequency": "r",
-        "id": 326,
+        "id": 323,
         "name": "crape",
         "synonyms": ["crape", "crepe", "French_pancake"],
         "synset": "crape.n.01"
@@ -2667,15 +2649,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a rugged box (usually made of wood); used for shipping",
         "frequency": "f",
-        "id": 327,
+        "id": 324,
         "name": "crate",
         "synonyms": ["crate"],
         "synset": "crate.n.01"
     },
     {
         "def": "writing or drawing implement made of a colored stick of composition wax",
-        "frequency": "r",
-        "id": 328,
+        "frequency": "c",
+        "id": 325,
         "name": "crayon",
         "synonyms": ["crayon", "wax_crayon"],
         "synset": "crayon.n.01"
@@ -2683,23 +2665,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a small pitcher for serving cream",
         "frequency": "r",
-        "id": 329,
+        "id": 326,
         "name": "cream_pitcher",
         "synonyms": ["cream_pitcher"],
         "synset": "cream_pitcher.n.01"
     },
     {
-        "def": "a card, usually plastic, used to pay for goods and services",
-        "frequency": "r",
-        "id": 330,
-        "name": "credit_card",
-        "synonyms": ["credit_card", "charge_card", "debit_card"],
-        "synset": "credit_card.n.01"
-    },
-    {
         "def": "very rich flaky crescent-shaped roll",
         "frequency": "c",
-        "id": 331,
+        "id": 327,
         "name": "crescent_roll",
         "synonyms": ["crescent_roll", "croissant"],
         "synset": "crescent_roll.n.01"
@@ -2707,15 +2681,15 @@ LVIS_CATEGORIES = [
     {
         "def": "baby bed with high sides made of slats",
         "frequency": "c",
-        "id": 332,
+        "id": 328,
         "name": "crib",
         "synonyms": ["crib", "cot"],
         "synset": "crib.n.01"
     },
     {
-        "def": "an earthen jar (made of baked clay)",
+        "def": "an earthen jar (made of baked clay) or a modern electric crockpot",
         "frequency": "c",
-        "id": 333,
+        "id": 329,
         "name": "crock_pot",
         "synonyms": ["crock_pot", "earthenware_jar"],
         "synset": "crock.n.03"
@@ -2723,7 +2697,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a horizontal bar that goes across something",
         "frequency": "f",
-        "id": 334,
+        "id": 330,
         "name": "crossbar",
         "synonyms": ["crossbar"],
         "synset": "crossbar.n.01"
@@ -2731,23 +2705,31 @@ LVIS_CATEGORIES = [
     {
         "def": "a small piece of toasted or fried bread; served in soup or salads",
         "frequency": "r",
-        "id": 335,
+        "id": 331,
         "name": "crouton",
         "synonyms": ["crouton"],
         "synset": "crouton.n.01"
     },
     {
         "def": "black birds having a raucous call",
-        "frequency": "r",
-        "id": 336,
+        "frequency": "c",
+        "id": 332,
         "name": "crow",
         "synonyms": ["crow"],
         "synset": "crow.n.01"
     },
     {
+        "def": "a heavy iron lever with one end forged into a wedge",
+        "frequency": "r",
+        "id": 333,
+        "name": "crowbar",
+        "synonyms": ["crowbar", "wrecking_bar", "pry_bar"],
+        "synset": "crowbar.n.01"
+    },
+    {
         "def": "an ornamental jeweled headdress signifying sovereignty",
         "frequency": "c",
-        "id": 337,
+        "id": 334,
         "name": "crown",
         "synonyms": ["crown"],
         "synset": "crown.n.04"
@@ -2755,7 +2737,7 @@ LVIS_CATEGORIES = [
     {
         "def": "representation of the cross on which Jesus died",
         "frequency": "c",
-        "id": 338,
+        "id": 335,
         "name": "crucifix",
         "synonyms": ["crucifix"],
         "synset": "crucifix.n.01"
@@ -2763,7 +2745,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a passenger ship used commercially for pleasure cruises",
         "frequency": "c",
-        "id": 339,
+        "id": 336,
         "name": "cruise_ship",
         "synonyms": ["cruise_ship", "cruise_liner"],
         "synset": "cruise_ship.n.01"
@@ -2771,23 +2753,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a car in which policemen cruise the streets",
         "frequency": "c",
-        "id": 340,
+        "id": 337,
         "name": "police_cruiser",
         "synonyms": ["police_cruiser", "patrol_car", "police_car", "squad_car"],
         "synset": "cruiser.n.01"
     },
     {
         "def": "small piece of e.g. bread or cake",
-        "frequency": "c",
-        "id": 341,
+        "frequency": "f",
+        "id": 338,
         "name": "crumb",
         "synonyms": ["crumb"],
         "synset": "crumb.n.03"
     },
     {
         "def": "a wooden or metal staff that fits under the armpit and reaches to the ground",
-        "frequency": "r",
-        "id": 342,
+        "frequency": "c",
+        "id": 339,
         "name": "crutch",
         "synonyms": ["crutch"],
         "synset": "crutch.n.01"
@@ -2795,15 +2777,15 @@ LVIS_CATEGORIES = [
     {
         "def": "the young of certain carnivorous mammals such as the bear or wolf or lion",
         "frequency": "c",
-        "id": 343,
+        "id": 340,
         "name": "cub_(animal)",
         "synonyms": ["cub_(animal)"],
         "synset": "cub.n.03"
     },
     {
         "def": "a block in the (approximate) shape of a cube",
-        "frequency": "r",
-        "id": 344,
+        "frequency": "c",
+        "id": 341,
         "name": "cube",
         "synonyms": ["cube", "square_block"],
         "synset": "cube.n.05"
@@ -2811,7 +2793,7 @@ LVIS_CATEGORIES = [
     {
         "def": "cylindrical green fruit with thin green rind and white flesh eaten as a vegetable",
         "frequency": "f",
-        "id": 345,
+        "id": 342,
         "name": "cucumber",
         "synonyms": ["cucumber", "cuke"],
         "synset": "cucumber.n.02"
@@ -2819,7 +2801,7 @@ LVIS_CATEGORIES = [
     {
         "def": "jewelry consisting of linked buttons used to fasten the cuffs of a shirt",
         "frequency": "c",
-        "id": 346,
+        "id": 343,
         "name": "cufflink",
         "synonyms": ["cufflink"],
         "synset": "cufflink.n.01"
@@ -2827,23 +2809,32 @@ LVIS_CATEGORIES = [
     {
         "def": "a small open container usually used for drinking; usually has a handle",
         "frequency": "f",
-        "id": 347,
+        "id": 344,
         "name": "cup",
         "synonyms": ["cup"],
         "synset": "cup.n.01"
     },
     {
-        "def": "a metal vessel with handles that is awarded as a trophy to a competition winner",
+        "def": "a metal award or cup-shaped vessel with handles that is awarded as a trophy to a "
+               "competition winner",
         "frequency": "c",
-        "id": 348,
+        "id": 345,
         "name": "trophy_cup",
         "synonyms": ["trophy_cup"],
         "synset": "cup.n.08"
     },
     {
+        "def": "a small room (or recess) or cabinet used for storage space",
+        "frequency": "f",
+        "id": 346,
+        "name": "cupboard",
+        "synonyms": ["cupboard", "closet"],
+        "synset": "cupboard.n.01"
+    },
+    {
         "def": "small cake baked in a muffin tin",
-        "frequency": "c",
-        "id": 349,
+        "frequency": "f",
+        "id": 347,
         "name": "cupcake",
         "synonyms": ["cupcake"],
         "synset": "cupcake.n.01"
@@ -2851,7 +2842,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cylindrical tube around which the hair is wound to curl it",
         "frequency": "r",
-        "id": 350,
+        "id": 348,
         "name": "hair_curler",
         "synonyms": ["hair_curler", "hair_roller", "hair_crimper"],
         "synset": "curler.n.01"
@@ -2859,7 +2850,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cylindrical home appliance that heats hair that has been curled around it",
         "frequency": "r",
-        "id": 351,
+        "id": 349,
         "name": "curling_iron",
         "synonyms": ["curling_iron"],
         "synset": "curling_iron.n.01"
@@ -2867,7 +2858,7 @@ LVIS_CATEGORIES = [
     {
         "def": "hanging cloth used as a blind (especially for a window)",
         "frequency": "f",
-        "id": 352,
+        "id": 350,
         "name": "curtain",
         "synonyms": ["curtain", "drapery"],
         "synset": "curtain.n.01"
@@ -2875,31 +2866,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a soft bag filled with air or padding such as feathers or foam rubber",
         "frequency": "f",
-        "id": 353,
+        "id": 351,
         "name": "cushion",
         "synonyms": ["cushion"],
         "synset": "cushion.n.03"
     },
     {
-        "def": "sweetened mixture of milk and eggs baked or boiled or frozen",
-        "frequency": "r",
-        "id": 354,
-        "name": "custard",
-        "synonyms": ["custard"],
-        "synset": "custard.n.01"
-    },
-    {
-        "def": "a cutting implement; a tool for cutting",
-        "frequency": "c",
-        "id": 355,
-        "name": "cutting_tool",
-        "synonyms": ["cutting_tool"],
-        "synset": "cutter.n.06"
-    },
-    {
         "def": "a cylindrical container",
         "frequency": "r",
-        "id": 356,
+        "id": 352,
         "name": "cylinder",
         "synonyms": ["cylinder"],
         "synset": "cylinder.n.04"
@@ -2907,32 +2882,31 @@ LVIS_CATEGORIES = [
     {
         "def": "a percussion instrument consisting of a concave brass disk",
         "frequency": "r",
-        "id": 357,
+        "id": 353,
         "name": "cymbal",
         "synonyms": ["cymbal"],
         "synset": "cymbal.n.01"
     },
     {
-        "def": "small long-bodied short-legged breed of dog having a short sleek coat and long "
-               "drooping ears",
-        "frequency": "r",
-        "id": 358,
-        "name": "dachshund",
-        "synonyms": ["dachshund", "dachsie", "badger_dog"],
-        "synset": "dachshund.n.01"
-    },
-    {
         "def": "a short knife with a pointed blade used for piercing or stabbing",
         "frequency": "r",
-        "id": 359,
+        "id": 354,
         "name": "dagger",
         "synonyms": ["dagger"],
         "synset": "dagger.n.01"
     },
     {
-        "def": "a circular board of wood or cork used as the target in the game of darts",
+        "def": "a large breed having a smooth white coat with black or brown spots",
         "frequency": "r",
-        "id": 360,
+        "id": 355,
+        "name": "dalmatian",
+        "synonyms": ["dalmatian"],
+        "synset": "dalmatian.n.02"
+    },
+    {
+        "def": "a circular board of wood or cork used as the target in the game of darts",
+        "frequency": "c",
+        "id": 356,
         "name": "dartboard",
         "synonyms": ["dartboard"],
         "synset": "dartboard.n.01"
@@ -2940,7 +2914,7 @@ LVIS_CATEGORIES = [
     {
         "def": "sweet edible fruit of the date palm with a single long woody seed",
         "frequency": "r",
-        "id": 361,
+        "id": 357,
         "name": "date_(fruit)",
         "synonyms": ["date_(fruit)"],
         "synset": "date.n.08"
@@ -2948,7 +2922,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a folding chair for use outdoors; a wooden frame supports a length of canvas",
         "frequency": "f",
-        "id": 362,
+        "id": 358,
         "name": "deck_chair",
         "synonyms": ["deck_chair", "beach_chair"],
         "synset": "deck_chair.n.01"
@@ -2956,7 +2930,7 @@ LVIS_CATEGORIES = [
     {
         "def": "distinguished from Bovidae by the male's having solid deciduous antlers",
         "frequency": "c",
-        "id": 363,
+        "id": 359,
         "name": "deer",
         "synonyms": ["deer", "cervid"],
         "synset": "deer.n.01"
@@ -2964,7 +2938,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a soft thread for cleaning the spaces between the teeth",
         "frequency": "c",
-        "id": 364,
+        "id": 360,
         "name": "dental_floss",
         "synonyms": ["dental_floss", "floss"],
         "synset": "dental_floss.n.01"
@@ -2973,7 +2947,7 @@ LVIS_CATEGORIES = [
         "def": "a piece of furniture with a writing surface and usually drawers or other "
                "compartments",
         "frequency": "f",
-        "id": 365,
+        "id": 361,
         "name": "desk",
         "synonyms": ["desk"],
         "synset": "desk.n.01"
@@ -2981,7 +2955,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a surface-active chemical widely used in industry and laundering",
         "frequency": "r",
-        "id": 366,
+        "id": 362,
         "name": "detergent",
         "synonyms": ["detergent"],
         "synset": "detergent.n.01"
@@ -2990,15 +2964,15 @@ LVIS_CATEGORIES = [
         "def": "garment consisting of a folded cloth drawn up between the legs and fastened at the "
                "waist",
         "frequency": "c",
-        "id": 367,
+        "id": 363,
         "name": "diaper",
         "synonyms": ["diaper"],
         "synset": "diaper.n.01"
     },
     {
-        "def": "a daily written record of (usually personal) experiences and observations",
+        "def": "yearly planner book",
         "frequency": "r",
-        "id": 368,
+        "id": 364,
         "name": "diary",
         "synonyms": ["diary", "journal"],
         "synset": "diary.n.01"
@@ -3006,7 +2980,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small cube with 1 to 6 spots on the six faces; used in gambling",
         "frequency": "r",
-        "id": 369,
+        "id": 365,
         "name": "die",
         "synonyms": ["die", "dice"],
         "synset": "die.n.01"
@@ -3014,7 +2988,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small boat of shallow draft with seats and oars with which it is propelled",
         "frequency": "r",
-        "id": 370,
+        "id": 366,
         "name": "dinghy",
         "synonyms": ["dinghy", "dory", "rowboat"],
         "synset": "dinghy.n.01"
@@ -3022,7 +2996,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a table at which meals are served",
         "frequency": "f",
-        "id": 371,
+        "id": 367,
         "name": "dining_table",
         "synonyms": ["dining_table"],
         "synset": "dining_table.n.01"
@@ -3030,15 +3004,15 @@ LVIS_CATEGORIES = [
     {
         "def": "semiformal evening dress for men",
         "frequency": "r",
-        "id": 372,
+        "id": 368,
         "name": "tux",
         "synonyms": ["tux", "tuxedo"],
         "synset": "dinner_jacket.n.01"
     },
     {
         "def": "a piece of dishware normally used as a container for holding or serving food",
-        "frequency": "c",
-        "id": 373,
+        "frequency": "f",
+        "id": 369,
         "name": "dish",
         "synonyms": ["dish"],
         "synset": "dish.n.01"
@@ -3046,23 +3020,23 @@ LVIS_CATEGORIES = [
     {
         "def": "directional antenna consisting of a parabolic reflector",
         "frequency": "c",
-        "id": 374,
+        "id": 370,
         "name": "dish_antenna",
         "synonyms": ["dish_antenna"],
         "synset": "dish.n.05"
     },
     {
-        "def": "a cloth for washing dishes",
+        "def": "a cloth for washing dishes or cleaning in general",
         "frequency": "c",
-        "id": 375,
+        "id": 371,
         "name": "dishrag",
         "synonyms": ["dishrag", "dishcloth"],
         "synset": "dishrag.n.01"
     },
     {
         "def": "a towel for drying dishes",
-        "frequency": "c",
-        "id": 376,
+        "frequency": "f",
+        "id": 372,
         "name": "dishtowel",
         "synonyms": ["dishtowel", "tea_towel"],
         "synset": "dishtowel.n.01"
@@ -3070,39 +3044,40 @@ LVIS_CATEGORIES = [
     {
         "def": "a machine for washing dishes",
         "frequency": "f",
-        "id": 377,
+        "id": 373,
         "name": "dishwasher",
         "synonyms": ["dishwasher", "dishwashing_machine"],
         "synset": "dishwasher.n.01"
     },
     {
-        "def": "a low-sudsing detergent designed for use in dishwashers",
+        "def": "dishsoap or dish detergent designed for use in dishwashers",
         "frequency": "r",
-        "id": 378,
+        "id": 374,
         "name": "dishwasher_detergent",
-        "synonyms": ["dishwasher_detergent", "dishwashing_detergent", "dishwashing_liquid"],
+        "synonyms": ["dishwasher_detergent", "dishwashing_detergent", "dishwashing_liquid",
+                     "dishsoap"],
         "synset": "dishwasher_detergent.n.01"
     },
     {
-        "def": "a small plastic magnetic disk enclosed in a stiff envelope used to store data",
-        "frequency": "r",
-        "id": 379,
-        "name": "diskette",
-        "synonyms": ["diskette", "floppy", "floppy_disk"],
-        "synset": "diskette.n.01"
-    },
-    {
         "def": "a container so designed that the contents can be used in prescribed amounts",
-        "frequency": "c",
-        "id": 380,
+        "frequency": "f",
+        "id": 375,
         "name": "dispenser",
         "synonyms": ["dispenser"],
         "synset": "dispenser.n.01"
     },
     {
+        "def": "a springboard from which swimmers can dive",
+        "frequency": "r",
+        "id": 376,
+        "name": "diving_board",
+        "synonyms": ["diving_board"],
+        "synset": "diving_board.n.01"
+    },
+    {
         "def": "a disposable cup made of paper; for holding drinks",
-        "frequency": "c",
-        "id": 381,
+        "frequency": "f",
+        "id": 377,
         "name": "Dixie_cup",
         "synonyms": ["Dixie_cup", "paper_cup"],
         "synset": "dixie_cup.n.01"
@@ -3110,7 +3085,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a common domesticated dog",
         "frequency": "f",
-        "id": 382,
+        "id": 378,
         "name": "dog",
         "synonyms": ["dog"],
         "synset": "dog.n.01"
@@ -3118,15 +3093,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a collar for a dog",
         "frequency": "f",
-        "id": 383,
+        "id": 379,
         "name": "dog_collar",
         "synonyms": ["dog_collar"],
         "synset": "dog_collar.n.01"
     },
     {
         "def": "a toy replica of a HUMAN (NOT AN ANIMAL)",
-        "frequency": "c",
-        "id": 384,
+        "frequency": "f",
+        "id": 380,
         "name": "doll",
         "synonyms": ["doll"],
         "synset": "doll.n.01"
@@ -3134,15 +3109,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a piece of paper money worth one dollar",
         "frequency": "r",
-        "id": 385,
+        "id": 381,
         "name": "dollar",
         "synonyms": ["dollar", "dollar_bill", "one_dollar_bill"],
         "synset": "dollar.n.02"
     },
     {
-        "def": "any of various small toothed whales with a beaklike snout; larger than porpoises",
+        "def": "a house so small that it is likened to a child's plaything",
         "frequency": "r",
-        "id": 386,
+        "id": 382,
+        "name": "dollhouse",
+        "synonyms": ["dollhouse", "doll's_house"],
+        "synset": "dollhouse.n.01"
+    },
+    {
+        "def": "any of various small toothed whales with a beaklike snout; larger than porpoises",
+        "frequency": "c",
+        "id": 383,
         "name": "dolphin",
         "synonyms": ["dolphin"],
         "synset": "dolphin.n.02"
@@ -3150,31 +3133,15 @@ LVIS_CATEGORIES = [
     {
         "def": "domestic beast of burden descended from the African wild ass; patient but stubborn",
         "frequency": "c",
-        "id": 387,
+        "id": 384,
         "name": "domestic_ass",
         "synonyms": ["domestic_ass", "donkey"],
         "synset": "domestic_ass.n.01"
     },
     {
-        "def": "a mask covering the upper part of the face but with holes for the eyes",
-        "frequency": "r",
-        "id": 388,
-        "name": "eye_mask",
-        "synonyms": ["eye_mask"],
-        "synset": "domino.n.03"
-    },
-    {
-        "def": "a button at an outer door that gives a ringing or buzzing signal when pushed",
-        "frequency": "r",
-        "id": 389,
-        "name": "doorbell",
-        "synonyms": ["doorbell", "buzzer"],
-        "synset": "doorbell.n.01"
-    },
-    {
         "def": "a knob used to open a door (often called `doorhandle' in Great Britain)",
         "frequency": "f",
-        "id": 390,
+        "id": 385,
         "name": "doorknob",
         "synonyms": ["doorknob", "doorhandle"],
         "synset": "doorknob.n.01"
@@ -3182,7 +3149,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a mat placed outside an exterior door for wiping the shoes before entering",
         "frequency": "c",
-        "id": 391,
+        "id": 386,
         "name": "doormat",
         "synonyms": ["doormat", "welcome_mat"],
         "synset": "doormat.n.02"
@@ -3190,7 +3157,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small ring-shaped friedcake",
         "frequency": "f",
-        "id": 392,
+        "id": 387,
         "name": "doughnut",
         "synonyms": ["doughnut", "donut"],
         "synset": "doughnut.n.02"
@@ -3198,7 +3165,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any of numerous small pigeons",
         "frequency": "r",
-        "id": 393,
+        "id": 388,
         "name": "dove",
         "synonyms": ["dove"],
         "synset": "dove.n.01"
@@ -3207,7 +3174,7 @@ LVIS_CATEGORIES = [
         "def": "slender-bodied non-stinging insect having iridescent wings that are outspread at "
                "rest",
         "frequency": "r",
-        "id": 394,
+        "id": 389,
         "name": "dragonfly",
         "synonyms": ["dragonfly"],
         "synset": "dragonfly.n.01"
@@ -3215,7 +3182,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a boxlike container in a piece of furniture; made so as to slide in and out",
         "frequency": "f",
-        "id": 395,
+        "id": 390,
         "name": "drawer",
         "synonyms": ["drawer"],
         "synset": "drawer.n.01"
@@ -3223,7 +3190,7 @@ LVIS_CATEGORIES = [
     {
         "def": "underpants worn by men",
         "frequency": "c",
-        "id": 396,
+        "id": 391,
         "name": "underdrawers",
         "synonyms": ["underdrawers", "boxers", "boxershorts"],
         "synset": "drawers.n.01"
@@ -3231,7 +3198,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a one-piece garment for a woman; has skirt and bodice",
         "frequency": "f",
-        "id": 397,
+        "id": 392,
         "name": "dress",
         "synonyms": ["dress", "frock"],
         "synset": "dress.n.01"
@@ -3239,23 +3206,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a man's hat with a tall crown; usually covered with silk or with beaver fur",
         "frequency": "c",
-        "id": 398,
+        "id": 393,
         "name": "dress_hat",
         "synonyms": ["dress_hat", "high_hat", "opera_hat", "silk_hat", "top_hat"],
         "synset": "dress_hat.n.01"
     },
     {
         "def": "formalwear consisting of full evening dress for men",
-        "frequency": "c",
-        "id": 399,
+        "frequency": "f",
+        "id": 394,
         "name": "dress_suit",
         "synonyms": ["dress_suit"],
         "synset": "dress_suit.n.01"
     },
     {
         "def": "a cabinet with shelves",
-        "frequency": "c",
-        "id": 400,
+        "frequency": "f",
+        "id": 395,
         "name": "dresser",
         "synonyms": ["dresser"],
         "synset": "dresser.n.05"
@@ -3263,23 +3230,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a tool with a sharp rotating point for making holes in hard materials",
         "frequency": "c",
-        "id": 401,
+        "id": 396,
         "name": "drill",
         "synonyms": ["drill"],
         "synset": "drill.n.01"
     },
     {
-        "def": "a public fountain to provide a jet of drinking water",
-        "frequency": "r",
-        "id": 402,
-        "name": "drinking_fountain",
-        "synonyms": ["drinking_fountain"],
-        "synset": "drinking_fountain.n.01"
-    },
-    {
         "def": "an aircraft without a pilot that is operated by remote control",
         "frequency": "r",
-        "id": 403,
+        "id": 397,
         "name": "drone",
         "synonyms": ["drone"],
         "synset": "drone.n.04"
@@ -3288,7 +3247,7 @@ LVIS_CATEGORIES = [
         "def": "pipet consisting of a small tube with a vacuum bulb at one end for drawing liquid "
                "in and releasing it a drop at a time",
         "frequency": "r",
-        "id": 404,
+        "id": 398,
         "name": "dropper",
         "synonyms": ["dropper", "eye_dropper"],
         "synset": "dropper.n.01"
@@ -3297,7 +3256,7 @@ LVIS_CATEGORIES = [
         "def": "a musical percussion instrument; usually consists of a hollow cylinder with a "
                "membrane stretched across each end",
         "frequency": "c",
-        "id": 405,
+        "id": 399,
         "name": "drum_(musical_instrument)",
         "synonyms": ["drum_(musical_instrument)"],
         "synset": "drum.n.01"
@@ -3305,7 +3264,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a stick used for playing a drum",
         "frequency": "r",
-        "id": 406,
+        "id": 400,
         "name": "drumstick",
         "synonyms": ["drumstick"],
         "synset": "drumstick.n.02"
@@ -3313,15 +3272,15 @@ LVIS_CATEGORIES = [
     {
         "def": "small web-footed broad-billed swimming bird",
         "frequency": "f",
-        "id": 407,
+        "id": 401,
         "name": "duck",
         "synonyms": ["duck"],
         "synset": "duck.n.01"
     },
     {
         "def": "young duck",
-        "frequency": "r",
-        "id": 408,
+        "frequency": "c",
+        "id": 402,
         "name": "duckling",
         "synonyms": ["duckling"],
         "synset": "duckling.n.02"
@@ -3329,15 +3288,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a wide silvery adhesive tape",
         "frequency": "c",
-        "id": 409,
+        "id": 403,
         "name": "duct_tape",
         "synonyms": ["duct_tape"],
         "synset": "duct_tape.n.01"
     },
     {
-        "def": "a large cylindrical bag of heavy cloth",
+        "def": "a large cylindrical bag of heavy cloth (does not include suitcases)",
         "frequency": "f",
-        "id": 410,
+        "id": 404,
         "name": "duffel_bag",
         "synonyms": ["duffel_bag", "duffle_bag", "duffel", "duffle"],
         "synset": "duffel_bag.n.01"
@@ -3345,7 +3304,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an exercising weight with two ball-like ends connected by a short handle",
         "frequency": "r",
-        "id": 411,
+        "id": 405,
         "name": "dumbbell",
         "synonyms": ["dumbbell"],
         "synset": "dumbbell.n.01"
@@ -3353,7 +3312,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a container designed to receive and transport and dump waste",
         "frequency": "c",
-        "id": 412,
+        "id": 406,
         "name": "dumpster",
         "synonyms": ["dumpster"],
         "synset": "dumpster.n.01"
@@ -3361,23 +3320,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a short-handled receptacle into which dust can be swept",
         "frequency": "r",
-        "id": 413,
+        "id": 407,
         "name": "dustpan",
         "synonyms": ["dustpan"],
         "synset": "dustpan.n.02"
     },
     {
-        "def": "iron or earthenware cooking pot; used for stews",
-        "frequency": "r",
-        "id": 414,
-        "name": "Dutch_oven",
-        "synonyms": ["Dutch_oven"],
-        "synset": "dutch_oven.n.02"
-    },
-    {
         "def": "large birds of prey noted for their broad wings and strong soaring flight",
         "frequency": "c",
-        "id": 415,
+        "id": 408,
         "name": "eagle",
         "synonyms": ["eagle"],
         "synset": "eagle.n.01"
@@ -3385,7 +3336,7 @@ LVIS_CATEGORIES = [
     {
         "def": "device for listening to audio that is held over or inserted into the ear",
         "frequency": "f",
-        "id": 416,
+        "id": 409,
         "name": "earphone",
         "synonyms": ["earphone", "earpiece", "headphone"],
         "synset": "earphone.n.01"
@@ -3393,7 +3344,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a soft plug that is inserted into the ear canal to block sound",
         "frequency": "r",
-        "id": 417,
+        "id": 410,
         "name": "earplug",
         "synonyms": ["earplug"],
         "synset": "earplug.n.01"
@@ -3401,7 +3352,7 @@ LVIS_CATEGORIES = [
     {
         "def": "jewelry to ornament the ear",
         "frequency": "f",
-        "id": 418,
+        "id": 411,
         "name": "earring",
         "synonyms": ["earring"],
         "synset": "earring.n.01"
@@ -3409,7 +3360,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an upright tripod for displaying something (usually an artist's canvas)",
         "frequency": "c",
-        "id": 419,
+        "id": 412,
         "name": "easel",
         "synonyms": ["easel"],
         "synset": "easel.n.01"
@@ -3417,7 +3368,7 @@ LVIS_CATEGORIES = [
     {
         "def": "oblong cream puff",
         "frequency": "r",
-        "id": 420,
+        "id": 413,
         "name": "eclair",
         "synonyms": ["eclair"],
         "synset": "eclair.n.01"
@@ -3425,7 +3376,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an elongate fish with fatty flesh",
         "frequency": "r",
-        "id": 421,
+        "id": 414,
         "name": "eel",
         "synonyms": ["eel"],
         "synset": "eel.n.01"
@@ -3433,7 +3384,7 @@ LVIS_CATEGORIES = [
     {
         "def": "oval reproductive body of a fowl (especially a hen) used as food",
         "frequency": "f",
-        "id": 422,
+        "id": 415,
         "name": "egg",
         "synonyms": ["egg", "eggs"],
         "synset": "egg.n.02"
@@ -3441,7 +3392,7 @@ LVIS_CATEGORIES = [
     {
         "def": "minced vegetables and meat wrapped in a pancake and fried",
         "frequency": "r",
-        "id": 423,
+        "id": 416,
         "name": "egg_roll",
         "synonyms": ["egg_roll", "spring_roll"],
         "synset": "egg_roll.n.01"
@@ -3449,7 +3400,7 @@ LVIS_CATEGORIES = [
     {
         "def": "the yellow spherical part of an egg",
         "frequency": "c",
-        "id": 424,
+        "id": 417,
         "name": "egg_yolk",
         "synonyms": ["egg_yolk", "yolk_(egg)"],
         "synset": "egg_yolk.n.01"
@@ -3457,7 +3408,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a mixer for beating eggs or whipping cream",
         "frequency": "c",
-        "id": 425,
+        "id": 418,
         "name": "eggbeater",
         "synonyms": ["eggbeater", "eggwhisk"],
         "synset": "eggbeater.n.02"
@@ -3465,7 +3416,7 @@ LVIS_CATEGORIES = [
     {
         "def": "egg-shaped vegetable having a shiny skin typically dark purple",
         "frequency": "c",
-        "id": 426,
+        "id": 419,
         "name": "eggplant",
         "synonyms": ["eggplant", "aubergine"],
         "synset": "eggplant.n.01"
@@ -3473,7 +3424,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a chair-shaped instrument of execution by electrocution",
         "frequency": "r",
-        "id": 427,
+        "id": 420,
         "name": "electric_chair",
         "synonyms": ["electric_chair"],
         "synset": "electric_chair.n.01"
@@ -3481,7 +3432,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a refrigerator in which the coolant is pumped around by an electric motor",
         "frequency": "f",
-        "id": 428,
+        "id": 421,
         "name": "refrigerator",
         "synonyms": ["refrigerator"],
         "synset": "electric_refrigerator.n.01"
@@ -3489,15 +3440,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a common elephant",
         "frequency": "f",
-        "id": 429,
+        "id": 422,
         "name": "elephant",
         "synonyms": ["elephant"],
         "synset": "elephant.n.01"
     },
     {
         "def": "large northern deer with enormous flattened antlers in the male",
-        "frequency": "r",
-        "id": 430,
+        "frequency": "c",
+        "id": 423,
         "name": "elk",
         "synonyms": ["elk", "moose"],
         "synset": "elk.n.01"
@@ -3505,7 +3456,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a flat (usually rectangular) container for a letter, thin package, etc.",
         "frequency": "c",
-        "id": 431,
+        "id": 424,
         "name": "envelope",
         "synonyms": ["envelope"],
         "synset": "envelope.n.01"
@@ -3513,7 +3464,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an implement used to erase something",
         "frequency": "c",
-        "id": 432,
+        "id": 425,
         "name": "eraser",
         "synonyms": ["eraser"],
         "synset": "eraser.n.01"
@@ -3521,7 +3472,7 @@ LVIS_CATEGORIES = [
     {
         "def": "edible snail usually served in the shell with a sauce of melted butter and garlic",
         "frequency": "r",
-        "id": 433,
+        "id": 426,
         "name": "escargot",
         "synonyms": ["escargot"],
         "synset": "escargot.n.01"
@@ -3529,7 +3480,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a protective cloth covering for an injured eye",
         "frequency": "r",
-        "id": 434,
+        "id": 427,
         "name": "eyepatch",
         "synonyms": ["eyepatch"],
         "synset": "eyepatch.n.01"
@@ -3537,7 +3488,7 @@ LVIS_CATEGORIES = [
     {
         "def": "birds of prey having long pointed powerful wings adapted for swift flight",
         "frequency": "r",
-        "id": 435,
+        "id": 428,
         "name": "falcon",
         "synonyms": ["falcon"],
         "synset": "falcon.n.01"
@@ -3545,7 +3496,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a device for creating a current of air by movement of a surface or surfaces",
         "frequency": "f",
-        "id": 436,
+        "id": 429,
         "name": "fan",
         "synonyms": ["fan"],
         "synset": "fan.n.01"
@@ -3553,7 +3504,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a regulator for controlling the flow of a liquid from a reservoir",
         "frequency": "f",
-        "id": 437,
+        "id": 430,
         "name": "faucet",
         "synonyms": ["faucet", "spigot", "tap"],
         "synset": "faucet.n.01"
@@ -3561,7 +3512,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a hat made of felt with a creased crown",
         "frequency": "r",
-        "id": 438,
+        "id": 431,
         "name": "fedora",
         "synonyms": ["fedora"],
         "synset": "fedora.n.01"
@@ -3570,7 +3521,7 @@ LVIS_CATEGORIES = [
         "def": "domesticated albino variety of the European polecat bred for hunting rats and "
                "rabbits",
         "frequency": "r",
-        "id": 439,
+        "id": 432,
         "name": "ferret",
         "synonyms": ["ferret"],
         "synset": "ferret.n.02"
@@ -3578,7 +3529,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a large wheel with suspended seats that remain upright as the wheel rotates",
         "frequency": "c",
-        "id": 440,
+        "id": 433,
         "name": "Ferris_wheel",
         "synonyms": ["Ferris_wheel"],
         "synset": "ferris_wheel.n.01"
@@ -3586,8 +3537,8 @@ LVIS_CATEGORIES = [
     {
         "def": "a boat that transports people or vehicles across a body of water and operates on a "
                "regular schedule",
-        "frequency": "r",
-        "id": 441,
+        "frequency": "c",
+        "id": 434,
         "name": "ferry",
         "synonyms": ["ferry", "ferryboat"],
         "synset": "ferry.n.01"
@@ -3596,7 +3547,7 @@ LVIS_CATEGORIES = [
         "def": "fleshy sweet pear-shaped yellowish or purple fruit eaten fresh or preserved or "
                "dried",
         "frequency": "r",
-        "id": 442,
+        "id": 435,
         "name": "fig_(fruit)",
         "synonyms": ["fig_(fruit)"],
         "synset": "fig.n.04"
@@ -3604,7 +3555,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a high-speed military or naval airplane designed to destroy enemy targets",
         "frequency": "c",
-        "id": 443,
+        "id": 436,
         "name": "fighter_jet",
         "synonyms": ["fighter_jet", "fighter_aircraft", "attack_aircraft"],
         "synset": "fighter.n.02"
@@ -3612,7 +3563,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small carved or molded figure",
         "frequency": "f",
-        "id": 444,
+        "id": 437,
         "name": "figurine",
         "synonyms": ["figurine"],
         "synset": "figurine.n.01"
@@ -3620,7 +3571,7 @@ LVIS_CATEGORIES = [
     {
         "def": "office furniture consisting of a container for keeping papers in order",
         "frequency": "c",
-        "id": 445,
+        "id": 438,
         "name": "file_cabinet",
         "synonyms": ["file_cabinet", "filing_cabinet"],
         "synset": "file.n.03"
@@ -3629,7 +3580,7 @@ LVIS_CATEGORIES = [
         "def": "a steel hand tool with small sharp teeth on some or all of its surfaces; used for "
                "smoothing wood or metal",
         "frequency": "r",
-        "id": 446,
+        "id": 439,
         "name": "file_(tool)",
         "synonyms": ["file_(tool)"],
         "synset": "file.n.04"
@@ -3637,23 +3588,23 @@ LVIS_CATEGORIES = [
     {
         "def": "an alarm that is tripped off by fire or smoke",
         "frequency": "f",
-        "id": 447,
+        "id": 440,
         "name": "fire_alarm",
         "synonyms": ["fire_alarm", "smoke_alarm"],
         "synset": "fire_alarm.n.02"
     },
     {
         "def": "large trucks that carry firefighters and equipment to the site of a fire",
-        "frequency": "c",
-        "id": 448,
+        "frequency": "f",
+        "id": 441,
         "name": "fire_engine",
         "synonyms": ["fire_engine", "fire_truck"],
         "synset": "fire_engine.n.01"
     },
     {
         "def": "a manually operated device for extinguishing small fires",
-        "frequency": "c",
-        "id": 449,
+        "frequency": "f",
+        "id": 442,
         "name": "fire_extinguisher",
         "synonyms": ["fire_extinguisher", "extinguisher"],
         "synset": "fire_extinguisher.n.01"
@@ -3661,7 +3612,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a large hose that carries water from a fire hydrant to the site of the fire",
         "frequency": "c",
-        "id": 450,
+        "id": 443,
         "name": "fire_hose",
         "synonyms": ["fire_hose"],
         "synset": "fire_hose.n.01"
@@ -3669,7 +3620,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an open recess in a wall at the base of a chimney where a fire can be built",
         "frequency": "f",
-        "id": 451,
+        "id": 444,
         "name": "fireplace",
         "synonyms": ["fireplace"],
         "synset": "fireplace.n.01"
@@ -3677,24 +3628,32 @@ LVIS_CATEGORIES = [
     {
         "def": "an upright hydrant for drawing water to use in fighting a fire",
         "frequency": "f",
-        "id": 452,
+        "id": 445,
         "name": "fireplug",
         "synonyms": ["fireplug", "fire_hydrant", "hydrant"],
         "synset": "fireplug.n.01"
     },
     {
+        "def": "kit consisting of a set of bandages and medicines for giving first aid",
+        "frequency": "r",
+        "id": 446,
+        "name": "first-aid_kit",
+        "synonyms": ["first-aid_kit"],
+        "synset": "first-aid_kit.n.01"
+    },
+    {
         "def": "any of various mostly cold-blooded aquatic vertebrates usually having scales and "
                "breathing through gills",
-        "frequency": "c",
-        "id": 453,
+        "frequency": "f",
+        "id": 447,
         "name": "fish",
         "synonyms": ["fish"],
         "synset": "fish.n.01"
     },
     {
         "def": "the flesh of fish used as food",
-        "frequency": "r",
-        "id": 454,
+        "frequency": "c",
+        "id": 448,
         "name": "fish_(food)",
         "synonyms": ["fish_(food)"],
         "synset": "fish.n.02"
@@ -3702,23 +3661,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a transparent bowl in which small fish are kept",
         "frequency": "r",
-        "id": 455,
+        "id": 449,
         "name": "fishbowl",
         "synonyms": ["fishbowl", "goldfish_bowl"],
         "synset": "fishbowl.n.02"
     },
     {
-        "def": "a vessel for fishing",
-        "frequency": "r",
-        "id": 456,
-        "name": "fishing_boat",
-        "synonyms": ["fishing_boat", "fishing_vessel"],
-        "synset": "fishing_boat.n.01"
-    },
-    {
         "def": "a rod that is used in fishing to extend the fishing line",
         "frequency": "c",
-        "id": 457,
+        "id": 450,
         "name": "fishing_rod",
         "synonyms": ["fishing_rod", "fishing_pole"],
         "synset": "fishing_rod.n.01"
@@ -3727,7 +3678,7 @@ LVIS_CATEGORIES = [
         "def": "emblem usually consisting of a rectangular piece of cloth of distinctive design "
                "(do not include pole)",
         "frequency": "f",
-        "id": 458,
+        "id": 451,
         "name": "flag",
         "synonyms": ["flag"],
         "synset": "flag.n.01"
@@ -3735,7 +3686,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a tall staff or pole on which a flag is raised",
         "frequency": "f",
-        "id": 459,
+        "id": 452,
         "name": "flagpole",
         "synonyms": ["flagpole", "flagstaff"],
         "synset": "flagpole.n.02"
@@ -3743,7 +3694,7 @@ LVIS_CATEGORIES = [
     {
         "def": "large pink web-footed bird with down-bent bill",
         "frequency": "c",
-        "id": 460,
+        "id": 453,
         "name": "flamingo",
         "synonyms": ["flamingo"],
         "synset": "flamingo.n.01"
@@ -3751,15 +3702,24 @@ LVIS_CATEGORIES = [
     {
         "def": "a soft light woolen fabric; used for clothing",
         "frequency": "c",
-        "id": 461,
+        "id": 454,
         "name": "flannel",
         "synonyms": ["flannel"],
         "synset": "flannel.n.01"
     },
     {
+        "def": "any broad thin covering attached at one edge, such as a mud flap next to a wheel "
+               "or a flap on an airplane wing",
+        "frequency": "c",
+        "id": 455,
+        "name": "flap",
+        "synonyms": ["flap"],
+        "synset": "flap.n.01"
+    },
+    {
         "def": "a lamp for providing momentary light to take a photograph",
         "frequency": "r",
-        "id": 462,
+        "id": 456,
         "name": "flash",
         "synonyms": ["flash", "flashbulb"],
         "synset": "flash.n.10"
@@ -3767,7 +3727,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small portable battery-powered electric lamp",
         "frequency": "c",
-        "id": 463,
+        "id": 457,
         "name": "flashlight",
         "synonyms": ["flashlight", "torch"],
         "synset": "flashlight.n.01"
@@ -3775,7 +3735,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a soft bulky fabric with deep pile; used chiefly for clothing",
         "frequency": "r",
-        "id": 464,
+        "id": 458,
         "name": "fleece",
         "synonyms": ["fleece"],
         "synset": "fleece.n.03"
@@ -3783,7 +3743,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a backless sandal held to the foot by a thong between two toes",
         "frequency": "f",
-        "id": 465,
+        "id": 459,
         "name": "flip-flop_(sandal)",
         "synonyms": ["flip-flop_(sandal)"],
         "synset": "flip-flop.n.02"
@@ -3791,7 +3751,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a shoe to aid a person in swimming",
         "frequency": "c",
-        "id": 466,
+        "id": 460,
         "name": "flipper_(footwear)",
         "synonyms": ["flipper_(footwear)", "fin_(footwear)"],
         "synset": "flipper.n.01"
@@ -3799,7 +3759,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a decorative arrangement of flowers",
         "frequency": "f",
-        "id": 467,
+        "id": 461,
         "name": "flower_arrangement",
         "synonyms": ["flower_arrangement", "floral_arrangement"],
         "synset": "flower_arrangement.n.01"
@@ -3807,15 +3767,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a tall narrow wineglass",
         "frequency": "c",
-        "id": 468,
+        "id": 462,
         "name": "flute_glass",
         "synonyms": ["flute_glass", "champagne_flute"],
         "synset": "flute.n.02"
     },
     {
         "def": "a young horse",
-        "frequency": "r",
-        "id": 469,
+        "frequency": "c",
+        "id": 463,
         "name": "foal",
         "synonyms": ["foal"],
         "synset": "foal.n.01"
@@ -3823,7 +3783,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a chair that can be folded flat for storage",
         "frequency": "c",
-        "id": 470,
+        "id": 464,
         "name": "folding_chair",
         "synonyms": ["folding_chair"],
         "synset": "folding_chair.n.01"
@@ -3831,7 +3791,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a kitchen appliance for shredding, blending, chopping, or slicing food",
         "frequency": "c",
-        "id": 471,
+        "id": 465,
         "name": "food_processor",
         "synonyms": ["food_processor"],
         "synset": "food_processor.n.01"
@@ -3839,7 +3799,7 @@ LVIS_CATEGORIES = [
     {
         "def": "the inflated oblong ball used in playing American football",
         "frequency": "c",
-        "id": 472,
+        "id": 466,
         "name": "football_(American)",
         "synonyms": ["football_(American)"],
         "synset": "football.n.02"
@@ -3847,7 +3807,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a padded helmet with a face mask to protect the head of football players",
         "frequency": "r",
-        "id": 473,
+        "id": 467,
         "name": "football_helmet",
         "synonyms": ["football_helmet"],
         "synset": "football_helmet.n.01"
@@ -3855,7 +3815,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a low seat or a stool to rest the feet of a seated person",
         "frequency": "c",
-        "id": 474,
+        "id": 468,
         "name": "footstool",
         "synonyms": ["footstool", "footrest"],
         "synset": "footstool.n.01"
@@ -3863,7 +3823,7 @@ LVIS_CATEGORIES = [
     {
         "def": "cutlery used for serving and eating food",
         "frequency": "f",
-        "id": 475,
+        "id": 469,
         "name": "fork",
         "synonyms": ["fork"],
         "synset": "fork.n.01"
@@ -3871,32 +3831,32 @@ LVIS_CATEGORIES = [
     {
         "def": "an industrial vehicle with a power operated fork in front that can be inserted "
                "under loads to lift and move them",
-        "frequency": "r",
-        "id": 476,
+        "frequency": "c",
+        "id": 470,
         "name": "forklift",
         "synonyms": ["forklift"],
         "synset": "forklift.n.01"
     },
     {
         "def": "a railway car that carries freight",
-        "frequency": "r",
-        "id": 477,
+        "frequency": "c",
+        "id": 471,
         "name": "freight_car",
         "synonyms": ["freight_car"],
         "synset": "freight_car.n.01"
     },
     {
         "def": "bread slice dipped in egg and milk and fried",
-        "frequency": "r",
-        "id": 478,
+        "frequency": "c",
+        "id": 472,
         "name": "French_toast",
         "synonyms": ["French_toast"],
         "synset": "french_toast.n.01"
     },
     {
-        "def": "anything that freshens",
+        "def": "anything that freshens air by removing or covering odor",
         "frequency": "c",
-        "id": 479,
+        "id": 473,
         "name": "freshener",
         "synonyms": ["freshener", "air_freshener"],
         "synset": "freshener.n.01"
@@ -3905,7 +3865,7 @@ LVIS_CATEGORIES = [
         "def": "a light, plastic disk propelled with a flip of the wrist for recreation or "
                "competition",
         "frequency": "f",
-        "id": 480,
+        "id": 474,
         "name": "frisbee",
         "synonyms": ["frisbee"],
         "synset": "frisbee.n.01"
@@ -3913,7 +3873,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a tailless stout-bodied amphibians with long hind limbs for leaping",
         "frequency": "c",
-        "id": 481,
+        "id": 475,
         "name": "frog",
         "synonyms": ["frog", "toad", "toad_frog"],
         "synset": "frog.n.01"
@@ -3921,23 +3881,15 @@ LVIS_CATEGORIES = [
     {
         "def": "drink produced by squeezing or crushing fruit",
         "frequency": "c",
-        "id": 482,
+        "id": 476,
         "name": "fruit_juice",
         "synonyms": ["fruit_juice"],
         "synset": "fruit_juice.n.01"
     },
     {
-        "def": "salad composed of fruits",
-        "frequency": "r",
-        "id": 483,
-        "name": "fruit_salad",
-        "synonyms": ["fruit_salad"],
-        "synset": "fruit_salad.n.01"
-    },
-    {
         "def": "a pan used for frying foods",
-        "frequency": "c",
-        "id": 484,
+        "frequency": "f",
+        "id": 477,
         "name": "frying_pan",
         "synonyms": ["frying_pan", "frypan", "skillet"],
         "synset": "frying_pan.n.01"
@@ -3945,7 +3897,7 @@ LVIS_CATEGORIES = [
     {
         "def": "soft creamy candy",
         "frequency": "r",
-        "id": 485,
+        "id": 478,
         "name": "fudge",
         "synonyms": ["fudge"],
         "synset": "fudge.n.01"
@@ -3954,15 +3906,15 @@ LVIS_CATEGORIES = [
         "def": "a cone-shaped utensil used to channel a substance into a container with a small "
                "mouth",
         "frequency": "r",
-        "id": 486,
+        "id": 479,
         "name": "funnel",
         "synonyms": ["funnel"],
         "synset": "funnel.n.02"
     },
     {
         "def": "a pad that is used for sleeping on the floor or on a raised frame",
-        "frequency": "c",
-        "id": 487,
+        "frequency": "r",
+        "id": 480,
         "name": "futon",
         "synonyms": ["futon"],
         "synset": "futon.n.01"
@@ -3970,7 +3922,7 @@ LVIS_CATEGORIES = [
     {
         "def": "restraint put into a person's mouth to prevent speaking or shouting",
         "frequency": "r",
-        "id": 488,
+        "id": 481,
         "name": "gag",
         "synonyms": ["gag", "muzzle"],
         "synset": "gag.n.02"
@@ -3978,7 +3930,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a receptacle where waste can be discarded",
         "frequency": "r",
-        "id": 489,
+        "id": 482,
         "name": "garbage",
         "synonyms": ["garbage"],
         "synset": "garbage.n.03"
@@ -3986,7 +3938,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a truck for collecting domestic refuse",
         "frequency": "c",
-        "id": 490,
+        "id": 483,
         "name": "garbage_truck",
         "synonyms": ["garbage_truck"],
         "synset": "garbage_truck.n.01"
@@ -3994,7 +3946,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a hose used for watering a lawn or garden",
         "frequency": "c",
-        "id": 491,
+        "id": 484,
         "name": "garden_hose",
         "synonyms": ["garden_hose"],
         "synset": "garden_hose.n.01"
@@ -4002,7 +3954,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a medicated solution used for gargling and rinsing the mouth",
         "frequency": "c",
-        "id": 492,
+        "id": 485,
         "name": "gargle",
         "synonyms": ["gargle", "mouthwash"],
         "synset": "gargle.n.01"
@@ -4010,7 +3962,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an ornament consisting of a grotesquely carved figure of a person or animal",
         "frequency": "r",
-        "id": 493,
+        "id": 486,
         "name": "gargoyle",
         "synonyms": ["gargoyle"],
         "synset": "gargoyle.n.02"
@@ -4018,7 +3970,7 @@ LVIS_CATEGORIES = [
     {
         "def": "aromatic bulb used as seasoning",
         "frequency": "c",
-        "id": 494,
+        "id": 487,
         "name": "garlic",
         "synonyms": ["garlic", "ail"],
         "synset": "garlic.n.02"
@@ -4026,15 +3978,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a protective face mask with a filter",
         "frequency": "r",
-        "id": 495,
+        "id": 488,
         "name": "gasmask",
         "synonyms": ["gasmask", "respirator", "gas_helmet"],
         "synset": "gasmask.n.01"
     },
     {
         "def": "small swift graceful antelope of Africa and Asia having lustrous eyes",
-        "frequency": "r",
-        "id": 496,
+        "frequency": "c",
+        "id": 489,
         "name": "gazelle",
         "synonyms": ["gazelle"],
         "synset": "gazelle.n.01"
@@ -4043,7 +3995,7 @@ LVIS_CATEGORIES = [
         "def": "an edible jelly made with gelatin and used as a dessert or salad base or a coating "
                "for foods",
         "frequency": "c",
-        "id": 497,
+        "id": 490,
         "name": "gelatin",
         "synonyms": ["gelatin", "jelly"],
         "synset": "gelatin.n.02"
@@ -4051,15 +4003,24 @@ LVIS_CATEGORIES = [
     {
         "def": "a crystalline rock that can be cut and polished for jewelry",
         "frequency": "r",
-        "id": 498,
+        "id": 491,
         "name": "gemstone",
         "synonyms": ["gemstone"],
         "synset": "gem.n.02"
     },
     {
+        "def": "engine that converts mechanical energy into electrical energy by electromagnetic "
+               "induction",
+        "frequency": "r",
+        "id": 492,
+        "name": "generator",
+        "synonyms": ["generator"],
+        "synset": "generator.n.02"
+    },
+    {
         "def": "large black-and-white herbivorous mammal of bamboo forests of China and Tibet",
         "frequency": "c",
-        "id": 499,
+        "id": 493,
         "name": "giant_panda",
         "synonyms": ["giant_panda", "panda", "panda_bear"],
         "synset": "giant_panda.n.01"
@@ -4067,7 +4028,7 @@ LVIS_CATEGORIES = [
     {
         "def": "attractive wrapping paper suitable for wrapping gifts",
         "frequency": "c",
-        "id": 500,
+        "id": 494,
         "name": "gift_wrap",
         "synonyms": ["gift_wrap"],
         "synset": "gift_wrap.n.01"
@@ -4075,7 +4036,7 @@ LVIS_CATEGORIES = [
     {
         "def": "the root of the common ginger plant; used fresh as a seasoning",
         "frequency": "c",
-        "id": 501,
+        "id": 495,
         "name": "ginger",
         "synonyms": ["ginger", "gingerroot"],
         "synset": "ginger.n.03"
@@ -4083,7 +4044,7 @@ LVIS_CATEGORIES = [
     {
         "def": "tall animal having a spotted coat and small horns and very long neck and legs",
         "frequency": "f",
-        "id": 502,
+        "id": 496,
         "name": "giraffe",
         "synonyms": ["giraffe"],
         "synset": "giraffe.n.01"
@@ -4091,7 +4052,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a band of material around the waist that strengthens a skirt or trousers",
         "frequency": "c",
-        "id": 503,
+        "id": 497,
         "name": "cincture",
         "synonyms": ["cincture", "sash", "waistband", "waistcloth"],
         "synset": "girdle.n.02"
@@ -4099,7 +4060,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a container for holding liquids while drinking",
         "frequency": "f",
-        "id": 504,
+        "id": 498,
         "name": "glass_(drink_container)",
         "synonyms": ["glass_(drink_container)", "drinking_glass"],
         "synset": "glass.n.02"
@@ -4107,7 +4068,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a sphere on which a map (especially of the earth) is represented",
         "frequency": "c",
-        "id": 505,
+        "id": 499,
         "name": "globe",
         "synonyms": ["globe"],
         "synset": "globe.n.03"
@@ -4115,7 +4076,7 @@ LVIS_CATEGORIES = [
     {
         "def": "handwear covering the hand",
         "frequency": "f",
-        "id": 506,
+        "id": 500,
         "name": "glove",
         "synonyms": ["glove"],
         "synset": "glove.n.02"
@@ -4123,7 +4084,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a common goat",
         "frequency": "c",
-        "id": 507,
+        "id": 501,
         "name": "goat",
         "synonyms": ["goat"],
         "synset": "goat.n.01"
@@ -4131,7 +4092,7 @@ LVIS_CATEGORIES = [
     {
         "def": "tight-fitting spectacles worn to protect the eyes",
         "frequency": "f",
-        "id": 508,
+        "id": 502,
         "name": "goggles",
         "synonyms": ["goggles"],
         "synset": "goggles.n.01"
@@ -4139,15 +4100,15 @@ LVIS_CATEGORIES = [
     {
         "def": "small golden or orange-red freshwater fishes used as pond or aquarium pets",
         "frequency": "r",
-        "id": 509,
+        "id": 503,
         "name": "goldfish",
         "synonyms": ["goldfish"],
         "synset": "goldfish.n.01"
     },
     {
         "def": "golf equipment used by a golfer to hit a golf ball",
-        "frequency": "r",
-        "id": 510,
+        "frequency": "c",
+        "id": 504,
         "name": "golf_club",
         "synonyms": ["golf_club", "golf-club"],
         "synset": "golf_club.n.02"
@@ -4155,7 +4116,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small motor vehicle in which golfers can ride between shots",
         "frequency": "c",
-        "id": 511,
+        "id": 505,
         "name": "golfcart",
         "synonyms": ["golfcart"],
         "synset": "golfcart.n.01"
@@ -4164,7 +4125,7 @@ LVIS_CATEGORIES = [
         "def": "long narrow flat-bottomed boat propelled by sculling; traditionally used on canals "
                "of Venice",
         "frequency": "r",
-        "id": 512,
+        "id": 506,
         "name": "gondola_(boat)",
         "synonyms": ["gondola_(boat)"],
         "synset": "gondola.n.02"
@@ -4172,7 +4133,7 @@ LVIS_CATEGORIES = [
     {
         "def": "loud, web-footed long-necked aquatic birds usually larger than ducks",
         "frequency": "c",
-        "id": 513,
+        "id": 507,
         "name": "goose",
         "synonyms": ["goose"],
         "synset": "goose.n.01"
@@ -4180,7 +4141,7 @@ LVIS_CATEGORIES = [
     {
         "def": "largest ape",
         "frequency": "r",
-        "id": 514,
+        "id": 508,
         "name": "gorilla",
         "synonyms": ["gorilla"],
         "synset": "gorilla.n.01"
@@ -4188,39 +4149,23 @@ LVIS_CATEGORIES = [
     {
         "def": "any of numerous inedible fruits with hard rinds",
         "frequency": "r",
-        "id": 515,
+        "id": 509,
         "name": "gourd",
         "synonyms": ["gourd"],
         "synset": "gourd.n.02"
     },
     {
-        "def": "protective garment worn by surgeons during operations",
-        "frequency": "r",
-        "id": 516,
-        "name": "surgical_gown",
-        "synonyms": ["surgical_gown", "scrubs_(surgical_clothing)"],
-        "synset": "gown.n.04"
-    },
-    {
         "def": "any of various juicy fruit with green or purple skins; grow in clusters",
         "frequency": "f",
-        "id": 517,
+        "id": 510,
         "name": "grape",
         "synonyms": ["grape"],
         "synset": "grape.n.01"
     },
     {
-        "def": "plant-eating insect with hind legs adapted for leaping",
-        "frequency": "r",
-        "id": 518,
-        "name": "grasshopper",
-        "synonyms": ["grasshopper"],
-        "synset": "grasshopper.n.01"
-    },
-    {
         "def": "utensil with sharp perforations for shredding foods (as vegetables or cheese)",
         "frequency": "c",
-        "id": 519,
+        "id": 511,
         "name": "grater",
         "synonyms": ["grater"],
         "synset": "grater.n.01"
@@ -4228,7 +4173,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a stone that is used to mark a grave",
         "frequency": "c",
-        "id": 520,
+        "id": 512,
         "name": "gravestone",
         "synonyms": ["gravestone", "headstone", "tombstone"],
         "synset": "gravestone.n.01"
@@ -4236,23 +4181,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a dish (often boat-shaped) for serving gravy or sauce",
         "frequency": "r",
-        "id": 521,
+        "id": 513,
         "name": "gravy_boat",
         "synonyms": ["gravy_boat", "gravy_holder"],
         "synset": "gravy_boat.n.01"
     },
     {
         "def": "a common bean plant cultivated for its slender green edible pods",
-        "frequency": "c",
-        "id": 522,
+        "frequency": "f",
+        "id": 514,
         "name": "green_bean",
         "synonyms": ["green_bean"],
         "synset": "green_bean.n.02"
     },
     {
         "def": "a young onion before the bulb has enlarged",
-        "frequency": "c",
-        "id": 523,
+        "frequency": "f",
+        "id": 515,
         "name": "green_onion",
         "synonyms": ["green_onion", "spring_onion", "scallion"],
         "synset": "green_onion.n.01"
@@ -4260,31 +4205,23 @@ LVIS_CATEGORIES = [
     {
         "def": "cooking utensil consisting of a flat heated surface on which food is cooked",
         "frequency": "r",
-        "id": 524,
+        "id": 516,
         "name": "griddle",
         "synonyms": ["griddle"],
         "synset": "griddle.n.01"
     },
     {
-        "def": "a restaurant where food is cooked on a grill",
-        "frequency": "r",
-        "id": 525,
-        "name": "grillroom",
-        "synonyms": ["grillroom", "grill_(restaurant)"],
-        "synset": "grillroom.n.01"
-    },
-    {
-        "def": "a machine tool that polishes metal",
-        "frequency": "r",
-        "id": 526,
-        "name": "grinder_(tool)",
-        "synonyms": ["grinder_(tool)"],
-        "synset": "grinder.n.04"
+        "def": "a framework of metal bars used as a partition or a grate",
+        "frequency": "f",
+        "id": 517,
+        "name": "grill",
+        "synonyms": ["grill", "grille", "grillwork", "radiator_grille"],
+        "synset": "grill.n.02"
     },
     {
         "def": "coarsely ground corn boiled as a breakfast dish",
         "frequency": "r",
-        "id": 527,
+        "id": 518,
         "name": "grits",
         "synonyms": ["grits", "hominy_grits"],
         "synset": "grits.n.01"
@@ -4292,7 +4229,7 @@ LVIS_CATEGORIES = [
     {
         "def": "powerful brownish-yellow bear of the uplands of western North America",
         "frequency": "c",
-        "id": 528,
+        "id": 519,
         "name": "grizzly",
         "synonyms": ["grizzly", "grizzly_bear"],
         "synset": "grizzly.n.01"
@@ -4300,23 +4237,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a sack for holding customer's groceries",
         "frequency": "c",
-        "id": 529,
+        "id": 520,
         "name": "grocery_bag",
         "synonyms": ["grocery_bag"],
         "synset": "grocery_bag.n.01"
     },
     {
-        "def": "a dip made of mashed avocado mixed with chopped onions and other seasonings",
-        "frequency": "r",
-        "id": 530,
-        "name": "guacamole",
-        "synonyms": ["guacamole"],
-        "synset": "guacamole.n.01"
-    },
-    {
         "def": "a stringed instrument usually having six strings; played by strumming or plucking",
         "frequency": "f",
-        "id": 531,
+        "id": 521,
         "name": "guitar",
         "synonyms": ["guitar"],
         "synset": "guitar.n.01"
@@ -4324,7 +4253,7 @@ LVIS_CATEGORIES = [
     {
         "def": "mostly white aquatic bird having long pointed wings and short legs",
         "frequency": "c",
-        "id": 532,
+        "id": 522,
         "name": "gull",
         "synonyms": ["gull", "seagull"],
         "synset": "gull.n.02"
@@ -4332,23 +4261,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a weapon that discharges a bullet at high velocity from a metal tube",
         "frequency": "c",
-        "id": 533,
+        "id": 523,
         "name": "gun",
         "synonyms": ["gun"],
         "synset": "gun.n.01"
     },
     {
-        "def": "substance sprayed on the hair to hold it in place",
-        "frequency": "r",
-        "id": 534,
-        "name": "hair_spray",
-        "synonyms": ["hair_spray"],
-        "synset": "hair_spray.n.01"
-    },
-    {
         "def": "a brush used to groom a person's hair",
-        "frequency": "c",
-        "id": 535,
+        "frequency": "f",
+        "id": 524,
         "name": "hairbrush",
         "synonyms": ["hairbrush"],
         "synset": "hairbrush.n.01"
@@ -4356,7 +4277,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small net that someone wears over their hair to keep it in place",
         "frequency": "c",
-        "id": 536,
+        "id": 525,
         "name": "hairnet",
         "synonyms": ["hairnet"],
         "synset": "hairnet.n.01"
@@ -4364,15 +4285,24 @@ LVIS_CATEGORIES = [
     {
         "def": "a double pronged pin used to hold women's hair in place",
         "frequency": "c",
-        "id": 537,
+        "id": 526,
         "name": "hairpin",
         "synonyms": ["hairpin"],
         "synset": "hairpin.n.01"
     },
     {
+        "def": "a woman's top that fastens behind the back and neck leaving the back and arms "
+               "uncovered",
+        "frequency": "r",
+        "id": 527,
+        "name": "halter_top",
+        "synonyms": ["halter_top"],
+        "synset": "halter.n.03"
+    },
+    {
         "def": "meat cut from the thigh of a hog (usually smoked)",
         "frequency": "f",
-        "id": 538,
+        "id": 528,
         "name": "ham",
         "synonyms": ["ham", "jambon", "gammon"],
         "synset": "ham.n.01"
@@ -4380,7 +4310,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a sandwich consisting of a patty of minced beef served on a bun",
         "frequency": "c",
-        "id": 539,
+        "id": 529,
         "name": "hamburger",
         "synonyms": ["hamburger", "beefburger", "burger"],
         "synset": "hamburger.n.01"
@@ -4389,15 +4319,15 @@ LVIS_CATEGORIES = [
         "def": "a hand tool with a heavy head and a handle; used to deliver an impulsive force by "
                "striking",
         "frequency": "c",
-        "id": 540,
+        "id": 530,
         "name": "hammer",
         "synonyms": ["hammer"],
         "synset": "hammer.n.02"
     },
     {
         "def": "a hanging bed of canvas or rope netting (usually suspended between two trees)",
-        "frequency": "r",
-        "id": 541,
+        "frequency": "c",
+        "id": 531,
         "name": "hammock",
         "synonyms": ["hammock"],
         "synset": "hammock.n.02"
@@ -4405,23 +4335,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a basket usually with a cover",
         "frequency": "r",
-        "id": 542,
+        "id": 532,
         "name": "hamper",
         "synonyms": ["hamper"],
         "synset": "hamper.n.02"
     },
     {
         "def": "short-tailed burrowing rodent with large cheek pouches",
-        "frequency": "r",
-        "id": 543,
+        "frequency": "c",
+        "id": 533,
         "name": "hamster",
         "synonyms": ["hamster"],
         "synset": "hamster.n.01"
     },
     {
         "def": "a hand-held electric blower that can blow warm air onto the hair",
-        "frequency": "c",
-        "id": 544,
+        "frequency": "f",
+        "id": 534,
         "name": "hair_dryer",
         "synonyms": ["hair_dryer"],
         "synset": "hand_blower.n.01"
@@ -4429,7 +4359,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a mirror intended to be held in the hand",
         "frequency": "r",
-        "id": 545,
+        "id": 535,
         "name": "hand_glass",
         "synonyms": ["hand_glass", "hand_mirror"],
         "synset": "hand_glass.n.01"
@@ -4437,7 +4367,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small towel used to dry the hands or face",
         "frequency": "f",
-        "id": 546,
+        "id": 536,
         "name": "hand_towel",
         "synonyms": ["hand_towel", "face_towel"],
         "synset": "hand_towel.n.01"
@@ -4445,7 +4375,7 @@ LVIS_CATEGORIES = [
     {
         "def": "wheeled vehicle that can be pushed by a person",
         "frequency": "c",
-        "id": 547,
+        "id": 537,
         "name": "handcart",
         "synonyms": ["handcart", "pushcart", "hand_truck"],
         "synset": "handcart.n.01"
@@ -4453,7 +4383,7 @@ LVIS_CATEGORIES = [
     {
         "def": "shackle that consists of a metal loop that can be locked around the wrist",
         "frequency": "r",
-        "id": 548,
+        "id": 538,
         "name": "handcuff",
         "synonyms": ["handcuff"],
         "synset": "handcuff.n.01"
@@ -4461,7 +4391,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a square piece of cloth used for wiping the eyes or nose or as a costume accessory",
         "frequency": "c",
-        "id": 549,
+        "id": 539,
         "name": "handkerchief",
         "synonyms": ["handkerchief"],
         "synset": "handkerchief.n.01"
@@ -4469,7 +4399,7 @@ LVIS_CATEGORIES = [
     {
         "def": "the appendage to an object that is designed to be held in order to use or move it",
         "frequency": "f",
-        "id": 550,
+        "id": 540,
         "name": "handle",
         "synonyms": ["handle", "grip", "handgrip"],
         "synset": "handle.n.01"
@@ -4477,7 +4407,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a saw used with one hand for cutting wood",
         "frequency": "r",
-        "id": 551,
+        "id": 541,
         "name": "handsaw",
         "synonyms": ["handsaw", "carpenter's_saw"],
         "synset": "handsaw.n.01"
@@ -4485,7 +4415,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a book with cardboard or cloth or leather covers",
         "frequency": "r",
-        "id": 552,
+        "id": 542,
         "name": "hardback_book",
         "synonyms": ["hardback_book", "hardcover_book"],
         "synset": "hardback.n.01"
@@ -4493,7 +4423,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a free-reed instrument in which air is forced through the reeds by bellows",
         "frequency": "r",
-        "id": 553,
+        "id": 543,
         "name": "harmonium",
         "synonyms": ["harmonium", "organ_(musical_instrument)", "reed_organ_(musical_instrument)"],
         "synset": "harmonium.n.01"
@@ -4501,7 +4431,7 @@ LVIS_CATEGORIES = [
     {
         "def": "headwear that protects the head from bad weather, sun, or worn for fashion",
         "frequency": "f",
-        "id": 554,
+        "id": 544,
         "name": "hat",
         "synonyms": ["hat"],
         "synset": "hat.n.01"
@@ -4509,23 +4439,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a round piece of luggage for carrying hats",
         "frequency": "r",
-        "id": 555,
+        "id": 545,
         "name": "hatbox",
         "synonyms": ["hatbox"],
         "synset": "hatbox.n.01"
     },
     {
-        "def": "a movable barrier covering a hatchway",
-        "frequency": "r",
-        "id": 556,
-        "name": "hatch",
-        "synonyms": ["hatch"],
-        "synset": "hatch.n.03"
-    },
-    {
-        "def": "a garment that covers the head and face",
+        "def": "a garment that covers the head OR face",
         "frequency": "c",
-        "id": 557,
+        "id": 546,
         "name": "veil",
         "synonyms": ["veil"],
         "synset": "head_covering.n.01"
@@ -4533,7 +4455,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a band worn around or over the head",
         "frequency": "f",
-        "id": 558,
+        "id": 547,
         "name": "headband",
         "synonyms": ["headband"],
         "synset": "headband.n.01"
@@ -4541,7 +4463,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a vertical board or panel forming the head of a bedstead",
         "frequency": "f",
-        "id": 559,
+        "id": 548,
         "name": "headboard",
         "synonyms": ["headboard"],
         "synset": "headboard.n.01"
@@ -4550,7 +4472,7 @@ LVIS_CATEGORIES = [
         "def": "a powerful light with reflector; attached to the front of an automobile or "
                "locomotive",
         "frequency": "f",
-        "id": 560,
+        "id": 549,
         "name": "headlight",
         "synonyms": ["headlight", "headlamp"],
         "synset": "headlight.n.01"
@@ -4558,7 +4480,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a kerchief worn over the head and tied under the chin",
         "frequency": "c",
-        "id": 561,
+        "id": 550,
         "name": "headscarf",
         "synonyms": ["headscarf"],
         "synset": "headscarf.n.01"
@@ -4566,7 +4488,7 @@ LVIS_CATEGORIES = [
     {
         "def": "receiver consisting of a pair of headphones",
         "frequency": "r",
-        "id": 562,
+        "id": 551,
         "name": "headset",
         "synonyms": ["headset"],
         "synset": "headset.n.01"
@@ -4574,23 +4496,15 @@ LVIS_CATEGORIES = [
     {
         "def": "the band that is the part of a bridle that fits around a horse's head",
         "frequency": "c",
-        "id": 563,
+        "id": 552,
         "name": "headstall_(for_horses)",
         "synonyms": ["headstall_(for_horses)", "headpiece_(for_horses)"],
         "synset": "headstall.n.01"
     },
     {
-        "def": "an acoustic device used to direct sound to the ear of a hearing-impaired person",
-        "frequency": "r",
-        "id": 564,
-        "name": "hearing_aid",
-        "synonyms": ["hearing_aid"],
-        "synset": "hearing_aid.n.02"
-    },
-    {
         "def": "a muscular organ; its contractions move the blood through the body",
         "frequency": "c",
-        "id": 565,
+        "id": 553,
         "name": "heart",
         "synonyms": ["heart"],
         "synset": "heart.n.02"
@@ -4598,7 +4512,7 @@ LVIS_CATEGORIES = [
     {
         "def": "device that heats water or supplies warmth to a room",
         "frequency": "c",
-        "id": 566,
+        "id": 554,
         "name": "heater",
         "synonyms": ["heater", "warmer"],
         "synset": "heater.n.01"
@@ -4607,7 +4521,7 @@ LVIS_CATEGORIES = [
         "def": "an aircraft without wings that obtains its lift from the rotation of overhead "
                "blades",
         "frequency": "c",
-        "id": 567,
+        "id": 555,
         "name": "helicopter",
         "synonyms": ["helicopter"],
         "synset": "helicopter.n.01"
@@ -4615,7 +4529,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a protective headgear made of hard material to resist blows",
         "frequency": "f",
-        "id": 568,
+        "id": 556,
         "name": "helmet",
         "synonyms": ["helmet"],
         "synset": "helmet.n.02"
@@ -4623,7 +4537,7 @@ LVIS_CATEGORIES = [
     {
         "def": "grey or white wading bird with long neck and long legs and (usually) long bill",
         "frequency": "r",
-        "id": 569,
+        "id": 557,
         "name": "heron",
         "synonyms": ["heron"],
         "synset": "heron.n.02"
@@ -4631,7 +4545,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a chair for feeding a very young child",
         "frequency": "c",
-        "id": 570,
+        "id": 558,
         "name": "highchair",
         "synonyms": ["highchair", "feeding_chair"],
         "synset": "highchair.n.01"
@@ -4639,7 +4553,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a joint that holds two parts together so that one can swing relative to the other",
         "frequency": "f",
-        "id": 571,
+        "id": 559,
         "name": "hinge",
         "synonyms": ["hinge"],
         "synset": "hinge.n.01"
@@ -4647,7 +4561,7 @@ LVIS_CATEGORIES = [
     {
         "def": "massive thick-skinned animal living in or around rivers of tropical Africa",
         "frequency": "r",
-        "id": 572,
+        "id": 560,
         "name": "hippopotamus",
         "synonyms": ["hippopotamus"],
         "synset": "hippopotamus.n.01"
@@ -4655,7 +4569,7 @@ LVIS_CATEGORIES = [
     {
         "def": "sports implement consisting of a stick used by hockey players to move the puck",
         "frequency": "r",
-        "id": 573,
+        "id": 561,
         "name": "hockey_stick",
         "synonyms": ["hockey_stick"],
         "synset": "hockey_stick.n.01"
@@ -4663,7 +4577,7 @@ LVIS_CATEGORIES = [
     {
         "def": "domestic swine",
         "frequency": "c",
-        "id": 574,
+        "id": 562,
         "name": "hog",
         "synonyms": ["hog", "pig"],
         "synset": "hog.n.03"
@@ -4672,7 +4586,7 @@ LVIS_CATEGORIES = [
         "def": "(baseball) a rubber slab where the batter stands; it must be touched by a base "
                "runner in order to score",
         "frequency": "f",
-        "id": 575,
+        "id": 563,
         "name": "home_plate_(baseball)",
         "synonyms": ["home_plate_(baseball)", "home_base_(baseball)"],
         "synset": "home_plate.n.01"
@@ -4680,7 +4594,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a sweet yellow liquid produced by bees",
         "frequency": "c",
-        "id": 576,
+        "id": 564,
         "name": "honey",
         "synonyms": ["honey"],
         "synset": "honey.n.01"
@@ -4688,7 +4602,7 @@ LVIS_CATEGORIES = [
     {
         "def": "metal covering leading to a vent that exhausts smoke or fumes",
         "frequency": "f",
-        "id": 577,
+        "id": 565,
         "name": "fume_hood",
         "synonyms": ["fume_hood", "exhaust_hood"],
         "synset": "hood.n.06"
@@ -4696,15 +4610,32 @@ LVIS_CATEGORIES = [
     {
         "def": "a curved or bent implement for suspending or pulling something",
         "frequency": "f",
-        "id": 578,
+        "id": 566,
         "name": "hook",
         "synonyms": ["hook"],
         "synset": "hook.n.05"
     },
     {
+        "def": "a tobacco pipe with a long flexible tube connected to a container where the smoke "
+               "is cooled by passing through water",
+        "frequency": "r",
+        "id": 567,
+        "name": "hookah",
+        "synonyms": ["hookah", "narghile", "nargileh", "sheesha", "shisha", "water_pipe"],
+        "synset": "hookah.n.01"
+    },
+    {
+        "def": "large stinging wasp",
+        "frequency": "r",
+        "id": 568,
+        "name": "hornet",
+        "synonyms": ["hornet"],
+        "synset": "hornet.n.01"
+    },
+    {
         "def": "a common horse",
         "frequency": "f",
-        "id": 579,
+        "id": 569,
         "name": "horse",
         "synonyms": ["horse"],
         "synset": "horse.n.01"
@@ -4712,7 +4643,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a flexible pipe for conveying a liquid or gas",
         "frequency": "f",
-        "id": 580,
+        "id": 570,
         "name": "hose",
         "synonyms": ["hose", "hosepipe"],
         "synset": "hose.n.03"
@@ -4721,7 +4652,7 @@ LVIS_CATEGORIES = [
         "def": "balloon for travel through the air in a basket suspended below a large bag of "
                "heated air",
         "frequency": "r",
-        "id": 581,
+        "id": 571,
         "name": "hot-air_balloon",
         "synonyms": ["hot-air_balloon"],
         "synset": "hot-air_balloon.n.01"
@@ -4729,7 +4660,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a portable electric appliance for heating or cooking or keeping food warm",
         "frequency": "r",
-        "id": 582,
+        "id": 572,
         "name": "hotplate",
         "synonyms": ["hotplate"],
         "synset": "hot_plate.n.01"
@@ -4737,7 +4668,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a pungent peppery sauce",
         "frequency": "c",
-        "id": 583,
+        "id": 573,
         "name": "hot_sauce",
         "synonyms": ["hot_sauce"],
         "synset": "hot_sauce.n.01"
@@ -4745,7 +4676,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a sandglass timer that runs for sixty minutes",
         "frequency": "r",
-        "id": 584,
+        "id": 574,
         "name": "hourglass",
         "synonyms": ["hourglass"],
         "synset": "hourglass.n.01"
@@ -4753,15 +4684,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a barge that is designed and equipped for use as a dwelling",
         "frequency": "r",
-        "id": 585,
+        "id": 575,
         "name": "houseboat",
         "synonyms": ["houseboat"],
         "synset": "houseboat.n.01"
     },
     {
         "def": "tiny American bird having brilliant iridescent plumage and long slender bills",
-        "frequency": "r",
-        "id": 586,
+        "frequency": "c",
+        "id": 576,
         "name": "hummingbird",
         "synonyms": ["hummingbird"],
         "synset": "hummingbird.n.01"
@@ -4769,15 +4700,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a thick spread made from mashed chickpeas",
         "frequency": "r",
-        "id": 587,
+        "id": 577,
         "name": "hummus",
         "synonyms": ["hummus", "humus", "hommos", "hoummos", "humous"],
         "synset": "hummus.n.01"
     },
     {
         "def": "white bear of Arctic regions",
-        "frequency": "c",
-        "id": 588,
+        "frequency": "f",
+        "id": 578,
         "name": "polar_bear",
         "synonyms": ["polar_bear"],
         "synset": "ice_bear.n.01"
@@ -4785,7 +4716,7 @@ LVIS_CATEGORIES = [
     {
         "def": "frozen dessert containing cream and sugar and flavoring",
         "frequency": "c",
-        "id": 589,
+        "id": 579,
         "name": "icecream",
         "synonyms": ["icecream"],
         "synset": "ice_cream.n.01"
@@ -4793,7 +4724,7 @@ LVIS_CATEGORIES = [
     {
         "def": "ice cream or water ice on a small wooden stick",
         "frequency": "r",
-        "id": 590,
+        "id": 580,
         "name": "popsicle",
         "synonyms": ["popsicle"],
         "synset": "ice_lolly.n.01"
@@ -4801,7 +4732,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an appliance included in some electric refrigerators for making ice cubes",
         "frequency": "c",
-        "id": 591,
+        "id": 581,
         "name": "ice_maker",
         "synonyms": ["ice_maker"],
         "synset": "ice_maker.n.01"
@@ -4810,7 +4741,7 @@ LVIS_CATEGORIES = [
         "def": "a waterproof bag filled with ice: applied to the body (especially the head) to "
                "cool or reduce swelling",
         "frequency": "r",
-        "id": 592,
+        "id": 582,
         "name": "ice_pack",
         "synonyms": ["ice_pack", "ice_bag"],
         "synset": "ice_pack.n.01"
@@ -4818,47 +4749,31 @@ LVIS_CATEGORIES = [
     {
         "def": "skate consisting of a boot with a steel blade fitted to the sole",
         "frequency": "r",
-        "id": 593,
+        "id": 583,
         "name": "ice_skate",
         "synonyms": ["ice_skate"],
         "synset": "ice_skate.n.01"
     },
     {
-        "def": "strong tea served over ice",
-        "frequency": "r",
-        "id": 594,
-        "name": "ice_tea",
-        "synonyms": ["ice_tea", "iced_tea"],
-        "synset": "ice_tea.n.01"
-    },
-    {
         "def": "a substance or device used to start a fire",
         "frequency": "c",
-        "id": 595,
+        "id": 584,
         "name": "igniter",
         "synonyms": ["igniter", "ignitor", "lighter"],
         "synset": "igniter.n.01"
     },
     {
-        "def": "a substance that produces a fragrant odor when burned",
-        "frequency": "r",
-        "id": 596,
-        "name": "incense",
-        "synonyms": ["incense"],
-        "synset": "incense.n.01"
-    },
-    {
         "def": "a dispenser that produces a chemical vapor to be inhaled through mouth or nose",
         "frequency": "r",
-        "id": 597,
+        "id": 585,
         "name": "inhaler",
         "synonyms": ["inhaler", "inhalator"],
         "synset": "inhaler.n.01"
     },
     {
         "def": "a pocket-sized device used to play music files",
-        "frequency": "c",
-        "id": 598,
+        "frequency": "f",
+        "id": 586,
         "name": "iPod",
         "synonyms": ["iPod"],
         "synset": "ipod.n.01"
@@ -4867,15 +4782,15 @@ LVIS_CATEGORIES = [
         "def": "home appliance consisting of a flat metal base that is heated and used to smooth "
                "cloth",
         "frequency": "c",
-        "id": 599,
+        "id": 587,
         "name": "iron_(for_clothing)",
         "synonyms": ["iron_(for_clothing)", "smoothing_iron_(for_clothing)"],
         "synset": "iron.n.04"
     },
     {
         "def": "narrow padded board on collapsible supports; used for ironing clothes",
-        "frequency": "r",
-        "id": 600,
+        "frequency": "c",
+        "id": 588,
         "name": "ironing_board",
         "synonyms": ["ironing_board"],
         "synset": "ironing_board.n.01"
@@ -4883,24 +4798,32 @@ LVIS_CATEGORIES = [
     {
         "def": "a waist-length coat",
         "frequency": "f",
-        "id": 601,
+        "id": 589,
         "name": "jacket",
         "synonyms": ["jacket"],
         "synset": "jacket.n.01"
     },
     {
         "def": "preserve of crushed fruit",
-        "frequency": "r",
-        "id": 602,
+        "frequency": "c",
+        "id": 590,
         "name": "jam",
         "synonyms": ["jam"],
         "synset": "jam.n.01"
     },
     {
+        "def": "a vessel (usually cylindrical) with a wide mouth and without handles",
+        "frequency": "f",
+        "id": 591,
+        "name": "jar",
+        "synonyms": ["jar"],
+        "synset": "jar.n.01"
+    },
+    {
         "def": "(usually plural) close-fitting trousers of heavy denim for manual work or casual "
                "wear",
         "frequency": "f",
-        "id": 603,
+        "id": 592,
         "name": "jean",
         "synonyms": ["jean", "blue_jean", "denim"],
         "synset": "jean.n.01"
@@ -4908,7 +4831,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a car suitable for traveling over rough terrain",
         "frequency": "c",
-        "id": 604,
+        "id": 593,
         "name": "jeep",
         "synonyms": ["jeep", "landrover"],
         "synset": "jeep.n.01"
@@ -4916,7 +4839,7 @@ LVIS_CATEGORIES = [
     {
         "def": "sugar-glazed jellied candy",
         "frequency": "r",
-        "id": 605,
+        "id": 594,
         "name": "jelly_bean",
         "synonyms": ["jelly_bean", "jelly_egg"],
         "synset": "jelly_bean.n.01"
@@ -4924,7 +4847,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a close-fitting pullover shirt",
         "frequency": "f",
-        "id": 606,
+        "id": 595,
         "name": "jersey",
         "synonyms": ["jersey", "T-shirt", "tee_shirt"],
         "synset": "jersey.n.03"
@@ -4932,16 +4855,24 @@ LVIS_CATEGORIES = [
     {
         "def": "an airplane powered by one or more jet engines",
         "frequency": "c",
-        "id": 607,
+        "id": 596,
         "name": "jet_plane",
         "synonyms": ["jet_plane", "jet-propelled_plane"],
         "synset": "jet.n.01"
     },
     {
+        "def": "a precious or semiprecious stone incorporated into a piece of jewelry",
+        "frequency": "r",
+        "id": 597,
+        "name": "jewel",
+        "synonyms": ["jewel", "gem", "precious_stone"],
+        "synset": "jewel.n.01"
+    },
+    {
         "def": "an adornment (as a bracelet or ring or necklace) made of precious metals and set "
                "with gems (or imitation gems)",
         "frequency": "c",
-        "id": 608,
+        "id": 598,
         "name": "jewelry",
         "synonyms": ["jewelry", "jewellery"],
         "synset": "jewelry.n.01"
@@ -4950,15 +4881,15 @@ LVIS_CATEGORIES = [
         "def": "a control device for computers consisting of a vertical handle that can move "
                "freely in two directions",
         "frequency": "r",
-        "id": 609,
+        "id": 599,
         "name": "joystick",
         "synonyms": ["joystick"],
         "synset": "joystick.n.02"
     },
     {
         "def": "one-piece garment fashioned after a parachutist's uniform",
-        "frequency": "r",
-        "id": 610,
+        "frequency": "c",
+        "id": 600,
         "name": "jumpsuit",
         "synonyms": ["jumpsuit"],
         "synset": "jump_suit.n.01"
@@ -4966,7 +4897,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small canoe consisting of a light frame made watertight with animal skins",
         "frequency": "c",
-        "id": 611,
+        "id": 601,
         "name": "kayak",
         "synonyms": ["kayak"],
         "synset": "kayak.n.01"
@@ -4974,7 +4905,7 @@ LVIS_CATEGORIES = [
     {
         "def": "small cask or barrel",
         "frequency": "r",
-        "id": 612,
+        "id": 602,
         "name": "keg",
         "synonyms": ["keg"],
         "synset": "keg.n.02"
@@ -4982,7 +4913,7 @@ LVIS_CATEGORIES = [
     {
         "def": "outbuilding that serves as a shelter for a dog",
         "frequency": "r",
-        "id": 613,
+        "id": 603,
         "name": "kennel",
         "synonyms": ["kennel", "doghouse"],
         "synset": "kennel.n.01"
@@ -4990,7 +4921,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a metal pot for stewing or boiling; usually has a lid",
         "frequency": "c",
-        "id": 614,
+        "id": 604,
         "name": "kettle",
         "synonyms": ["kettle", "boiler"],
         "synset": "kettle.n.01"
@@ -4998,7 +4929,7 @@ LVIS_CATEGORIES = [
     {
         "def": "metal instrument used to unlock a lock",
         "frequency": "f",
-        "id": 615,
+        "id": 605,
         "name": "key",
         "synonyms": ["key"],
         "synset": "key.n.01"
@@ -5006,7 +4937,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a plastic card used to gain access typically to a door",
         "frequency": "r",
-        "id": 616,
+        "id": 606,
         "name": "keycard",
         "synonyms": ["keycard"],
         "synset": "keycard.n.01"
@@ -5014,8 +4945,8 @@ LVIS_CATEGORIES = [
     {
         "def": "a knee-length pleated tartan skirt worn by men as part of the traditional dress in "
                "the Highlands of northern Scotland",
-        "frequency": "r",
-        "id": 617,
+        "frequency": "c",
+        "id": 607,
         "name": "kilt",
         "synonyms": ["kilt"],
         "synset": "kilt.n.01"
@@ -5023,7 +4954,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a loose robe; imitated from robes originally worn by Japanese",
         "frequency": "c",
-        "id": 618,
+        "id": 608,
         "name": "kimono",
         "synonyms": ["kimono"],
         "synset": "kimono.n.01"
@@ -5031,15 +4962,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a sink in a kitchen",
         "frequency": "f",
-        "id": 619,
+        "id": 609,
         "name": "kitchen_sink",
         "synonyms": ["kitchen_sink"],
         "synset": "kitchen_sink.n.01"
     },
     {
         "def": "a table in the kitchen",
-        "frequency": "c",
-        "id": 620,
+        "frequency": "r",
+        "id": 610,
         "name": "kitchen_table",
         "synonyms": ["kitchen_table"],
         "synset": "kitchen_table.n.01"
@@ -5048,7 +4979,7 @@ LVIS_CATEGORIES = [
         "def": "plaything consisting of a light frame covered with tissue paper; flown in wind at "
                "end of a string",
         "frequency": "f",
-        "id": 621,
+        "id": 611,
         "name": "kite",
         "synonyms": ["kite"],
         "synset": "kite.n.03"
@@ -5056,7 +4987,7 @@ LVIS_CATEGORIES = [
     {
         "def": "young domestic cat",
         "frequency": "c",
-        "id": 622,
+        "id": 612,
         "name": "kitten",
         "synonyms": ["kitten", "kitty"],
         "synset": "kitten.n.01"
@@ -5064,7 +4995,7 @@ LVIS_CATEGORIES = [
     {
         "def": "fuzzy brown egg-shaped fruit with slightly tart green flesh",
         "frequency": "c",
-        "id": 623,
+        "id": 613,
         "name": "kiwi_fruit",
         "synonyms": ["kiwi_fruit"],
         "synset": "kiwi.n.03"
@@ -5073,7 +5004,7 @@ LVIS_CATEGORIES = [
         "def": "protective garment consisting of a pad worn by football or baseball or hockey "
                "players",
         "frequency": "f",
-        "id": 624,
+        "id": 614,
         "name": "knee_pad",
         "synonyms": ["knee_pad"],
         "synset": "knee_pad.n.01"
@@ -5081,23 +5012,15 @@ LVIS_CATEGORIES = [
     {
         "def": "tool with a blade and point used as a cutting instrument",
         "frequency": "f",
-        "id": 625,
+        "id": 615,
         "name": "knife",
         "synonyms": ["knife"],
         "synset": "knife.n.01"
     },
     {
-        "def": "a chess game piece shaped to resemble the head of a horse",
-        "frequency": "r",
-        "id": 626,
-        "name": "knight_(chess_piece)",
-        "synonyms": ["knight_(chess_piece)", "horse_(chess_piece)"],
-        "synset": "knight.n.02"
-    },
-    {
         "def": "needle consisting of a slender rod with pointed ends; usually used in pairs",
         "frequency": "r",
-        "id": 627,
+        "id": 616,
         "name": "knitting_needle",
         "synonyms": ["knitting_needle"],
         "synset": "knitting_needle.n.01"
@@ -5105,7 +5028,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a round handle often found on a door",
         "frequency": "f",
-        "id": 628,
+        "id": 617,
         "name": "knob",
         "synonyms": ["knob"],
         "synset": "knob.n.02"
@@ -5113,7 +5036,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a device (usually metal and ornamental) attached by a hinge to a door",
         "frequency": "r",
-        "id": 629,
+        "id": 618,
         "name": "knocker_(on_a_door)",
         "synonyms": ["knocker_(on_a_door)", "doorknocker"],
         "synset": "knocker.n.05"
@@ -5121,7 +5044,7 @@ LVIS_CATEGORIES = [
     {
         "def": "sluggish tailless Australian marsupial with grey furry ears and coat",
         "frequency": "r",
-        "id": 630,
+        "id": 619,
         "name": "koala",
         "synonyms": ["koala", "koala_bear"],
         "synset": "koala.n.01"
@@ -5130,7 +5053,7 @@ LVIS_CATEGORIES = [
         "def": "a light coat worn to protect clothing from substances used while working in a "
                "laboratory",
         "frequency": "r",
-        "id": 631,
+        "id": 620,
         "name": "lab_coat",
         "synonyms": ["lab_coat", "laboratory_coat"],
         "synset": "lab_coat.n.01"
@@ -5138,7 +5061,7 @@ LVIS_CATEGORIES = [
     {
         "def": "steps consisting of two parallel members connected by rungs",
         "frequency": "f",
-        "id": 632,
+        "id": 621,
         "name": "ladder",
         "synonyms": ["ladder"],
         "synset": "ladder.n.01"
@@ -5146,23 +5069,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a spoon-shaped vessel with a long handle frequently used to transfer liquids",
         "frequency": "c",
-        "id": 633,
+        "id": 622,
         "name": "ladle",
         "synonyms": ["ladle"],
         "synset": "ladle.n.01"
     },
     {
         "def": "small round bright-colored and spotted beetle, typically red and black",
-        "frequency": "r",
-        "id": 634,
+        "frequency": "c",
+        "id": 623,
         "name": "ladybug",
         "synonyms": ["ladybug", "ladybeetle", "ladybird_beetle"],
         "synset": "ladybug.n.01"
     },
     {
         "def": "young sheep",
-        "frequency": "c",
-        "id": 635,
+        "frequency": "f",
+        "id": 624,
         "name": "lamb_(animal)",
         "synonyms": ["lamb_(animal)"],
         "synset": "lamb.n.01"
@@ -5170,7 +5093,7 @@ LVIS_CATEGORIES = [
     {
         "def": "chop cut from a lamb",
         "frequency": "r",
-        "id": 636,
+        "id": 625,
         "name": "lamb-chop",
         "synonyms": ["lamb-chop", "lambchop"],
         "synset": "lamb_chop.n.01"
@@ -5178,7 +5101,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a piece of furniture holding one or more electric light bulbs",
         "frequency": "f",
-        "id": 637,
+        "id": 626,
         "name": "lamp",
         "synonyms": ["lamp"],
         "synset": "lamp.n.02"
@@ -5186,7 +5109,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a metal post supporting an outdoor lamp (such as a streetlight)",
         "frequency": "f",
-        "id": 638,
+        "id": 627,
         "name": "lamppost",
         "synonyms": ["lamppost"],
         "synset": "lamppost.n.01"
@@ -5194,7 +5117,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a protective ornamental shade used to screen a light bulb from direct view",
         "frequency": "f",
-        "id": 639,
+        "id": 628,
         "name": "lampshade",
         "synonyms": ["lampshade"],
         "synset": "lampshade.n.01"
@@ -5202,7 +5125,7 @@ LVIS_CATEGORIES = [
     {
         "def": "light in a transparent protective case",
         "frequency": "c",
-        "id": 640,
+        "id": 629,
         "name": "lantern",
         "synonyms": ["lantern"],
         "synset": "lantern.n.01"
@@ -5210,7 +5133,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cord worn around the neck to hold a knife or whistle, etc.",
         "frequency": "f",
-        "id": 641,
+        "id": 630,
         "name": "lanyard",
         "synonyms": ["lanyard", "laniard"],
         "synset": "lanyard.n.02"
@@ -5218,7 +5141,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a portable computer small enough to use in your lap",
         "frequency": "f",
-        "id": 642,
+        "id": 631,
         "name": "laptop_computer",
         "synonyms": ["laptop_computer", "notebook_computer"],
         "synset": "laptop.n.01"
@@ -5226,15 +5149,15 @@ LVIS_CATEGORIES = [
     {
         "def": "baked dish of layers of lasagna pasta with sauce and cheese and meat or vegetables",
         "frequency": "r",
-        "id": 643,
+        "id": 632,
         "name": "lasagna",
         "synonyms": ["lasagna", "lasagne"],
         "synset": "lasagna.n.01"
     },
     {
         "def": "a bar that can be lowered or slid into a groove to fasten a door or gate",
-        "frequency": "c",
-        "id": 644,
+        "frequency": "f",
+        "id": 633,
         "name": "latch",
         "synonyms": ["latch"],
         "synset": "latch.n.02"
@@ -5242,7 +5165,7 @@ LVIS_CATEGORIES = [
     {
         "def": "garden tool for mowing grass on lawns",
         "frequency": "r",
-        "id": 645,
+        "id": 634,
         "name": "lawn_mower",
         "synonyms": ["lawn_mower"],
         "synset": "lawn_mower.n.01"
@@ -5250,7 +5173,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an animal skin made smooth and flexible by removing the hair and then tanning",
         "frequency": "r",
-        "id": 646,
+        "id": 635,
         "name": "leather",
         "synonyms": ["leather"],
         "synset": "leather.n.01"
@@ -5258,7 +5181,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a garment covering the leg (usually extending from the knee to the ankle)",
         "frequency": "c",
-        "id": 647,
+        "id": 636,
         "name": "legging_(clothing)",
         "synonyms": ["legging_(clothing)", "leging_(clothing)", "leg_covering"],
         "synset": "legging.n.01"
@@ -5266,15 +5189,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a child's plastic construction set for making models from blocks",
         "frequency": "c",
-        "id": 648,
+        "id": 637,
         "name": "Lego",
         "synonyms": ["Lego", "Lego_set"],
         "synset": "lego.n.01"
     },
     {
+        "def": "the fruit or seed of bean or pea plants",
+        "frequency": "r",
+        "id": 638,
+        "name": "legume",
+        "synonyms": ["legume"],
+        "synset": "legume.n.02"
+    },
+    {
         "def": "yellow oval fruit with juicy acidic flesh",
         "frequency": "f",
-        "id": 649,
+        "id": 639,
         "name": "lemon",
         "synonyms": ["lemon"],
         "synset": "lemon.n.01"
@@ -5282,7 +5213,7 @@ LVIS_CATEGORIES = [
     {
         "def": "sweetened beverage of diluted lemon juice",
         "frequency": "r",
-        "id": 650,
+        "id": 640,
         "name": "lemonade",
         "synonyms": ["lemonade"],
         "synset": "lemonade.n.01"
@@ -5290,7 +5221,7 @@ LVIS_CATEGORIES = [
     {
         "def": "leafy plant commonly eaten in salad or on sandwiches",
         "frequency": "f",
-        "id": 651,
+        "id": 641,
         "name": "lettuce",
         "synonyms": ["lettuce"],
         "synset": "lettuce.n.02"
@@ -5299,7 +5230,7 @@ LVIS_CATEGORIES = [
         "def": "a plate mounted on the front and back of car and bearing the car's registration "
                "number",
         "frequency": "f",
-        "id": 652,
+        "id": 642,
         "name": "license_plate",
         "synonyms": ["license_plate", "numberplate"],
         "synset": "license_plate.n.01"
@@ -5307,7 +5238,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a ring-shaped life preserver used to prevent drowning (NOT a life-jacket or vest)",
         "frequency": "f",
-        "id": 653,
+        "id": 643,
         "name": "life_buoy",
         "synonyms": ["life_buoy", "lifesaver", "life_belt", "life_ring"],
         "synset": "life_buoy.n.01"
@@ -5315,16 +5246,15 @@ LVIS_CATEGORIES = [
     {
         "def": "life preserver consisting of a sleeveless jacket of buoyant or inflatable design",
         "frequency": "f",
-        "id": 654,
+        "id": 644,
         "name": "life_jacket",
         "synonyms": ["life_jacket", "life_vest"],
         "synset": "life_jacket.n.01"
     },
     {
-        "def": "glass bulb or tube shaped electric device that emits light (DO NOT MARK LAMPS AS A "
-               "WHOLE)",
+        "def": "lightblub/source of light",
         "frequency": "f",
-        "id": 655,
+        "id": 645,
         "name": "lightbulb",
         "synonyms": ["lightbulb"],
         "synset": "light_bulb.n.01"
@@ -5332,15 +5262,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a metallic conductor that is attached to a high point and leads to the ground",
         "frequency": "r",
-        "id": 656,
+        "id": 646,
         "name": "lightning_rod",
         "synonyms": ["lightning_rod", "lightning_conductor"],
         "synset": "lightning_rod.n.02"
     },
     {
         "def": "the green acidic fruit of any of various lime trees",
-        "frequency": "c",
-        "id": 657,
+        "frequency": "f",
+        "id": 647,
         "name": "lime",
         "synonyms": ["lime"],
         "synset": "lime.n.06"
@@ -5348,23 +5278,15 @@ LVIS_CATEGORIES = [
     {
         "def": "long luxurious car; usually driven by a chauffeur",
         "frequency": "r",
-        "id": 658,
+        "id": 648,
         "name": "limousine",
         "synonyms": ["limousine"],
         "synset": "limousine.n.01"
     },
     {
-        "def": "a high-quality paper made of linen fibers or with a linen finish",
-        "frequency": "r",
-        "id": 659,
-        "name": "linen_paper",
-        "synonyms": ["linen_paper"],
-        "synset": "linen.n.02"
-    },
-    {
         "def": "large gregarious predatory cat of Africa and India",
         "frequency": "c",
-        "id": 660,
+        "id": 649,
         "name": "lion",
         "synonyms": ["lion"],
         "synset": "lion.n.01"
@@ -5372,47 +5294,31 @@ LVIS_CATEGORIES = [
     {
         "def": "a balm applied to the lips",
         "frequency": "c",
-        "id": 661,
+        "id": 650,
         "name": "lip_balm",
         "synonyms": ["lip_balm"],
         "synset": "lip_balm.n.01"
     },
     {
-        "def": "makeup that is used to color the lips",
-        "frequency": "c",
-        "id": 662,
-        "name": "lipstick",
-        "synonyms": ["lipstick", "lip_rouge"],
-        "synset": "lipstick.n.01"
-    },
-    {
-        "def": "an alcoholic beverage that is distilled rather than fermented",
+        "def": "liquor or beer",
         "frequency": "r",
-        "id": 663,
+        "id": 651,
         "name": "liquor",
         "synonyms": ["liquor", "spirits", "hard_liquor", "liqueur", "cordial"],
         "synset": "liquor.n.01"
     },
     {
         "def": "a reptile with usually two pairs of legs and a tapering tail",
-        "frequency": "r",
-        "id": 664,
+        "frequency": "c",
+        "id": 652,
         "name": "lizard",
         "synonyms": ["lizard"],
         "synset": "lizard.n.01"
     },
     {
-        "def": "a low leather step-in shoe",
-        "frequency": "r",
-        "id": 665,
-        "name": "Loafer_(type_of_shoe)",
-        "synonyms": ["Loafer_(type_of_shoe)"],
-        "synset": "loafer.n.02"
-    },
-    {
         "def": "a segment of the trunk of a tree when stripped of branches",
         "frequency": "f",
-        "id": 666,
+        "id": 653,
         "name": "log",
         "synonyms": ["log"],
         "synset": "log.n.01"
@@ -5420,23 +5326,15 @@ LVIS_CATEGORIES = [
     {
         "def": "hard candy on a stick",
         "frequency": "c",
-        "id": 667,
+        "id": 654,
         "name": "lollipop",
         "synonyms": ["lollipop"],
         "synset": "lollipop.n.02"
     },
     {
-        "def": "any of various cosmetic preparations that are applied to the skin",
-        "frequency": "c",
-        "id": 668,
-        "name": "lotion",
-        "synonyms": ["lotion"],
-        "synset": "lotion.n.01"
-    },
-    {
         "def": "electronic device that produces sound often as part of a stereo system",
         "frequency": "f",
-        "id": 669,
+        "id": 655,
         "name": "speaker_(stero_equipment)",
         "synonyms": ["speaker_(stero_equipment)"],
         "synset": "loudspeaker.n.01"
@@ -5444,7 +5342,7 @@ LVIS_CATEGORIES = [
     {
         "def": "small sofa that seats two people",
         "frequency": "c",
-        "id": 670,
+        "id": 656,
         "name": "loveseat",
         "synonyms": ["loveseat"],
         "synset": "love_seat.n.01"
@@ -5452,7 +5350,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a rapidly firing automatic gun",
         "frequency": "r",
-        "id": 671,
+        "id": 657,
         "name": "machine_gun",
         "synonyms": ["machine_gun"],
         "synset": "machine_gun.n.01"
@@ -5460,7 +5358,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a paperback periodic publication",
         "frequency": "f",
-        "id": 672,
+        "id": 658,
         "name": "magazine",
         "synonyms": ["magazine"],
         "synset": "magazine.n.02"
@@ -5468,31 +5366,39 @@ LVIS_CATEGORIES = [
     {
         "def": "a device that attracts iron and produces a magnetic field",
         "frequency": "f",
-        "id": 673,
+        "id": 659,
         "name": "magnet",
         "synonyms": ["magnet"],
         "synset": "magnet.n.01"
     },
     {
         "def": "a slot (usually in a door) through which mail can be delivered",
-        "frequency": "r",
-        "id": 674,
+        "frequency": "c",
+        "id": 660,
         "name": "mail_slot",
         "synonyms": ["mail_slot"],
         "synset": "mail_slot.n.01"
     },
     {
         "def": "a private box for delivery of mail",
-        "frequency": "c",
-        "id": 675,
+        "frequency": "f",
+        "id": 661,
         "name": "mailbox_(at_home)",
         "synonyms": ["mailbox_(at_home)", "letter_box_(at_home)"],
         "synset": "mailbox.n.01"
     },
     {
+        "def": "wild dabbling duck from which domestic ducks are descended",
+        "frequency": "r",
+        "id": 662,
+        "name": "mallard",
+        "synonyms": ["mallard"],
+        "synset": "mallard.n.01"
+    },
+    {
         "def": "a sports implement with a long handle and a hammer-like head used to hit a ball",
         "frequency": "r",
-        "id": 676,
+        "id": 663,
         "name": "mallet",
         "synonyms": ["mallet"],
         "synset": "mallet.n.01"
@@ -5500,15 +5406,23 @@ LVIS_CATEGORIES = [
     {
         "def": "any of numerous extinct elephants widely distributed in the Pleistocene",
         "frequency": "r",
-        "id": 677,
+        "id": 664,
         "name": "mammoth",
         "synonyms": ["mammoth"],
         "synset": "mammoth.n.01"
     },
     {
+        "def": "sirenian mammal of tropical coastal waters of America",
+        "frequency": "r",
+        "id": 665,
+        "name": "manatee",
+        "synonyms": ["manatee"],
+        "synset": "manatee.n.01"
+    },
+    {
         "def": "a somewhat flat reddish-orange loose skinned citrus of China",
         "frequency": "c",
-        "id": 678,
+        "id": 666,
         "name": "mandarin_orange",
         "synonyms": ["mandarin_orange"],
         "synset": "mandarin.n.05"
@@ -5516,7 +5430,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a container (usually in a barn or stable) from which cattle or horses feed",
         "frequency": "c",
-        "id": 679,
+        "id": 667,
         "name": "manger",
         "synonyms": ["manger", "trough"],
         "synset": "manger.n.01"
@@ -5525,23 +5439,23 @@ LVIS_CATEGORIES = [
         "def": "a hole (usually with a flush cover) through which a person can gain access to an "
                "underground structure",
         "frequency": "f",
-        "id": 680,
+        "id": 668,
         "name": "manhole",
         "synonyms": ["manhole"],
         "synset": "manhole.n.01"
     },
     {
         "def": "a diagrammatic representation of the earth's surface (or part of it)",
-        "frequency": "c",
-        "id": 681,
+        "frequency": "f",
+        "id": 669,
         "name": "map",
         "synonyms": ["map"],
         "synset": "map.n.01"
     },
     {
         "def": "a writing implement for making a mark",
-        "frequency": "c",
-        "id": 682,
+        "frequency": "f",
+        "id": 670,
         "name": "marker",
         "synonyms": ["marker"],
         "synset": "marker.n.03"
@@ -5549,7 +5463,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cocktail made of gin (or vodka) with dry vermouth",
         "frequency": "r",
-        "id": 683,
+        "id": 671,
         "name": "martini",
         "synonyms": ["martini"],
         "synset": "martini.n.01"
@@ -5557,7 +5471,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a person or animal that is adopted by a team or other group as a symbolic figure",
         "frequency": "r",
-        "id": 684,
+        "id": 672,
         "name": "mascot",
         "synonyms": ["mascot"],
         "synset": "mascot.n.01"
@@ -5565,7 +5479,7 @@ LVIS_CATEGORIES = [
     {
         "def": "potato that has been peeled and boiled and then mashed",
         "frequency": "c",
-        "id": 685,
+        "id": 673,
         "name": "mashed_potato",
         "synonyms": ["mashed_potato"],
         "synset": "mashed_potato.n.01"
@@ -5573,7 +5487,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a kitchen utensil used for mashing (e.g. potatoes)",
         "frequency": "r",
-        "id": 686,
+        "id": 674,
         "name": "masher",
         "synonyms": ["masher"],
         "synset": "masher.n.02"
@@ -5581,7 +5495,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a protective covering worn over the face",
         "frequency": "f",
-        "id": 687,
+        "id": 675,
         "name": "mask",
         "synonyms": ["mask", "facemask"],
         "synset": "mask.n.04"
@@ -5589,7 +5503,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a vertical spar for supporting sails",
         "frequency": "f",
-        "id": 688,
+        "id": 676,
         "name": "mast",
         "synonyms": ["mast"],
         "synset": "mast.n.01"
@@ -5598,7 +5512,7 @@ LVIS_CATEGORIES = [
         "def": "sports equipment consisting of a piece of thick padding on the floor for "
                "gymnastics",
         "frequency": "c",
-        "id": 689,
+        "id": 677,
         "name": "mat_(gym_equipment)",
         "synonyms": ["mat_(gym_equipment)", "gym_mat"],
         "synset": "mat.n.03"
@@ -5606,7 +5520,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a box for holding matches",
         "frequency": "r",
-        "id": 690,
+        "id": 678,
         "name": "matchbox",
         "synonyms": ["matchbox"],
         "synset": "matchbox.n.01"
@@ -5614,7 +5528,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a thick pad filled with resilient material used as a bed or part of a bed",
         "frequency": "f",
-        "id": 691,
+        "id": 679,
         "name": "mattress",
         "synonyms": ["mattress"],
         "synset": "mattress.n.01"
@@ -5622,7 +5536,7 @@ LVIS_CATEGORIES = [
     {
         "def": "graduated cup used to measure liquid or granular ingredients",
         "frequency": "c",
-        "id": 692,
+        "id": 680,
         "name": "measuring_cup",
         "synonyms": ["measuring_cup"],
         "synset": "measuring_cup.n.01"
@@ -5630,7 +5544,7 @@ LVIS_CATEGORIES = [
     {
         "def": "measuring instrument having a sequence of marks at regular intervals",
         "frequency": "c",
-        "id": 693,
+        "id": 681,
         "name": "measuring_stick",
         "synonyms": ["measuring_stick", "ruler_(measuring_stick)", "measuring_rod"],
         "synset": "measuring_stick.n.01"
@@ -5638,7 +5552,7 @@ LVIS_CATEGORIES = [
     {
         "def": "ground meat formed into a ball and fried or simmered in broth",
         "frequency": "c",
-        "id": 694,
+        "id": 682,
         "name": "meatball",
         "synonyms": ["meatball"],
         "synset": "meatball.n.01"
@@ -5646,15 +5560,15 @@ LVIS_CATEGORIES = [
     {
         "def": "something that treats or prevents or alleviates the symptoms of disease",
         "frequency": "c",
-        "id": 695,
+        "id": 683,
         "name": "medicine",
         "synonyms": ["medicine"],
         "synset": "medicine.n.02"
     },
     {
         "def": "fruit of the gourd family having a hard rind and sweet juicy flesh",
-        "frequency": "r",
-        "id": 696,
+        "frequency": "c",
+        "id": 684,
         "name": "melon",
         "synonyms": ["melon"],
         "synset": "melon.n.01"
@@ -5662,7 +5576,7 @@ LVIS_CATEGORIES = [
     {
         "def": "device for converting sound waves into electrical energy",
         "frequency": "f",
-        "id": 697,
+        "id": 685,
         "name": "microphone",
         "synonyms": ["microphone"],
         "synset": "microphone.n.01"
@@ -5670,7 +5584,7 @@ LVIS_CATEGORIES = [
     {
         "def": "magnifier of the image of small objects",
         "frequency": "r",
-        "id": 698,
+        "id": 686,
         "name": "microscope",
         "synonyms": ["microscope"],
         "synset": "microscope.n.01"
@@ -5678,7 +5592,7 @@ LVIS_CATEGORIES = [
     {
         "def": "kitchen appliance that cooks food by passing an electromagnetic wave through it",
         "frequency": "f",
-        "id": 699,
+        "id": 687,
         "name": "microwave_oven",
         "synonyms": ["microwave_oven"],
         "synset": "microwave.n.02"
@@ -5686,23 +5600,39 @@ LVIS_CATEGORIES = [
     {
         "def": "stone post at side of a road to show distances",
         "frequency": "r",
-        "id": 700,
+        "id": 688,
         "name": "milestone",
         "synonyms": ["milestone", "milepost"],
         "synset": "milestone.n.01"
     },
     {
         "def": "a white nutritious liquid secreted by mammals and used as food by human beings",
-        "frequency": "c",
-        "id": 701,
+        "frequency": "f",
+        "id": 689,
         "name": "milk",
         "synonyms": ["milk"],
         "synset": "milk.n.01"
     },
     {
+        "def": "can for transporting milk",
+        "frequency": "r",
+        "id": 690,
+        "name": "milk_can",
+        "synonyms": ["milk_can"],
+        "synset": "milk_can.n.01"
+    },
+    {
+        "def": "frothy drink of milk and flavoring and sometimes fruit or ice cream",
+        "frequency": "r",
+        "id": 691,
+        "name": "milkshake",
+        "synonyms": ["milkshake"],
+        "synset": "milkshake.n.01"
+    },
+    {
         "def": "a small box-shaped passenger van",
         "frequency": "f",
-        "id": 702,
+        "id": 692,
         "name": "minivan",
         "synonyms": ["minivan"],
         "synset": "minivan.n.01"
@@ -5710,7 +5640,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a candy that is flavored with a mint oil",
         "frequency": "r",
-        "id": 703,
+        "id": 693,
         "name": "mint_candy",
         "synonyms": ["mint_candy"],
         "synset": "mint.n.05"
@@ -5718,7 +5648,7 @@ LVIS_CATEGORIES = [
     {
         "def": "polished surface that forms images by reflecting light",
         "frequency": "f",
-        "id": 704,
+        "id": 694,
         "name": "mirror",
         "synonyms": ["mirror"],
         "synset": "mirror.n.01"
@@ -5726,7 +5656,7 @@ LVIS_CATEGORIES = [
     {
         "def": "glove that encases the thumb separately and the other four fingers together",
         "frequency": "c",
-        "id": 705,
+        "id": 695,
         "name": "mitten",
         "synonyms": ["mitten"],
         "synset": "mitten.n.01"
@@ -5734,7 +5664,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a kitchen utensil that is used for mixing foods",
         "frequency": "c",
-        "id": 706,
+        "id": 696,
         "name": "mixer_(kitchen_tool)",
         "synonyms": ["mixer_(kitchen_tool)", "stand_mixer"],
         "synset": "mixer.n.04"
@@ -5742,7 +5672,7 @@ LVIS_CATEGORIES = [
     {
         "def": "the official currency issued by a government or national bank",
         "frequency": "c",
-        "id": 707,
+        "id": 697,
         "name": "money",
         "synonyms": ["money"],
         "synset": "money.n.03"
@@ -5750,7 +5680,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a computer monitor",
         "frequency": "f",
-        "id": 708,
+        "id": 698,
         "name": "monitor_(computer_equipment) computer_monitor",
         "synonyms": ["monitor_(computer_equipment) computer_monitor"],
         "synset": "monitor.n.04"
@@ -5758,7 +5688,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any of various long-tailed primates",
         "frequency": "c",
-        "id": 709,
+        "id": 699,
         "name": "monkey",
         "synonyms": ["monkey"],
         "synset": "monkey.n.01"
@@ -5767,7 +5697,7 @@ LVIS_CATEGORIES = [
         "def": "machine that converts other forms of energy into mechanical energy and so imparts "
                "motion",
         "frequency": "f",
-        "id": 710,
+        "id": 700,
         "name": "motor",
         "synonyms": ["motor"],
         "synset": "motor.n.01"
@@ -5775,7 +5705,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a wheeled vehicle with small wheels and a low-powered engine",
         "frequency": "f",
-        "id": 711,
+        "id": 701,
         "name": "motor_scooter",
         "synonyms": ["motor_scooter", "scooter"],
         "synset": "motor_scooter.n.01"
@@ -5783,23 +5713,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a self-propelled wheeled vehicle that does not run on rails",
         "frequency": "r",
-        "id": 712,
+        "id": 702,
         "name": "motor_vehicle",
         "synonyms": ["motor_vehicle", "automotive_vehicle"],
         "synset": "motor_vehicle.n.01"
     },
     {
-        "def": "a boat propelled by an internal-combustion engine",
-        "frequency": "r",
-        "id": 713,
-        "name": "motorboat",
-        "synonyms": ["motorboat", "powerboat"],
-        "synset": "motorboat.n.01"
-    },
-    {
         "def": "a motor vehicle with two wheels and a strong frame",
         "frequency": "f",
-        "id": 714,
+        "id": 703,
         "name": "motorcycle",
         "synonyms": ["motorcycle"],
         "synset": "motorcycle.n.01"
@@ -5807,24 +5729,16 @@ LVIS_CATEGORIES = [
     {
         "def": "(baseball) the slight elevation on which the pitcher stands",
         "frequency": "f",
-        "id": 715,
+        "id": 704,
         "name": "mound_(baseball)",
         "synonyms": ["mound_(baseball)", "pitcher's_mound"],
         "synset": "mound.n.01"
     },
     {
-        "def": "a small rodent with pointed snouts and small ears on elongated bodies with slender "
-               "usually hairless tails",
-        "frequency": "r",
-        "id": 716,
-        "name": "mouse_(animal_rodent)",
-        "synonyms": ["mouse_(animal_rodent)"],
-        "synset": "mouse.n.01"
-    },
-    {
-        "def": "a computer input device that controls an on-screen pointer",
+        "def": "a computer input device that controls an on-screen pointer (does not include "
+               "trackpads / touchpads)",
         "frequency": "f",
-        "id": 717,
+        "id": 705,
         "name": "mouse_(computer_equipment)",
         "synonyms": ["mouse_(computer_equipment)", "computer_mouse"],
         "synset": "mouse.n.04"
@@ -5832,7 +5746,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small portable pad that provides an operating surface for a computer mouse",
         "frequency": "f",
-        "id": 718,
+        "id": 706,
         "name": "mousepad",
         "synonyms": ["mousepad"],
         "synset": "mousepad.n.01"
@@ -5840,7 +5754,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a sweet quick bread baked in a cup-shaped pan",
         "frequency": "c",
-        "id": 719,
+        "id": 707,
         "name": "muffin",
         "synonyms": ["muffin"],
         "synset": "muffin.n.01"
@@ -5848,7 +5762,7 @@ LVIS_CATEGORIES = [
     {
         "def": "with handle and usually cylindrical",
         "frequency": "f",
-        "id": 720,
+        "id": 708,
         "name": "mug",
         "synonyms": ["mug"],
         "synset": "mug.n.04"
@@ -5856,7 +5770,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a common mushroom",
         "frequency": "f",
-        "id": 721,
+        "id": 709,
         "name": "mushroom",
         "synonyms": ["mushroom"],
         "synset": "mushroom.n.02"
@@ -5864,7 +5778,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a stool for piano players; usually adjustable in height",
         "frequency": "r",
-        "id": 722,
+        "id": 710,
         "name": "music_stool",
         "synonyms": ["music_stool", "piano_stool"],
         "synset": "music_stool.n.01"
@@ -5872,8 +5786,8 @@ LVIS_CATEGORIES = [
     {
         "def": "any of various devices or contrivances that can be used to produce musical tones "
                "or sounds",
-        "frequency": "r",
-        "id": 723,
+        "frequency": "c",
+        "id": 711,
         "name": "musical_instrument",
         "synonyms": ["musical_instrument", "instrument_(musical)"],
         "synset": "musical_instrument.n.01"
@@ -5881,24 +5795,16 @@ LVIS_CATEGORIES = [
     {
         "def": "a small flat file for shaping the nails",
         "frequency": "r",
-        "id": 724,
+        "id": 712,
         "name": "nailfile",
         "synonyms": ["nailfile"],
         "synset": "nailfile.n.01"
     },
     {
-        "def": "a plate bearing a name",
-        "frequency": "r",
-        "id": 725,
-        "name": "nameplate",
-        "synonyms": ["nameplate"],
-        "synset": "nameplate.n.01"
-    },
-    {
         "def": "a small piece of table linen or paper that is used to wipe the mouth and to cover "
                "the lap in order to protect clothing",
         "frequency": "f",
-        "id": 726,
+        "id": 713,
         "name": "napkin",
         "synonyms": ["napkin", "table_napkin", "serviette"],
         "synset": "napkin.n.01"
@@ -5906,7 +5812,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a kerchief worn around the neck",
         "frequency": "r",
-        "id": 727,
+        "id": 714,
         "name": "neckerchief",
         "synonyms": ["neckerchief"],
         "synset": "neckerchief.n.01"
@@ -5915,7 +5821,7 @@ LVIS_CATEGORIES = [
         "def": "jewelry consisting of a cord or chain (often bearing gems) worn about the neck as "
                "an ornament",
         "frequency": "f",
-        "id": 728,
+        "id": 715,
         "name": "necklace",
         "synonyms": ["necklace"],
         "synset": "necklace.n.01"
@@ -5924,15 +5830,15 @@ LVIS_CATEGORIES = [
         "def": "neckwear consisting of a long narrow piece of material worn under a collar and "
                "tied in knot at the front",
         "frequency": "f",
-        "id": 729,
+        "id": 716,
         "name": "necktie",
         "synonyms": ["necktie", "tie_(necktie)"],
         "synset": "necktie.n.01"
     },
     {
         "def": "a sharp pointed implement (usually metal)",
-        "frequency": "r",
-        "id": 730,
+        "frequency": "c",
+        "id": 717,
         "name": "needle",
         "synonyms": ["needle"],
         "synset": "needle.n.03"
@@ -5940,15 +5846,24 @@ LVIS_CATEGORIES = [
     {
         "def": "a structure in which animals lay eggs or give birth to their young",
         "frequency": "c",
-        "id": 731,
+        "id": 718,
         "name": "nest",
         "synonyms": ["nest"],
         "synset": "nest.n.01"
     },
     {
+        "def": "a daily or weekly publication on folded sheets containing news, articles, and "
+               "advertisements",
+        "frequency": "f",
+        "id": 719,
+        "name": "newspaper",
+        "synonyms": ["newspaper", "paper_(newspaper)"],
+        "synset": "newspaper.n.01"
+    },
+    {
         "def": "a stall where newspapers and other periodicals are sold",
-        "frequency": "r",
-        "id": 732,
+        "frequency": "c",
+        "id": 720,
         "name": "newsstand",
         "synonyms": ["newsstand"],
         "synset": "newsstand.n.01"
@@ -5956,7 +5871,7 @@ LVIS_CATEGORIES = [
     {
         "def": "garments designed to be worn in bed",
         "frequency": "c",
-        "id": 733,
+        "id": 721,
         "name": "nightshirt",
         "synonyms": ["nightshirt", "nightwear", "sleepwear", "nightclothes"],
         "synset": "nightwear.n.01"
@@ -5965,15 +5880,15 @@ LVIS_CATEGORIES = [
         "def": "a canvas bag that is used to feed an animal (such as a horse); covers the muzzle "
                "and fastens at the top of the head",
         "frequency": "r",
-        "id": 734,
+        "id": 722,
         "name": "nosebag_(for_animals)",
         "synonyms": ["nosebag_(for_animals)", "feedbag"],
         "synset": "nosebag.n.01"
     },
     {
         "def": "a strap that is the part of a bridle that goes over the animal's nose",
-        "frequency": "r",
-        "id": 735,
+        "frequency": "c",
+        "id": 723,
         "name": "noseband_(for_animals)",
         "synonyms": ["noseband_(for_animals)", "nosepiece_(for_animals)"],
         "synset": "noseband.n.01"
@@ -5981,7 +5896,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a book with blank pages for recording notes or memoranda",
         "frequency": "f",
-        "id": 736,
+        "id": 724,
         "name": "notebook",
         "synonyms": ["notebook"],
         "synset": "notebook.n.01"
@@ -5989,7 +5904,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a pad of paper for keeping notes",
         "frequency": "c",
-        "id": 737,
+        "id": 725,
         "name": "notepad",
         "synonyms": ["notepad"],
         "synset": "notepad.n.01"
@@ -5997,8 +5912,8 @@ LVIS_CATEGORIES = [
     {
         "def": "a small metal block (usually square or hexagonal) with internal screw thread to be "
                "fitted onto a bolt",
-        "frequency": "c",
-        "id": 738,
+        "frequency": "f",
+        "id": 726,
         "name": "nut",
         "synonyms": ["nut"],
         "synset": "nut.n.03"
@@ -6006,15 +5921,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a hand tool used to crack nuts open",
         "frequency": "r",
-        "id": 739,
+        "id": 727,
         "name": "nutcracker",
         "synonyms": ["nutcracker"],
         "synset": "nutcracker.n.01"
     },
     {
         "def": "an implement used to propel or steer a boat",
-        "frequency": "c",
-        "id": 740,
+        "frequency": "f",
+        "id": 728,
         "name": "oar",
         "synonyms": ["oar"],
         "synset": "oar.n.01"
@@ -6022,7 +5937,7 @@ LVIS_CATEGORIES = [
     {
         "def": "tentacles of octopus prepared as food",
         "frequency": "r",
-        "id": 741,
+        "id": 729,
         "name": "octopus_(food)",
         "synonyms": ["octopus_(food)"],
         "synset": "octopus.n.01"
@@ -6030,7 +5945,7 @@ LVIS_CATEGORIES = [
     {
         "def": "bottom-living cephalopod having a soft oval body with eight long tentacles",
         "frequency": "r",
-        "id": 742,
+        "id": 730,
         "name": "octopus_(animal)",
         "synonyms": ["octopus_(animal)"],
         "synset": "octopus.n.02"
@@ -6038,7 +5953,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a lamp that burns oil (as kerosine) for light",
         "frequency": "c",
-        "id": 743,
+        "id": 731,
         "name": "oil_lamp",
         "synonyms": ["oil_lamp", "kerosene_lamp", "kerosine_lamp"],
         "synset": "oil_lamp.n.01"
@@ -6046,7 +5961,7 @@ LVIS_CATEGORIES = [
     {
         "def": "oil from olives",
         "frequency": "c",
-        "id": 744,
+        "id": 732,
         "name": "olive_oil",
         "synonyms": ["olive_oil"],
         "synset": "olive_oil.n.01"
@@ -6055,7 +5970,7 @@ LVIS_CATEGORIES = [
         "def": "beaten eggs cooked until just set; may be folded around e.g. ham or cheese or "
                "jelly",
         "frequency": "r",
-        "id": 745,
+        "id": 733,
         "name": "omelet",
         "synonyms": ["omelet", "omelette"],
         "synset": "omelet.n.01"
@@ -6063,7 +5978,7 @@ LVIS_CATEGORIES = [
     {
         "def": "the bulb of an onion plant",
         "frequency": "f",
-        "id": 746,
+        "id": 734,
         "name": "onion",
         "synonyms": ["onion"],
         "synset": "onion.n.01"
@@ -6071,7 +5986,7 @@ LVIS_CATEGORIES = [
     {
         "def": "orange (FRUIT of an orange tree)",
         "frequency": "f",
-        "id": 747,
+        "id": 735,
         "name": "orange_(fruit)",
         "synonyms": ["orange_(fruit)"],
         "synset": "orange.n.01"
@@ -6079,39 +5994,39 @@ LVIS_CATEGORIES = [
     {
         "def": "bottled or freshly squeezed juice of oranges",
         "frequency": "c",
-        "id": 748,
+        "id": 736,
         "name": "orange_juice",
         "synonyms": ["orange_juice"],
         "synset": "orange_juice.n.01"
     },
     {
-        "def": "aromatic Eurasian perennial herb used in cooking and baking",
-        "frequency": "r",
-        "id": 749,
-        "name": "oregano",
-        "synonyms": ["oregano", "marjoram"],
-        "synset": "oregano.n.01"
-    },
-    {
         "def": "fast-running African flightless bird with two-toed feet; largest living bird",
         "frequency": "c",
-        "id": 750,
+        "id": 737,
         "name": "ostrich",
         "synonyms": ["ostrich"],
         "synset": "ostrich.n.02"
     },
     {
-        "def": "thick cushion used as a seat",
-        "frequency": "c",
-        "id": 751,
+        "def": "a thick standalone cushion used as a seat or footrest, often next to a chair",
+        "frequency": "f",
+        "id": 738,
         "name": "ottoman",
         "synonyms": ["ottoman", "pouf", "pouffe", "hassock"],
         "synset": "ottoman.n.03"
     },
     {
+        "def": "kitchen appliance used for baking or roasting",
+        "frequency": "f",
+        "id": 739,
+        "name": "oven",
+        "synonyms": ["oven"],
+        "synset": "oven.n.01"
+    },
+    {
         "def": "work clothing consisting of denim trousers usually with a bib and shoulder straps",
         "frequency": "c",
-        "id": 752,
+        "id": 740,
         "name": "overalls_(clothing)",
         "synonyms": ["overalls_(clothing)"],
         "synset": "overall.n.01"
@@ -6120,7 +6035,7 @@ LVIS_CATEGORIES = [
         "def": "nocturnal bird of prey with hawk-like beak and claws and large head with "
                "front-facing eyes",
         "frequency": "c",
-        "id": 753,
+        "id": 741,
         "name": "owl",
         "synonyms": ["owl"],
         "synset": "owl.n.01"
@@ -6128,7 +6043,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small package or bundle",
         "frequency": "c",
-        "id": 754,
+        "id": 742,
         "name": "packet",
         "synonyms": ["packet"],
         "synset": "packet.n.03"
@@ -6137,23 +6052,23 @@ LVIS_CATEGORIES = [
         "def": "absorbent material saturated with ink used to transfer ink evenly to a rubber "
                "stamp",
         "frequency": "r",
-        "id": 755,
+        "id": 743,
         "name": "inkpad",
         "synonyms": ["inkpad", "inking_pad", "stamp_pad"],
         "synset": "pad.n.03"
     },
     {
-        "def": "a flat mass of soft material used for protection, stuffing, or comfort",
+        "def": "mostly arm/knee pads labeled",
         "frequency": "c",
-        "id": 756,
+        "id": 744,
         "name": "pad",
         "synonyms": ["pad"],
         "synset": "pad.n.04"
     },
     {
         "def": "a short light oar used without an oarlock to propel a canoe or small boat",
-        "frequency": "c",
-        "id": 757,
+        "frequency": "f",
+        "id": 745,
         "name": "paddle",
         "synonyms": ["paddle", "boat_paddle"],
         "synset": "paddle.n.04"
@@ -6161,23 +6076,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a detachable, portable lock",
         "frequency": "c",
-        "id": 758,
+        "id": 746,
         "name": "padlock",
         "synonyms": ["padlock"],
         "synset": "padlock.n.01"
     },
     {
-        "def": "a box containing a collection of cubes or tubes of artists' paint",
-        "frequency": "r",
-        "id": 759,
-        "name": "paintbox",
-        "synonyms": ["paintbox"],
-        "synset": "paintbox.n.01"
-    },
-    {
         "def": "a brush used as an applicator to apply paint",
         "frequency": "c",
-        "id": 760,
+        "id": 747,
         "name": "paintbrush",
         "synonyms": ["paintbrush"],
         "synset": "paintbrush.n.01"
@@ -6186,15 +6093,15 @@ LVIS_CATEGORIES = [
         "def": "graphic art consisting of an artistic composition made by applying paints to a "
                "surface",
         "frequency": "f",
-        "id": 761,
+        "id": 748,
         "name": "painting",
         "synonyms": ["painting"],
         "synset": "painting.n.01"
     },
     {
         "def": "loose-fitting nightclothes worn for sleeping or lounging",
-        "frequency": "c",
-        "id": 762,
+        "frequency": "f",
+        "id": 749,
         "name": "pajamas",
         "synonyms": ["pajamas", "pyjamas"],
         "synset": "pajama.n.02"
@@ -6203,7 +6110,7 @@ LVIS_CATEGORIES = [
         "def": "board that provides a flat surface on which artists mix paints and the range of "
                "colors used",
         "frequency": "c",
-        "id": 763,
+        "id": 750,
         "name": "palette",
         "synonyms": ["palette", "pallet"],
         "synset": "palette.n.02"
@@ -6211,7 +6118,7 @@ LVIS_CATEGORIES = [
     {
         "def": "cooking utensil consisting of a wide metal vessel",
         "frequency": "f",
-        "id": 764,
+        "id": 751,
         "name": "pan_(for_cooking)",
         "synonyms": ["pan_(for_cooking)", "cooking_pan"],
         "synset": "pan.n.01"
@@ -6219,7 +6126,7 @@ LVIS_CATEGORIES = [
     {
         "def": "shallow container made of metal",
         "frequency": "r",
-        "id": 765,
+        "id": 752,
         "name": "pan_(metal_container)",
         "synonyms": ["pan_(metal_container)"],
         "synset": "pan.n.03"
@@ -6227,7 +6134,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a flat cake of thin batter fried on both sides on a griddle",
         "frequency": "c",
-        "id": 766,
+        "id": 753,
         "name": "pancake",
         "synonyms": ["pancake"],
         "synset": "pancake.n.01"
@@ -6235,7 +6142,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a woman's tights consisting of underpants and stockings",
         "frequency": "r",
-        "id": 767,
+        "id": 754,
         "name": "pantyhose",
         "synonyms": ["pantyhose"],
         "synset": "pantyhose.n.01"
@@ -6243,23 +6150,15 @@ LVIS_CATEGORIES = [
     {
         "def": "large oval melon-like tropical fruit with yellowish flesh",
         "frequency": "r",
-        "id": 768,
+        "id": 755,
         "name": "papaya",
         "synonyms": ["papaya"],
         "synset": "papaya.n.02"
     },
     {
-        "def": "a wire or plastic clip for holding sheets of paper together",
-        "frequency": "r",
-        "id": 769,
-        "name": "paperclip",
-        "synonyms": ["paperclip"],
-        "synset": "paper_clip.n.01"
-    },
-    {
         "def": "a disposable plate made of cardboard",
         "frequency": "f",
-        "id": 770,
+        "id": 756,
         "name": "paper_plate",
         "synonyms": ["paper_plate"],
         "synset": "paper_plate.n.01"
@@ -6267,7 +6166,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a disposable towel made of absorbent paper",
         "frequency": "f",
-        "id": 771,
+        "id": 757,
         "name": "paper_towel",
         "synonyms": ["paper_towel"],
         "synset": "paper_towel.n.01"
@@ -6275,7 +6174,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a book with paper covers",
         "frequency": "r",
-        "id": 772,
+        "id": 758,
         "name": "paperback_book",
         "synonyms": ["paperback_book", "paper-back_book", "softback_book", "soft-cover_book"],
         "synset": "paperback_book.n.01"
@@ -6283,7 +6182,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a weight used to hold down a stack of papers",
         "frequency": "r",
-        "id": 773,
+        "id": 759,
         "name": "paperweight",
         "synonyms": ["paperweight"],
         "synset": "paperweight.n.01"
@@ -6291,15 +6190,15 @@ LVIS_CATEGORIES = [
     {
         "def": "rescue equipment consisting of a device that fills with air and retards your fall",
         "frequency": "c",
-        "id": 774,
+        "id": 760,
         "name": "parachute",
         "synonyms": ["parachute"],
         "synset": "parachute.n.01"
     },
     {
         "def": "any of numerous small slender long-tailed parrots",
-        "frequency": "r",
-        "id": 775,
+        "frequency": "c",
+        "id": 761,
         "name": "parakeet",
         "synonyms": ["parakeet", "parrakeet", "parroket", "paraquet", "paroquet", "parroquet"],
         "synset": "parakeet.n.01"
@@ -6308,23 +6207,31 @@ LVIS_CATEGORIES = [
         "def": "parachute that will lift a person up into the air when it is towed by a motorboat "
                "or a car",
         "frequency": "c",
-        "id": 776,
+        "id": 762,
         "name": "parasail_(sports)",
         "synonyms": ["parasail_(sports)"],
         "synset": "parasail.n.01"
     },
     {
+        "def": "a handheld collapsible source of shade",
+        "frequency": "c",
+        "id": 763,
+        "name": "parasol",
+        "synonyms": ["parasol", "sunshade"],
+        "synset": "parasol.n.01"
+    },
+    {
         "def": "a superior paper resembling sheepskin",
         "frequency": "r",
-        "id": 777,
+        "id": 764,
         "name": "parchment",
         "synonyms": ["parchment"],
         "synset": "parchment.n.01"
     },
     {
         "def": "a kind of heavy jacket (`windcheater' is a British term)",
-        "frequency": "r",
-        "id": 778,
+        "frequency": "c",
+        "id": 765,
         "name": "parka",
         "synonyms": ["parka", "anorak"],
         "synset": "parka.n.01"
@@ -6332,7 +6239,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a coin-operated timer located next to a parking space",
         "frequency": "f",
-        "id": 779,
+        "id": 766,
         "name": "parking_meter",
         "synonyms": ["parking_meter"],
         "synset": "parking_meter.n.01"
@@ -6341,7 +6248,7 @@ LVIS_CATEGORIES = [
         "def": "usually brightly colored tropical birds with short hooked beaks and the ability to "
                "mimic sounds",
         "frequency": "c",
-        "id": 780,
+        "id": 767,
         "name": "parrot",
         "synonyms": ["parrot"],
         "synset": "parrot.n.01"
@@ -6349,7 +6256,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a railcar where passengers ride",
         "frequency": "c",
-        "id": 781,
+        "id": 768,
         "name": "passenger_car_(part_of_a_train)",
         "synonyms": ["passenger_car_(part_of_a_train)", "coach_(part_of_a_train)"],
         "synset": "passenger_car.n.01"
@@ -6357,7 +6264,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a ship built to carry passengers",
         "frequency": "r",
-        "id": 782,
+        "id": 769,
         "name": "passenger_ship",
         "synonyms": ["passenger_ship"],
         "synset": "passenger_ship.n.01"
@@ -6365,8 +6272,8 @@ LVIS_CATEGORIES = [
     {
         "def": "a document issued by a country to a citizen allowing that person to travel abroad "
                "and re-enter the home country",
-        "frequency": "r",
-        "id": 783,
+        "frequency": "c",
+        "id": 770,
         "name": "passport",
         "synonyms": ["passport"],
         "synset": "passport.n.02"
@@ -6374,7 +6281,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any of various baked foods made of dough or batter",
         "frequency": "f",
-        "id": 784,
+        "id": 771,
         "name": "pastry",
         "synonyms": ["pastry"],
         "synset": "pastry.n.02"
@@ -6382,7 +6289,7 @@ LVIS_CATEGORIES = [
     {
         "def": "small flat mass of chopped food",
         "frequency": "r",
-        "id": 785,
+        "id": 772,
         "name": "patty_(food)",
         "synonyms": ["patty_(food)"],
         "synset": "patty.n.01"
@@ -6390,7 +6297,7 @@ LVIS_CATEGORIES = [
     {
         "def": "seed of a pea plant used for food",
         "frequency": "c",
-        "id": 786,
+        "id": 773,
         "name": "pea_(food)",
         "synonyms": ["pea_(food)"],
         "synset": "pea.n.01"
@@ -6398,7 +6305,7 @@ LVIS_CATEGORIES = [
     {
         "def": "downy juicy fruit with sweet yellowish or whitish flesh",
         "frequency": "c",
-        "id": 787,
+        "id": 774,
         "name": "peach",
         "synonyms": ["peach"],
         "synset": "peach.n.03"
@@ -6406,31 +6313,39 @@ LVIS_CATEGORIES = [
     {
         "def": "a spread made from ground peanuts",
         "frequency": "c",
-        "id": 788,
+        "id": 775,
         "name": "peanut_butter",
         "synonyms": ["peanut_butter"],
         "synset": "peanut_butter.n.01"
     },
     {
         "def": "sweet juicy gritty-textured fruit available in many varieties",
-        "frequency": "c",
-        "id": 789,
+        "frequency": "f",
+        "id": 776,
         "name": "pear",
         "synonyms": ["pear"],
         "synset": "pear.n.01"
     },
     {
         "def": "a device for peeling vegetables or fruits",
-        "frequency": "r",
-        "id": 790,
+        "frequency": "c",
+        "id": 777,
         "name": "peeler_(tool_for_fruit_and_vegetables)",
         "synonyms": ["peeler_(tool_for_fruit_and_vegetables)"],
         "synset": "peeler.n.03"
     },
     {
+        "def": "a prosthesis that replaces a missing leg",
+        "frequency": "r",
+        "id": 778,
+        "name": "wooden_leg",
+        "synonyms": ["wooden_leg", "pegleg"],
+        "synset": "peg.n.04"
+    },
+    {
         "def": "a board perforated with regularly spaced holes into which pegs can be fitted",
         "frequency": "r",
-        "id": 791,
+        "id": 779,
         "name": "pegboard",
         "synonyms": ["pegboard"],
         "synset": "pegboard.n.01"
@@ -6439,7 +6354,7 @@ LVIS_CATEGORIES = [
         "def": "large long-winged warm-water seabird having a large bill with a distensible pouch "
                "for fish",
         "frequency": "c",
-        "id": 792,
+        "id": 780,
         "name": "pelican",
         "synonyms": ["pelican"],
         "synset": "pelican.n.01"
@@ -6447,15 +6362,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a writing implement with a point from which ink flows",
         "frequency": "f",
-        "id": 793,
+        "id": 781,
         "name": "pen",
         "synonyms": ["pen"],
         "synset": "pen.n.01"
     },
     {
         "def": "a thin cylindrical pointed writing implement made of wood and graphite",
-        "frequency": "c",
-        "id": 794,
+        "frequency": "f",
+        "id": 782,
         "name": "pencil",
         "synonyms": ["pencil"],
         "synset": "pencil.n.01"
@@ -6463,7 +6378,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a box for holding pencils",
         "frequency": "r",
-        "id": 795,
+        "id": 783,
         "name": "pencil_box",
         "synonyms": ["pencil_box", "pencil_case"],
         "synset": "pencil_box.n.01"
@@ -6471,7 +6386,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a rotary implement for sharpening the point on pencils",
         "frequency": "r",
-        "id": 796,
+        "id": 784,
         "name": "pencil_sharpener",
         "synonyms": ["pencil_sharpener"],
         "synset": "pencil_sharpener.n.01"
@@ -6480,7 +6395,7 @@ LVIS_CATEGORIES = [
         "def": "an apparatus consisting of an object mounted so that it swings freely under the "
                "influence of gravity",
         "frequency": "r",
-        "id": 797,
+        "id": 785,
         "name": "pendulum",
         "synonyms": ["pendulum"],
         "synset": "pendulum.n.01"
@@ -6489,7 +6404,7 @@ LVIS_CATEGORIES = [
         "def": "short-legged flightless birds of cold southern regions having webbed feet and "
                "wings modified as flippers",
         "frequency": "c",
-        "id": 798,
+        "id": 786,
         "name": "penguin",
         "synonyms": ["penguin"],
         "synset": "penguin.n.01"
@@ -6497,7 +6412,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a flag longer than it is wide (and often tapering)",
         "frequency": "r",
-        "id": 799,
+        "id": 787,
         "name": "pennant",
         "synonyms": ["pennant"],
         "synset": "pennant.n.02"
@@ -6505,15 +6420,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a coin worth one-hundredth of the value of the basic unit",
         "frequency": "r",
-        "id": 800,
+        "id": 788,
         "name": "penny_(coin)",
         "synonyms": ["penny_(coin)"],
         "synset": "penny.n.02"
     },
     {
         "def": "pungent seasoning from the berry of the common pepper plant; whole or ground",
-        "frequency": "c",
-        "id": 801,
+        "frequency": "f",
+        "id": 789,
         "name": "pepper",
         "synonyms": ["pepper", "peppercorn"],
         "synset": "pepper.n.03"
@@ -6521,7 +6436,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a mill for grinding pepper",
         "frequency": "c",
-        "id": 802,
+        "id": 790,
         "name": "pepper_mill",
         "synonyms": ["pepper_mill", "pepper_grinder"],
         "synset": "pepper_mill.n.01"
@@ -6529,7 +6444,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a toiletry that emits and diffuses a fragrant odor",
         "frequency": "c",
-        "id": 803,
+        "id": 791,
         "name": "perfume",
         "synonyms": ["perfume"],
         "synset": "perfume.n.02"
@@ -6537,7 +6452,7 @@ LVIS_CATEGORIES = [
     {
         "def": "orange fruit resembling a plum; edible when fully ripe",
         "frequency": "r",
-        "id": 804,
+        "id": 792,
         "name": "persimmon",
         "synonyms": ["persimmon"],
         "synset": "persimmon.n.02"
@@ -6545,31 +6460,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a human being",
         "frequency": "f",
-        "id": 805,
-        "name": "baby",
-        "synonyms": ["baby", "child", "boy", "girl", "man", "woman", "person", "human"],
+        "id": 793,
+        "name": "person",
+        "synonyms": ["person", "baby", "child", "boy", "girl", "man", "woman", "human"],
         "synset": "person.n.01"
     },
     {
         "def": "a domesticated animal kept for companionship or amusement",
-        "frequency": "r",
-        "id": 806,
+        "frequency": "c",
+        "id": 794,
         "name": "pet",
         "synonyms": ["pet"],
         "synset": "pet.n.01"
     },
     {
-        "def": "food prepared for animal pets",
-        "frequency": "r",
-        "id": 807,
-        "name": "petfood",
-        "synonyms": ["petfood", "pet-food"],
-        "synset": "petfood.n.01"
-    },
-    {
         "def": "long bench with backs; used in church by the congregation",
-        "frequency": "r",
-        "id": 808,
+        "frequency": "c",
+        "id": 795,
         "name": "pew_(church_bench)",
         "synonyms": ["pew_(church_bench)", "church_bench"],
         "synset": "pew.n.01"
@@ -6578,7 +6485,7 @@ LVIS_CATEGORIES = [
         "def": "a directory containing an alphabetical list of telephone subscribers and their "
                "telephone numbers",
         "frequency": "r",
-        "id": 809,
+        "id": 796,
         "name": "phonebook",
         "synonyms": ["phonebook", "telephone_book", "telephone_directory"],
         "synset": "phonebook.n.01"
@@ -6586,7 +6493,7 @@ LVIS_CATEGORIES = [
     {
         "def": "sound recording consisting of a typically black disk with a continuous groove",
         "frequency": "c",
-        "id": 810,
+        "id": 797,
         "name": "phonograph_record",
         "synonyms": ["phonograph_record", "phonograph_recording", "record_(phonograph_recording)"],
         "synset": "phonograph_record.n.01"
@@ -6594,8 +6501,8 @@ LVIS_CATEGORIES = [
     {
         "def": "a keyboard instrument that is played by depressing keys that cause hammers to "
                "strike tuned strings and produce sounds",
-        "frequency": "c",
-        "id": 811,
+        "frequency": "f",
+        "id": 798,
         "name": "piano",
         "synonyms": ["piano"],
         "synset": "piano.n.01"
@@ -6603,7 +6510,7 @@ LVIS_CATEGORIES = [
     {
         "def": "vegetables (especially cucumbers) preserved in brine or vinegar",
         "frequency": "f",
-        "id": 812,
+        "id": 799,
         "name": "pickle",
         "synonyms": ["pickle"],
         "synset": "pickle.n.01"
@@ -6611,7 +6518,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a light truck with an open body and low sides and a tailboard",
         "frequency": "f",
-        "id": 813,
+        "id": 800,
         "name": "pickup_truck",
         "synonyms": ["pickup_truck"],
         "synset": "pickup.n.01"
@@ -6619,7 +6526,7 @@ LVIS_CATEGORIES = [
     {
         "def": "dish baked in pastry-lined pan often with a pastry top",
         "frequency": "c",
-        "id": 814,
+        "id": 801,
         "name": "pie",
         "synonyms": ["pie"],
         "synset": "pie.n.01"
@@ -6627,7 +6534,7 @@ LVIS_CATEGORIES = [
     {
         "def": "wild and domesticated birds having a heavy body and short legs",
         "frequency": "c",
-        "id": 815,
+        "id": 802,
         "name": "pigeon",
         "synonyms": ["pigeon"],
         "synset": "pigeon.n.01"
@@ -6635,7 +6542,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a child's coin bank (often shaped like a pig)",
         "frequency": "r",
-        "id": 816,
+        "id": 803,
         "name": "piggy_bank",
         "synonyms": ["piggy_bank", "penny_bank"],
         "synset": "piggy_bank.n.01"
@@ -6643,7 +6550,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cushion to support the head of a sleeping person",
         "frequency": "f",
-        "id": 817,
+        "id": 804,
         "name": "pillow",
         "synonyms": ["pillow"],
         "synset": "pillow.n.01"
@@ -6652,7 +6559,7 @@ LVIS_CATEGORIES = [
         "def": "a small slender (often pointed) piece of wood or metal used to support or fasten "
                "or attach things",
         "frequency": "r",
-        "id": 818,
+        "id": 805,
         "name": "pin_(non_jewelry)",
         "synonyms": ["pin_(non_jewelry)"],
         "synset": "pin.n.09"
@@ -6660,7 +6567,7 @@ LVIS_CATEGORIES = [
     {
         "def": "large sweet fleshy tropical fruit with a tuft of stiff leaves",
         "frequency": "f",
-        "id": 819,
+        "id": 806,
         "name": "pineapple",
         "synonyms": ["pineapple"],
         "synset": "pineapple.n.02"
@@ -6668,7 +6575,7 @@ LVIS_CATEGORIES = [
     {
         "def": "the seed-producing cone of a pine tree",
         "frequency": "c",
-        "id": 820,
+        "id": 807,
         "name": "pinecone",
         "synonyms": ["pinecone"],
         "synset": "pinecone.n.01"
@@ -6676,7 +6583,7 @@ LVIS_CATEGORIES = [
     {
         "def": "light hollow ball used in playing table tennis",
         "frequency": "r",
-        "id": 821,
+        "id": 808,
         "name": "ping-pong_ball",
         "synonyms": ["ping-pong_ball"],
         "synset": "ping-pong_ball.n.01"
@@ -6685,7 +6592,7 @@ LVIS_CATEGORIES = [
         "def": "a toy consisting of vanes of colored paper or plastic that is pinned to a stick "
                "and spins when it is pointed into the wind",
         "frequency": "r",
-        "id": 822,
+        "id": 809,
         "name": "pinwheel",
         "synonyms": ["pinwheel"],
         "synset": "pinwheel.n.03"
@@ -6693,7 +6600,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a tube with a small bowl at one end; used for smoking tobacco",
         "frequency": "r",
-        "id": 823,
+        "id": 810,
         "name": "tobacco_pipe",
         "synonyms": ["tobacco_pipe"],
         "synset": "pipe.n.01"
@@ -6702,7 +6609,7 @@ LVIS_CATEGORIES = [
         "def": "a long tube made of metal or plastic that is used to carry water or oil or gas "
                "etc.",
         "frequency": "f",
-        "id": 824,
+        "id": 811,
         "name": "pipe",
         "synonyms": ["pipe", "piping"],
         "synset": "pipe.n.02"
@@ -6710,15 +6617,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a firearm that is held and fired with one hand",
         "frequency": "r",
-        "id": 825,
+        "id": 812,
         "name": "pistol",
         "synonyms": ["pistol", "handgun"],
         "synset": "pistol.n.01"
     },
     {
         "def": "usually small round bread that can open into a pocket for filling",
-        "frequency": "r",
-        "id": 826,
+        "frequency": "c",
+        "id": 813,
         "name": "pita_(bread)",
         "synonyms": ["pita_(bread)", "pocket_bread"],
         "synset": "pita.n.01"
@@ -6726,7 +6633,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an open vessel with a handle and a spout for pouring",
         "frequency": "f",
-        "id": 827,
+        "id": 814,
         "name": "pitcher_(vessel_for_liquid)",
         "synonyms": ["pitcher_(vessel_for_liquid)", "ewer"],
         "synset": "pitcher.n.02"
@@ -6735,7 +6642,7 @@ LVIS_CATEGORIES = [
         "def": "a long-handled hand tool with sharp widely spaced prongs for lifting and pitching "
                "hay",
         "frequency": "r",
-        "id": 828,
+        "id": 815,
         "name": "pitchfork",
         "synonyms": ["pitchfork"],
         "synset": "pitchfork.n.01"
@@ -6744,7 +6651,7 @@ LVIS_CATEGORIES = [
         "def": "Italian open pie made of thin bread dough spread with a spiced mixture of e.g. "
                "tomato sauce and cheese",
         "frequency": "f",
-        "id": 829,
+        "id": 816,
         "name": "pizza",
         "synonyms": ["pizza"],
         "synset": "pizza.n.01"
@@ -6752,7 +6659,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a mat placed on a table for an individual place setting",
         "frequency": "f",
-        "id": 830,
+        "id": 817,
         "name": "place_mat",
         "synonyms": ["place_mat"],
         "synset": "place_mat.n.01"
@@ -6760,7 +6667,7 @@ LVIS_CATEGORIES = [
     {
         "def": "dish on which food is served or from which food is eaten",
         "frequency": "f",
-        "id": 831,
+        "id": 818,
         "name": "plate",
         "synonyms": ["plate"],
         "synset": "plate.n.04"
@@ -6768,23 +6675,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a large shallow dish used for serving food",
         "frequency": "c",
-        "id": 832,
+        "id": 819,
         "name": "platter",
         "synonyms": ["platter"],
         "synset": "platter.n.01"
     },
     {
-        "def": "one of a pack of cards that are used to play card games",
-        "frequency": "r",
-        "id": 833,
-        "name": "playing_card",
-        "synonyms": ["playing_card"],
-        "synset": "playing_card.n.01"
-    },
-    {
         "def": "a portable enclosure in which babies may be left to play",
         "frequency": "r",
-        "id": 834,
+        "id": 820,
         "name": "playpen",
         "synonyms": ["playpen"],
         "synset": "playpen.n.01"
@@ -6792,7 +6691,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a gripping hand tool with two hinged arms and (usually) serrated jaws",
         "frequency": "c",
-        "id": 835,
+        "id": 821,
         "name": "pliers",
         "synonyms": ["pliers", "plyers"],
         "synset": "pliers.n.01"
@@ -6801,15 +6700,23 @@ LVIS_CATEGORIES = [
         "def": "a farm tool having one or more heavy blades to break the soil and cut a furrow "
                "prior to sowing",
         "frequency": "r",
-        "id": 836,
+        "id": 822,
         "name": "plow_(farm_equipment)",
         "synonyms": ["plow_(farm_equipment)", "plough_(farm_equipment)"],
         "synset": "plow.n.01"
     },
     {
+        "def": "a feather or cluster of feathers worn as an ornament",
+        "frequency": "r",
+        "id": 823,
+        "name": "plume",
+        "synonyms": ["plume"],
+        "synset": "plume.n.02"
+    },
+    {
         "def": "a watch that is carried in a small watch pocket",
         "frequency": "r",
-        "id": 837,
+        "id": 824,
         "name": "pocket_watch",
         "synonyms": ["pocket_watch"],
         "synset": "pocket_watch.n.01"
@@ -6818,7 +6725,7 @@ LVIS_CATEGORIES = [
         "def": "a knife with a blade that folds into the handle; suitable for carrying in the "
                "pocket",
         "frequency": "c",
-        "id": 838,
+        "id": 825,
         "name": "pocketknife",
         "synonyms": ["pocketknife"],
         "synset": "pocketknife.n.01"
@@ -6826,7 +6733,7 @@ LVIS_CATEGORIES = [
     {
         "def": "fire iron consisting of a metal rod with a handle; used to stir a fire",
         "frequency": "c",
-        "id": 839,
+        "id": 826,
         "name": "poker_(fire_stirring_tool)",
         "synonyms": ["poker_(fire_stirring_tool)", "stove_poker", "fire_hook"],
         "synset": "poker.n.01"
@@ -6834,23 +6741,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a long (usually round) rod of wood or metal or plastic",
         "frequency": "f",
-        "id": 840,
+        "id": 827,
         "name": "pole",
         "synonyms": ["pole", "post"],
         "synset": "pole.n.01"
     },
     {
-        "def": "van used by police to transport prisoners",
-        "frequency": "r",
-        "id": 841,
-        "name": "police_van",
-        "synonyms": ["police_van", "police_wagon", "paddy_wagon", "patrol_wagon"],
-        "synset": "police_van.n.01"
-    },
-    {
         "def": "a shirt with short sleeves designed for comfort and casual wear",
         "frequency": "f",
-        "id": 842,
+        "id": 828,
         "name": "polo_shirt",
         "synonyms": ["polo_shirt", "sport_shirt"],
         "synset": "polo_shirt.n.01"
@@ -6858,7 +6757,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a blanket-like cloak with a hole in the center for the head",
         "frequency": "r",
-        "id": 843,
+        "id": 829,
         "name": "poncho",
         "synonyms": ["poncho"],
         "synset": "poncho.n.01"
@@ -6867,7 +6766,7 @@ LVIS_CATEGORIES = [
         "def": "any of various breeds of small gentle horses usually less than five feet high at "
                "the shoulder",
         "frequency": "c",
-        "id": 844,
+        "id": 830,
         "name": "pony",
         "synonyms": ["pony"],
         "synset": "pony.n.05"
@@ -6875,7 +6774,7 @@ LVIS_CATEGORIES = [
     {
         "def": "game equipment consisting of a heavy table on which pool is played",
         "frequency": "r",
-        "id": 845,
+        "id": 831,
         "name": "pool_table",
         "synonyms": ["pool_table", "billiard_table", "snooker_table"],
         "synset": "pool_table.n.01"
@@ -6883,23 +6782,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a sweet drink containing carbonated water and flavoring",
         "frequency": "f",
-        "id": 846,
+        "id": 832,
         "name": "pop_(soda)",
         "synonyms": ["pop_(soda)", "soda_(pop)", "tonic", "soft_drink"],
         "synset": "pop.n.02"
     },
     {
-        "def": "any likeness of a person, in any medium",
-        "frequency": "r",
-        "id": 847,
-        "name": "portrait",
-        "synonyms": ["portrait", "portrayal"],
-        "synset": "portrait.n.02"
-    },
-    {
         "def": "public box for deposit of mail",
         "frequency": "c",
-        "id": 848,
+        "id": 833,
         "name": "postbox_(public)",
         "synonyms": ["postbox_(public)", "mailbox_(public)"],
         "synset": "postbox.n.01"
@@ -6907,7 +6798,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a card for sending messages by post without an envelope",
         "frequency": "c",
-        "id": 849,
+        "id": 834,
         "name": "postcard",
         "synonyms": ["postcard", "postal_card", "mailing-card"],
         "synset": "postcard.n.01"
@@ -6915,7 +6806,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a sign posted in a public place as an advertisement",
         "frequency": "f",
-        "id": 850,
+        "id": 835,
         "name": "poster",
         "synonyms": ["poster", "placard"],
         "synset": "poster.n.01"
@@ -6924,7 +6815,7 @@ LVIS_CATEGORIES = [
         "def": "metal or earthenware cooking vessel that is usually round and deep; often has a "
                "handle and lid",
         "frequency": "f",
-        "id": 851,
+        "id": 836,
         "name": "pot",
         "synonyms": ["pot"],
         "synset": "pot.n.01"
@@ -6932,7 +6823,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a container in which plants are cultivated",
         "frequency": "f",
-        "id": 852,
+        "id": 837,
         "name": "flowerpot",
         "synonyms": ["flowerpot"],
         "synset": "pot.n.04"
@@ -6940,7 +6831,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an edible tuber native to South America",
         "frequency": "f",
-        "id": 853,
+        "id": 838,
         "name": "potato",
         "synonyms": ["potato"],
         "synset": "potato.n.01"
@@ -6948,7 +6839,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an insulated pad for holding hot pots",
         "frequency": "c",
-        "id": 854,
+        "id": 839,
         "name": "potholder",
         "synonyms": ["potholder"],
         "synset": "potholder.n.01"
@@ -6956,7 +6847,7 @@ LVIS_CATEGORIES = [
     {
         "def": "ceramic ware made from clay and baked in a kiln",
         "frequency": "c",
-        "id": 855,
+        "id": 840,
         "name": "pottery",
         "synonyms": ["pottery", "clayware"],
         "synset": "pottery.n.01"
@@ -6964,15 +6855,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a small or medium size container for holding or carrying things",
         "frequency": "c",
-        "id": 856,
+        "id": 841,
         "name": "pouch",
         "synonyms": ["pouch"],
         "synset": "pouch.n.01"
     },
     {
         "def": "a machine for excavating",
-        "frequency": "r",
-        "id": 857,
+        "frequency": "c",
+        "id": 842,
         "name": "power_shovel",
         "synonyms": ["power_shovel", "excavator", "digger"],
         "synset": "power_shovel.n.01"
@@ -6980,15 +6871,23 @@ LVIS_CATEGORIES = [
     {
         "def": "any of various edible decapod crustaceans",
         "frequency": "c",
-        "id": 858,
+        "id": 843,
         "name": "prawn",
         "synonyms": ["prawn", "shrimp"],
         "synset": "prawn.n.01"
     },
     {
+        "def": "glazed and salted cracker typically in the shape of a loose knot",
+        "frequency": "c",
+        "id": 844,
+        "name": "pretzel",
+        "synonyms": ["pretzel"],
+        "synset": "pretzel.n.01"
+    },
+    {
         "def": "a machine that prints",
         "frequency": "f",
-        "id": 859,
+        "id": 845,
         "name": "printer",
         "synonyms": ["printer", "printing_machine"],
         "synset": "printer.n.03"
@@ -6996,7 +6895,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a weapon that is forcibly thrown or projected at a targets",
         "frequency": "c",
-        "id": 860,
+        "id": 846,
         "name": "projectile_(weapon)",
         "synonyms": ["projectile_(weapon)", "missile"],
         "synset": "projectile.n.01"
@@ -7004,7 +6903,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an optical instrument that projects an enlarged image onto a screen",
         "frequency": "c",
-        "id": 861,
+        "id": 847,
         "name": "projector",
         "synonyms": ["projector"],
         "synset": "projector.n.02"
@@ -7012,7 +6911,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a mechanical device that rotates to push against air or water",
         "frequency": "f",
-        "id": 862,
+        "id": 848,
         "name": "propeller",
         "synonyms": ["propeller", "propellor"],
         "synset": "propeller.n.01"
@@ -7020,7 +6919,7 @@ LVIS_CATEGORIES = [
     {
         "def": "dried plum",
         "frequency": "r",
-        "id": 863,
+        "id": 849,
         "name": "prune",
         "synonyms": ["prune"],
         "synset": "prune.n.01"
@@ -7028,7 +6927,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any of various soft thick unsweetened baked dishes",
         "frequency": "r",
-        "id": 864,
+        "id": 850,
         "name": "pudding",
         "synonyms": ["pudding"],
         "synset": "pudding.n.01"
@@ -7037,7 +6936,7 @@ LVIS_CATEGORIES = [
         "def": "fishes whose elongated spiny body can inflate itself with water or air to form a "
                "globe",
         "frequency": "r",
-        "id": 865,
+        "id": 851,
         "name": "puffer_(fish)",
         "synonyms": ["puffer_(fish)", "pufferfish", "blowfish", "globefish"],
         "synset": "puffer.n.02"
@@ -7045,7 +6944,7 @@ LVIS_CATEGORIES = [
     {
         "def": "seabirds having short necks and brightly colored compressed bills",
         "frequency": "r",
-        "id": 866,
+        "id": 852,
         "name": "puffin",
         "synonyms": ["puffin"],
         "synset": "puffin.n.01"
@@ -7054,7 +6953,7 @@ LVIS_CATEGORIES = [
         "def": "small compact smooth-coated breed of Asiatic origin having a tightly curled tail "
                "and broad flat wrinkled muzzle",
         "frequency": "r",
-        "id": 867,
+        "id": 853,
         "name": "pug-dog",
         "synonyms": ["pug-dog"],
         "synset": "pug.n.01"
@@ -7063,7 +6962,7 @@ LVIS_CATEGORIES = [
         "def": "usually large pulpy deep-yellow round fruit of the squash family maturing in late "
                "summer or early autumn",
         "frequency": "c",
-        "id": 868,
+        "id": 854,
         "name": "pumpkin",
         "synonyms": ["pumpkin"],
         "synset": "pumpkin.n.02"
@@ -7071,7 +6970,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a tool for making holes or indentations",
         "frequency": "r",
-        "id": 869,
+        "id": 855,
         "name": "puncher",
         "synonyms": ["puncher"],
         "synset": "punch.n.03"
@@ -7079,15 +6978,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a small figure of a person operated from above with strings by a puppeteer",
         "frequency": "r",
-        "id": 870,
+        "id": 856,
         "name": "puppet",
         "synonyms": ["puppet", "marionette"],
         "synset": "puppet.n.01"
     },
     {
         "def": "a young dog",
-        "frequency": "r",
-        "id": 871,
+        "frequency": "c",
+        "id": 857,
         "name": "puppy",
         "synonyms": ["puppy"],
         "synset": "puppy.n.01"
@@ -7095,7 +6994,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a tortilla that is filled with cheese and heated",
         "frequency": "r",
-        "id": 872,
+        "id": 858,
         "name": "quesadilla",
         "synonyms": ["quesadilla"],
         "synset": "quesadilla.n.01"
@@ -7104,7 +7003,7 @@ LVIS_CATEGORIES = [
         "def": "a tart filled with rich unsweetened custard; often contains other ingredients (as "
                "cheese or ham or seafood or vegetables)",
         "frequency": "r",
-        "id": 873,
+        "id": 859,
         "name": "quiche",
         "synonyms": ["quiche"],
         "synset": "quiche.n.02"
@@ -7112,7 +7011,7 @@ LVIS_CATEGORIES = [
     {
         "def": "bedding made of two layers of cloth filled with stuffing and stitched together",
         "frequency": "f",
-        "id": 874,
+        "id": 860,
         "name": "quilt",
         "synonyms": ["quilt", "comforter"],
         "synset": "quilt.n.01"
@@ -7121,7 +7020,7 @@ LVIS_CATEGORIES = [
         "def": "any of various burrowing animals of the family Leporidae having long ears and "
                "short tails",
         "frequency": "c",
-        "id": 875,
+        "id": 861,
         "name": "rabbit",
         "synonyms": ["rabbit"],
         "synset": "rabbit.n.01"
@@ -7129,7 +7028,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a fast car that competes in races",
         "frequency": "r",
-        "id": 876,
+        "id": 862,
         "name": "race_car",
         "synonyms": ["race_car", "racing_car"],
         "synset": "racer.n.02"
@@ -7137,7 +7036,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a sports implement used to strike a ball in various games",
         "frequency": "c",
-        "id": 877,
+        "id": 863,
         "name": "racket",
         "synonyms": ["racket", "racquet"],
         "synset": "racket.n.04"
@@ -7146,15 +7045,15 @@ LVIS_CATEGORIES = [
         "def": "measuring instrument in which the echo of a pulse of microwave radiation is used "
                "to detect and locate distant objects",
         "frequency": "r",
-        "id": 878,
+        "id": 864,
         "name": "radar",
         "synonyms": ["radar"],
         "synset": "radar.n.01"
     },
     {
         "def": "a mechanism consisting of a metal honeycomb through which hot fluids circulate",
-        "frequency": "c",
-        "id": 879,
+        "frequency": "f",
+        "id": 865,
         "name": "radiator",
         "synonyms": ["radiator"],
         "synset": "radiator.n.03"
@@ -7163,7 +7062,7 @@ LVIS_CATEGORIES = [
         "def": "an electronic receiver that detects and demodulates and amplifies transmitted "
                "radio signals",
         "frequency": "c",
-        "id": 880,
+        "id": 866,
         "name": "radio_receiver",
         "synonyms": ["radio_receiver", "radio_set", "radio", "tuner_(radio)"],
         "synset": "radio_receiver.n.01"
@@ -7171,7 +7070,7 @@ LVIS_CATEGORIES = [
     {
         "def": "pungent edible root of any of various cultivated radish plants",
         "frequency": "c",
-        "id": 881,
+        "id": 867,
         "name": "radish",
         "synonyms": ["radish", "daikon"],
         "synset": "radish.n.03"
@@ -7180,7 +7079,7 @@ LVIS_CATEGORIES = [
         "def": "a flat float (usually made of logs or planks) that can be used for transport or as "
                "a platform for swimmers",
         "frequency": "c",
-        "id": 882,
+        "id": 868,
         "name": "raft",
         "synonyms": ["raft"],
         "synset": "raft.n.01"
@@ -7188,7 +7087,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cloth doll that is stuffed and (usually) painted",
         "frequency": "r",
-        "id": 883,
+        "id": 869,
         "name": "rag_doll",
         "synonyms": ["rag_doll"],
         "synset": "rag_doll.n.01"
@@ -7196,7 +7095,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a water-resistant coat",
         "frequency": "c",
-        "id": 884,
+        "id": 870,
         "name": "raincoat",
         "synonyms": ["raincoat", "waterproof_jacket"],
         "synset": "raincoat.n.01"
@@ -7204,7 +7103,7 @@ LVIS_CATEGORIES = [
     {
         "def": "uncastrated adult male sheep",
         "frequency": "c",
-        "id": 885,
+        "id": 871,
         "name": "ram_(animal)",
         "synonyms": ["ram_(animal)"],
         "synset": "ram.n.05"
@@ -7213,7 +7112,7 @@ LVIS_CATEGORIES = [
         "def": "red or black edible aggregate berries usually smaller than the related "
                "blackberries",
         "frequency": "c",
-        "id": 886,
+        "id": 872,
         "name": "raspberry",
         "synonyms": ["raspberry"],
         "synset": "raspberry.n.02"
@@ -7221,7 +7120,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any of various long-tailed rodents similar to but larger than a mouse",
         "frequency": "r",
-        "id": 887,
+        "id": 873,
         "name": "rat",
         "synonyms": ["rat"],
         "synset": "rat.n.01"
@@ -7229,7 +7128,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a blade that has very sharp edge",
         "frequency": "c",
-        "id": 888,
+        "id": 874,
         "name": "razorblade",
         "synonyms": ["razorblade"],
         "synset": "razorblade.n.01"
@@ -7238,15 +7137,15 @@ LVIS_CATEGORIES = [
         "def": "a squeezer with a conical ridged center that is used for squeezing juice from "
                "citrus fruit",
         "frequency": "c",
-        "id": 889,
+        "id": 875,
         "name": "reamer_(juicer)",
         "synonyms": ["reamer_(juicer)", "juicer", "juice_reamer"],
         "synset": "reamer.n.01"
     },
     {
-        "def": "car mirror that reflects the view out of the rear window",
+        "def": "vehicle mirror (side or rearview)",
         "frequency": "f",
-        "id": 890,
+        "id": 876,
         "name": "rearview_mirror",
         "synonyms": ["rearview_mirror"],
         "synset": "rearview_mirror.n.01"
@@ -7254,7 +7153,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an acknowledgment (usually tangible) that payment has been made",
         "frequency": "c",
-        "id": 891,
+        "id": 877,
         "name": "receipt",
         "synonyms": ["receipt"],
         "synset": "receipt.n.02"
@@ -7263,7 +7162,7 @@ LVIS_CATEGORIES = [
         "def": "an armchair whose back can be lowered and foot can be raised to allow the sitter "
                "to recline in it",
         "frequency": "c",
-        "id": 892,
+        "id": 878,
         "name": "recliner",
         "synonyms": ["recliner", "reclining_chair", "lounger_(chair)"],
         "synset": "recliner.n.01"
@@ -7271,24 +7170,16 @@ LVIS_CATEGORIES = [
     {
         "def": "machine in which rotating records cause a stylus to vibrate and the vibrations are "
                "amplified acoustically or electronically",
-        "frequency": "r",
-        "id": 893,
+        "frequency": "c",
+        "id": 879,
         "name": "record_player",
         "synonyms": ["record_player", "phonograph_(record_player)", "turntable"],
         "synset": "record_player.n.01"
     },
     {
-        "def": "compact head of purplish-red leaves",
-        "frequency": "r",
-        "id": 894,
-        "name": "red_cabbage",
-        "synonyms": ["red_cabbage"],
-        "synset": "red_cabbage.n.02"
-    },
-    {
         "def": "device that reflects light, radiation, etc.",
         "frequency": "f",
-        "id": 895,
+        "id": 880,
         "name": "reflector",
         "synonyms": ["reflector"],
         "synset": "reflector.n.01"
@@ -7296,7 +7187,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a device that can be used to control a machine or apparatus from a distance",
         "frequency": "f",
-        "id": 896,
+        "id": 881,
         "name": "remote_control",
         "synonyms": ["remote_control"],
         "synset": "remote_control.n.01"
@@ -7305,7 +7196,7 @@ LVIS_CATEGORIES = [
         "def": "massive powerful herbivorous odd-toed ungulate of southeast Asia and Africa having "
                "very thick skin and one or two horns on the snout",
         "frequency": "c",
-        "id": 897,
+        "id": 882,
         "name": "rhinoceros",
         "synonyms": ["rhinoceros"],
         "synset": "rhinoceros.n.01"
@@ -7313,15 +7204,15 @@ LVIS_CATEGORIES = [
     {
         "def": "cut of meat including one or more ribs",
         "frequency": "r",
-        "id": 898,
+        "id": 883,
         "name": "rib_(food)",
         "synonyms": ["rib_(food)"],
         "synset": "rib.n.03"
     },
     {
         "def": "a shoulder firearm with a long barrel",
-        "frequency": "r",
-        "id": 899,
+        "frequency": "c",
+        "id": 884,
         "name": "rifle",
         "synonyms": ["rifle"],
         "synset": "rifle.n.01"
@@ -7330,7 +7221,7 @@ LVIS_CATEGORIES = [
         "def": "jewelry consisting of a circlet of precious metal (often set with jewels) worn on "
                "the finger",
         "frequency": "f",
-        "id": 900,
+        "id": 885,
         "name": "ring",
         "synonyms": ["ring"],
         "synset": "ring.n.08"
@@ -7338,7 +7229,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a boat used on rivers or to ply a river",
         "frequency": "r",
-        "id": 901,
+        "id": 886,
         "name": "river_boat",
         "synonyms": ["river_boat"],
         "synset": "river_boat.n.01"
@@ -7346,7 +7237,7 @@ LVIS_CATEGORIES = [
     {
         "def": "(NOT A ROAD) a MAP showing roads (for automobile travel)",
         "frequency": "r",
-        "id": 902,
+        "id": 887,
         "name": "road_map",
         "synonyms": ["road_map"],
         "synset": "road_map.n.02"
@@ -7354,7 +7245,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any loose flowing garment",
         "frequency": "c",
-        "id": 903,
+        "id": 888,
         "name": "robe",
         "synonyms": ["robe"],
         "synset": "robe.n.01"
@@ -7362,15 +7253,24 @@ LVIS_CATEGORIES = [
     {
         "def": "a chair mounted on rockers",
         "frequency": "c",
-        "id": 904,
+        "id": 889,
         "name": "rocking_chair",
         "synonyms": ["rocking_chair"],
         "synset": "rocking_chair.n.01"
     },
     {
+        "def": "relatively small placental mammals having a single pair of constantly growing "
+               "incisor teeth specialized for gnawing",
+        "frequency": "r",
+        "id": 890,
+        "name": "rodent",
+        "synonyms": ["rodent"],
+        "synset": "rodent.n.01"
+    },
+    {
         "def": "a shoe with pairs of rollers (small hard wheels) fixed to the sole",
         "frequency": "r",
-        "id": 905,
+        "id": 891,
         "name": "roller_skate",
         "synonyms": ["roller_skate"],
         "synset": "roller_skate.n.01"
@@ -7378,7 +7278,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an in-line variant of a roller skate",
         "frequency": "r",
-        "id": 906,
+        "id": 892,
         "name": "Rollerblade",
         "synonyms": ["Rollerblade"],
         "synset": "rollerblade.n.01"
@@ -7387,7 +7287,7 @@ LVIS_CATEGORIES = [
         "def": "utensil consisting of a cylinder (usually of wood) with a handle at each end; used "
                "to roll out dough",
         "frequency": "c",
-        "id": 907,
+        "id": 893,
         "name": "rolling_pin",
         "synonyms": ["rolling_pin"],
         "synset": "rolling_pin.n.01"
@@ -7395,7 +7295,7 @@ LVIS_CATEGORIES = [
     {
         "def": "carbonated drink containing extracts of roots and herbs",
         "frequency": "r",
-        "id": 908,
+        "id": 894,
         "name": "root_beer",
         "synonyms": ["root_beer"],
         "synset": "root_beer.n.01"
@@ -7403,7 +7303,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a device that forwards data packets between computer networks",
         "frequency": "c",
-        "id": 909,
+        "id": 895,
         "name": "router_(computer_equipment)",
         "synonyms": ["router_(computer_equipment)"],
         "synset": "router.n.02"
@@ -7411,7 +7311,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a narrow band of elastic rubber used to hold things (such as papers) together",
         "frequency": "f",
-        "id": 910,
+        "id": 896,
         "name": "rubber_band",
         "synonyms": ["rubber_band", "elastic_band"],
         "synset": "rubber_band.n.01"
@@ -7419,7 +7319,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a long narrow carpet",
         "frequency": "c",
-        "id": 911,
+        "id": 897,
         "name": "runner_(carpet)",
         "synonyms": ["runner_(carpet)"],
         "synset": "runner.n.08"
@@ -7427,7 +7327,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a bag made of paper or plastic for holding customer's purchases",
         "frequency": "f",
-        "id": 912,
+        "id": 898,
         "name": "plastic_bag",
         "synonyms": ["plastic_bag", "paper_bag"],
         "synset": "sack.n.01"
@@ -7435,7 +7335,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a seat for the rider of a horse or camel",
         "frequency": "f",
-        "id": 913,
+        "id": 899,
         "name": "saddle_(on_an_animal)",
         "synonyms": ["saddle_(on_an_animal)"],
         "synset": "saddle.n.01"
@@ -7443,7 +7343,7 @@ LVIS_CATEGORIES = [
     {
         "def": "stable gear consisting of a blanket placed under the saddle",
         "frequency": "f",
-        "id": 914,
+        "id": 900,
         "name": "saddle_blanket",
         "synonyms": ["saddle_blanket", "saddlecloth", "horse_blanket"],
         "synset": "saddle_blanket.n.01"
@@ -7451,7 +7351,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a large bag (or pair of bags) hung over a saddle",
         "frequency": "c",
-        "id": 915,
+        "id": 901,
         "name": "saddlebag",
         "synonyms": ["saddlebag"],
         "synset": "saddlebag.n.01"
@@ -7460,15 +7360,15 @@ LVIS_CATEGORIES = [
         "def": "a pin in the form of a clasp; has a guard so the point of the pin will not stick "
                "the user",
         "frequency": "r",
-        "id": 916,
+        "id": 902,
         "name": "safety_pin",
         "synonyms": ["safety_pin"],
         "synset": "safety_pin.n.01"
     },
     {
         "def": "a large piece of fabric by means of which wind is used to propel a sailing vessel",
-        "frequency": "c",
-        "id": 917,
+        "frequency": "f",
+        "id": 903,
         "name": "sail",
         "synonyms": ["sail"],
         "synset": "sail.n.01"
@@ -7476,8 +7376,8 @@ LVIS_CATEGORIES = [
     {
         "def": "food mixtures either arranged on a plate or tossed and served with a moist "
                "dressing; usually consisting of or including greens",
-        "frequency": "c",
-        "id": 918,
+        "frequency": "f",
+        "id": 904,
         "name": "salad",
         "synonyms": ["salad"],
         "synset": "salad.n.01"
@@ -7485,23 +7385,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a plate or bowl for individual servings of salad",
         "frequency": "r",
-        "id": 919,
+        "id": 905,
         "name": "salad_plate",
         "synonyms": ["salad_plate", "salad_bowl"],
         "synset": "salad_plate.n.01"
     },
     {
         "def": "highly seasoned fatty sausage of pork and beef usually dried",
-        "frequency": "r",
-        "id": 920,
+        "frequency": "c",
+        "id": 906,
         "name": "salami",
         "synonyms": ["salami"],
         "synset": "salami.n.01"
     },
     {
         "def": "any of various large food and game fishes of northern waters",
-        "frequency": "r",
-        "id": 921,
+        "frequency": "c",
+        "id": 907,
         "name": "salmon_(fish)",
         "synonyms": ["salmon_(fish)"],
         "synset": "salmon.n.01"
@@ -7509,15 +7409,15 @@ LVIS_CATEGORIES = [
     {
         "def": "flesh of any of various marine or freshwater fish of the family Salmonidae",
         "frequency": "r",
-        "id": 922,
+        "id": 908,
         "name": "salmon_(food)",
         "synonyms": ["salmon_(food)"],
         "synset": "salmon.n.03"
     },
     {
         "def": "spicy sauce of tomatoes and onions and chili peppers to accompany Mexican foods",
-        "frequency": "r",
-        "id": 923,
+        "frequency": "c",
+        "id": 909,
         "name": "salsa",
         "synonyms": ["salsa"],
         "synset": "salsa.n.01"
@@ -7525,7 +7425,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a shaker with a perforated top for sprinkling salt",
         "frequency": "f",
-        "id": 924,
+        "id": 910,
         "name": "saltshaker",
         "synonyms": ["saltshaker"],
         "synset": "saltshaker.n.01"
@@ -7533,7 +7433,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a shoe consisting of a sole fastened by straps to the foot",
         "frequency": "f",
-        "id": 925,
+        "id": 911,
         "name": "sandal_(type_of_shoe)",
         "synonyms": ["sandal_(type_of_shoe)"],
         "synset": "sandal.n.01"
@@ -7541,7 +7441,7 @@ LVIS_CATEGORIES = [
     {
         "def": "two (or more) slices of bread with a filling between them",
         "frequency": "f",
-        "id": 926,
+        "id": 912,
         "name": "sandwich",
         "synonyms": ["sandwich"],
         "synset": "sandwich.n.01"
@@ -7550,7 +7450,7 @@ LVIS_CATEGORIES = [
         "def": "luggage consisting of a small case with a flat bottom and (usually) a shoulder "
                "strap",
         "frequency": "r",
-        "id": 927,
+        "id": 913,
         "name": "satchel",
         "synonyms": ["satchel"],
         "synset": "satchel.n.01"
@@ -7558,7 +7458,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a deep pan with a handle; used for stewing or boiling",
         "frequency": "r",
-        "id": 928,
+        "id": 914,
         "name": "saucepan",
         "synonyms": ["saucepan"],
         "synset": "saucepan.n.01"
@@ -7566,7 +7466,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small shallow dish for holding a cup at the table",
         "frequency": "f",
-        "id": 929,
+        "id": 915,
         "name": "saucer",
         "synonyms": ["saucer"],
         "synset": "saucer.n.02"
@@ -7574,7 +7474,7 @@ LVIS_CATEGORIES = [
     {
         "def": "highly seasoned minced meat stuffed in casings",
         "frequency": "f",
-        "id": 930,
+        "id": 916,
         "name": "sausage",
         "synonyms": ["sausage"],
         "synset": "sausage.n.01"
@@ -7582,7 +7482,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a framework for holding wood that is being sawed",
         "frequency": "r",
-        "id": 931,
+        "id": 917,
         "name": "sawhorse",
         "synonyms": ["sawhorse", "sawbuck"],
         "synset": "sawhorse.n.01"
@@ -7590,7 +7490,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a wind instrument with a `J'-shaped form typically made of brass",
         "frequency": "r",
-        "id": 932,
+        "id": 918,
         "name": "saxophone",
         "synonyms": ["saxophone"],
         "synset": "sax.n.02"
@@ -7598,7 +7498,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a measuring instrument for weighing; shows amount of mass",
         "frequency": "f",
-        "id": 933,
+        "id": 919,
         "name": "scale_(measuring_instrument)",
         "synonyms": ["scale_(measuring_instrument)"],
         "synset": "scale.n.07"
@@ -7606,7 +7506,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an effigy in the shape of a man to frighten birds away from seeds",
         "frequency": "r",
-        "id": 934,
+        "id": 920,
         "name": "scarecrow",
         "synonyms": ["scarecrow", "strawman"],
         "synset": "scarecrow.n.01"
@@ -7614,7 +7514,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a garment worn around the head or neck or shoulders for warmth or decoration",
         "frequency": "f",
-        "id": 935,
+        "id": 921,
         "name": "scarf",
         "synonyms": ["scarf"],
         "synset": "scarf.n.01"
@@ -7622,7 +7522,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a bus used to transport children to or from school",
         "frequency": "c",
-        "id": 936,
+        "id": 922,
         "name": "school_bus",
         "synonyms": ["school_bus"],
         "synset": "school_bus.n.01"
@@ -7630,55 +7530,39 @@ LVIS_CATEGORIES = [
     {
         "def": "a tool having two crossed pivoting blades with looped handles",
         "frequency": "f",
-        "id": 937,
+        "id": 923,
         "name": "scissors",
         "synonyms": ["scissors"],
         "synset": "scissors.n.01"
     },
     {
         "def": "a large board for displaying the score of a contest (and some other information)",
-        "frequency": "c",
-        "id": 938,
+        "frequency": "f",
+        "id": 924,
         "name": "scoreboard",
         "synonyms": ["scoreboard"],
         "synset": "scoreboard.n.01"
     },
     {
-        "def": "eggs beaten and cooked to a soft firm consistency while stirring",
-        "frequency": "c",
-        "id": 939,
-        "name": "scrambled_eggs",
-        "synonyms": ["scrambled_eggs"],
-        "synset": "scrambled_eggs.n.01"
-    },
-    {
         "def": "any of various hand tools for scraping",
         "frequency": "r",
-        "id": 940,
+        "id": 925,
         "name": "scraper",
         "synonyms": ["scraper"],
         "synset": "scraper.n.01"
     },
     {
-        "def": "a device used for scratching",
-        "frequency": "r",
-        "id": 941,
-        "name": "scratcher",
-        "synonyms": ["scratcher"],
-        "synset": "scratcher.n.03"
-    },
-    {
         "def": "a hand tool for driving screws; has a tip that fits into the head of a screw",
         "frequency": "c",
-        "id": 942,
+        "id": 926,
         "name": "screwdriver",
         "synonyms": ["screwdriver"],
         "synset": "screwdriver.n.01"
     },
     {
         "def": "a brush with short stiff bristles for heavy cleaning",
-        "frequency": "c",
-        "id": 943,
+        "frequency": "f",
+        "id": 927,
         "name": "scrubbing_brush",
         "synonyms": ["scrubbing_brush"],
         "synset": "scrub_brush.n.01"
@@ -7686,7 +7570,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a three-dimensional work of art",
         "frequency": "c",
-        "id": 944,
+        "id": 928,
         "name": "sculpture",
         "synonyms": ["sculpture"],
         "synset": "sculpture.n.01"
@@ -7694,16 +7578,16 @@ LVIS_CATEGORIES = [
     {
         "def": "a bird that frequents coastal waters and the open ocean: gulls; pelicans; gannets; "
                "cormorants; albatrosses; petrels; etc.",
-        "frequency": "r",
-        "id": 945,
+        "frequency": "c",
+        "id": 929,
         "name": "seabird",
         "synonyms": ["seabird", "seafowl"],
         "synset": "seabird.n.01"
     },
     {
         "def": "small fish with horse-like heads bent sharply downward and curled tails",
-        "frequency": "r",
-        "id": 946,
+        "frequency": "c",
+        "id": 930,
         "name": "seahorse",
         "synonyms": ["seahorse"],
         "synset": "seahorse.n.02"
@@ -7711,7 +7595,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an airplane that can land on or take off from water",
         "frequency": "r",
-        "id": 947,
+        "id": 931,
         "name": "seaplane",
         "synonyms": ["seaplane", "hydroplane"],
         "synset": "seaplane.n.01"
@@ -7719,39 +7603,23 @@ LVIS_CATEGORIES = [
     {
         "def": "the shell of a marine organism",
         "frequency": "c",
-        "id": 948,
+        "id": 932,
         "name": "seashell",
         "synonyms": ["seashell"],
         "synset": "seashell.n.01"
     },
     {
-        "def": "young plant or tree grown from a seed",
-        "frequency": "r",
-        "id": 949,
-        "name": "seedling",
-        "synonyms": ["seedling"],
-        "synset": "seedling.n.01"
-    },
-    {
-        "def": "a dish used for serving food",
-        "frequency": "c",
-        "id": 950,
-        "name": "serving_dish",
-        "synonyms": ["serving_dish"],
-        "synset": "serving_dish.n.01"
-    },
-    {
         "def": "a textile machine used as a home appliance for sewing",
-        "frequency": "r",
-        "id": 951,
+        "frequency": "c",
+        "id": 933,
         "name": "sewing_machine",
         "synonyms": ["sewing_machine"],
         "synset": "sewing_machine.n.01"
     },
     {
         "def": "a container in which something can be shaken",
-        "frequency": "r",
-        "id": 952,
+        "frequency": "c",
+        "id": 934,
         "name": "shaker",
         "synonyms": ["shaker"],
         "synset": "shaker.n.03"
@@ -7759,15 +7627,15 @@ LVIS_CATEGORIES = [
     {
         "def": "cleansing agent consisting of soaps or detergents used for washing the hair",
         "frequency": "c",
-        "id": 953,
+        "id": 935,
         "name": "shampoo",
         "synonyms": ["shampoo"],
         "synset": "shampoo.n.01"
     },
     {
         "def": "typically large carnivorous fishes with sharpe teeth",
-        "frequency": "r",
-        "id": 954,
+        "frequency": "c",
+        "id": 936,
         "name": "shark",
         "synonyms": ["shark"],
         "synset": "shark.n.01"
@@ -7775,7 +7643,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any implement that is used to make something (an edge or a point) sharper",
         "frequency": "r",
-        "id": 955,
+        "id": 937,
         "name": "sharpener",
         "synonyms": ["sharpener"],
         "synset": "sharpener.n.01"
@@ -7783,7 +7651,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a pen with indelible ink that will write on any surface",
         "frequency": "r",
-        "id": 956,
+        "id": 938,
         "name": "Sharpie",
         "synonyms": ["Sharpie"],
         "synset": "sharpie.n.03"
@@ -7791,7 +7659,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a razor powered by an electric motor",
         "frequency": "r",
-        "id": 957,
+        "id": 939,
         "name": "shaver_(electric)",
         "synonyms": ["shaver_(electric)", "electric_shaver", "electric_razor"],
         "synset": "shaver.n.03"
@@ -7800,7 +7668,7 @@ LVIS_CATEGORIES = [
         "def": "toiletry consisting that forms a rich lather for softening the beard before "
                "shaving",
         "frequency": "c",
-        "id": 958,
+        "id": 940,
         "name": "shaving_cream",
         "synonyms": ["shaving_cream", "shaving_soap"],
         "synset": "shaving_cream.n.01"
@@ -7808,7 +7676,7 @@ LVIS_CATEGORIES = [
     {
         "def": "cloak consisting of an oblong piece of cloth used to cover the head and shoulders",
         "frequency": "r",
-        "id": 959,
+        "id": 941,
         "name": "shawl",
         "synonyms": ["shawl"],
         "synset": "shawl.n.01"
@@ -7816,7 +7684,7 @@ LVIS_CATEGORIES = [
     {
         "def": "large scissors with strong blades",
         "frequency": "r",
-        "id": 960,
+        "id": 942,
         "name": "shears",
         "synonyms": ["shears"],
         "synset": "shears.n.01"
@@ -7824,7 +7692,7 @@ LVIS_CATEGORIES = [
     {
         "def": "woolly usually horned ruminant mammal related to the goat",
         "frequency": "f",
-        "id": 961,
+        "id": 943,
         "name": "sheep",
         "synonyms": ["sheep"],
         "synset": "sheep.n.01"
@@ -7832,7 +7700,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any of various usually long-haired breeds of dog reared to herd and guard sheep",
         "frequency": "r",
-        "id": 962,
+        "id": 944,
         "name": "shepherd_dog",
         "synonyms": ["shepherd_dog", "sheepdog"],
         "synset": "shepherd_dog.n.01"
@@ -7840,15 +7708,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a frozen dessert made primarily of fruit juice and sugar",
         "frequency": "r",
-        "id": 963,
+        "id": 945,
         "name": "sherbert",
         "synonyms": ["sherbert", "sherbet"],
         "synset": "sherbert.n.01"
     },
     {
         "def": "armor carried on the arm to intercept blows",
-        "frequency": "r",
-        "id": 964,
+        "frequency": "c",
+        "id": 946,
         "name": "shield",
         "synonyms": ["shield"],
         "synset": "shield.n.02"
@@ -7856,7 +7724,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a garment worn on the upper half of the body",
         "frequency": "f",
-        "id": 965,
+        "id": 947,
         "name": "shirt",
         "synonyms": ["shirt"],
         "synset": "shirt.n.01"
@@ -7864,7 +7732,7 @@ LVIS_CATEGORIES = [
     {
         "def": "common footwear covering the foot",
         "frequency": "f",
-        "id": 966,
+        "id": 948,
         "name": "shoe",
         "synonyms": ["shoe", "sneaker_(type_of_shoe)", "tennis_shoe"],
         "synset": "shoe.n.01"
@@ -7872,8 +7740,8 @@ LVIS_CATEGORIES = [
     {
         "def": "a bag made of plastic or strong paper (often with handles); used to transport "
                "goods after shopping",
-        "frequency": "c",
-        "id": 967,
+        "frequency": "f",
+        "id": 949,
         "name": "shopping_bag",
         "synonyms": ["shopping_bag"],
         "synset": "shopping_bag.n.01"
@@ -7881,7 +7749,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a handcart that holds groceries or other goods while shopping",
         "frequency": "c",
-        "id": 968,
+        "id": 950,
         "name": "shopping_cart",
         "synonyms": ["shopping_cart"],
         "synset": "shopping_cart.n.01"
@@ -7889,7 +7757,7 @@ LVIS_CATEGORIES = [
     {
         "def": "trousers that end at or above the knee",
         "frequency": "f",
-        "id": 969,
+        "id": 951,
         "name": "short_pants",
         "synonyms": ["short_pants", "shorts_(clothing)", "trunks_(clothing)"],
         "synset": "short_pants.n.01"
@@ -7897,15 +7765,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a small glass adequate to hold a single swallow of whiskey",
         "frequency": "r",
-        "id": 970,
+        "id": 952,
         "name": "shot_glass",
         "synonyms": ["shot_glass"],
         "synset": "shot_glass.n.01"
     },
     {
         "def": "a large handbag that can be carried by a strap looped over the shoulder",
-        "frequency": "c",
-        "id": 971,
+        "frequency": "f",
+        "id": 953,
         "name": "shoulder_bag",
         "synonyms": ["shoulder_bag"],
         "synset": "shoulder_bag.n.01"
@@ -7913,7 +7781,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a hand tool for lifting loose material such as snow, dirt, etc.",
         "frequency": "c",
-        "id": 972,
+        "id": 954,
         "name": "shovel",
         "synonyms": ["shovel"],
         "synset": "shovel.n.01"
@@ -7921,15 +7789,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a plumbing fixture that sprays water over you",
         "frequency": "f",
-        "id": 973,
+        "id": 955,
         "name": "shower_head",
         "synonyms": ["shower_head"],
         "synset": "shower.n.01"
     },
     {
+        "def": "a tight cap worn to keep hair dry while showering",
+        "frequency": "r",
+        "id": 956,
+        "name": "shower_cap",
+        "synonyms": ["shower_cap"],
+        "synset": "shower_cap.n.01"
+    },
+    {
         "def": "a curtain that keeps water from splashing out of the shower area",
         "frequency": "f",
-        "id": 974,
+        "id": 957,
         "name": "shower_curtain",
         "synonyms": ["shower_curtain"],
         "synset": "shower_curtain.n.01"
@@ -7937,23 +7813,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a device that shreds documents",
         "frequency": "r",
-        "id": 975,
+        "id": 958,
         "name": "shredder_(for_paper)",
         "synonyms": ["shredder_(for_paper)"],
         "synset": "shredder.n.01"
     },
     {
-        "def": "a strainer for separating lumps from powdered material or grading particles",
-        "frequency": "r",
-        "id": 976,
-        "name": "sieve",
-        "synonyms": ["sieve", "screen_(sieve)"],
-        "synset": "sieve.n.01"
-    },
-    {
         "def": "structure displaying a board on which advertisements can be posted",
         "frequency": "f",
-        "id": 977,
+        "id": 959,
         "name": "signboard",
         "synonyms": ["signboard"],
         "synset": "signboard.n.01"
@@ -7961,7 +7829,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cylindrical tower used for storing goods",
         "frequency": "c",
-        "id": 978,
+        "id": 960,
         "name": "silo",
         "synonyms": ["silo"],
         "synset": "silo.n.01"
@@ -7970,7 +7838,7 @@ LVIS_CATEGORIES = [
         "def": "plumbing fixture consisting of a water basin fixed to a wall or floor and having a "
                "drainpipe",
         "frequency": "f",
-        "id": 979,
+        "id": 961,
         "name": "sink",
         "synonyms": ["sink"],
         "synset": "sink.n.01"
@@ -7979,7 +7847,7 @@ LVIS_CATEGORIES = [
         "def": "a board with wheels that is ridden in a standing or crouching position and "
                "propelled by foot",
         "frequency": "f",
-        "id": 980,
+        "id": 962,
         "name": "skateboard",
         "synonyms": ["skateboard"],
         "synset": "skateboard.n.01"
@@ -7987,7 +7855,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a long pin for holding meat in position while it is being roasted",
         "frequency": "c",
-        "id": 981,
+        "id": 963,
         "name": "skewer",
         "synonyms": ["skewer"],
         "synset": "skewer.n.01"
@@ -7995,7 +7863,7 @@ LVIS_CATEGORIES = [
     {
         "def": "sports equipment for skiing on snow",
         "frequency": "f",
-        "id": 982,
+        "id": 964,
         "name": "ski",
         "synonyms": ["ski"],
         "synset": "ski.n.01"
@@ -8003,7 +7871,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a stiff boot that is fastened to a ski with a ski binding",
         "frequency": "f",
-        "id": 983,
+        "id": 965,
         "name": "ski_boot",
         "synonyms": ["ski_boot"],
         "synset": "ski_boot.n.01"
@@ -8011,7 +7879,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a parka to be worn while skiing",
         "frequency": "f",
-        "id": 984,
+        "id": 966,
         "name": "ski_parka",
         "synonyms": ["ski_parka", "ski_jacket"],
         "synset": "ski_parka.n.01"
@@ -8019,7 +7887,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a pole with metal points used as an aid in skiing",
         "frequency": "f",
-        "id": 985,
+        "id": 967,
         "name": "ski_pole",
         "synonyms": ["ski_pole"],
         "synset": "ski_pole.n.01"
@@ -8027,16 +7895,24 @@ LVIS_CATEGORIES = [
     {
         "def": "a garment hanging from the waist; worn mainly by girls and women",
         "frequency": "f",
-        "id": 986,
+        "id": 968,
         "name": "skirt",
         "synonyms": ["skirt"],
         "synset": "skirt.n.02"
     },
     {
+        "def": "rounded brimless cap fitting the crown of the head",
+        "frequency": "r",
+        "id": 969,
+        "name": "skullcap",
+        "synonyms": ["skullcap"],
+        "synset": "skullcap.n.01"
+    },
+    {
         "def": "a vehicle or flat object for transportation over snow by sliding or pulled by "
                "dogs, etc.",
         "frequency": "c",
-        "id": 987,
+        "id": 970,
         "name": "sled",
         "synonyms": ["sled", "sledge", "sleigh"],
         "synset": "sled.n.01"
@@ -8044,7 +7920,7 @@ LVIS_CATEGORIES = [
     {
         "def": "large padded bag designed to be slept in outdoors",
         "frequency": "c",
-        "id": 988,
+        "id": 971,
         "name": "sleeping_bag",
         "synonyms": ["sleeping_bag"],
         "synset": "sleeping_bag.n.01"
@@ -8052,7 +7928,7 @@ LVIS_CATEGORIES = [
     {
         "def": "bandage to support an injured forearm; slung over the shoulder or neck",
         "frequency": "r",
-        "id": 989,
+        "id": 972,
         "name": "sling_(bandage)",
         "synonyms": ["sling_(bandage)", "triangular_bandage"],
         "synset": "sling.n.05"
@@ -8060,7 +7936,7 @@ LVIS_CATEGORIES = [
     {
         "def": "low footwear that can be slipped on and off easily; usually worn indoors",
         "frequency": "c",
-        "id": 990,
+        "id": 973,
         "name": "slipper_(footwear)",
         "synonyms": ["slipper_(footwear)", "carpet_slipper_(footwear)"],
         "synset": "slipper.n.01"
@@ -8069,7 +7945,7 @@ LVIS_CATEGORIES = [
         "def": "a thick smooth drink consisting of fresh fruit pureed with ice cream or yoghurt or "
                "milk",
         "frequency": "r",
-        "id": 991,
+        "id": 974,
         "name": "smoothie",
         "synonyms": ["smoothie"],
         "synset": "smoothie.n.02"
@@ -8077,7 +7953,7 @@ LVIS_CATEGORIES = [
     {
         "def": "limbless scaly elongate reptile; some are venomous",
         "frequency": "r",
-        "id": 992,
+        "id": 975,
         "name": "snake",
         "synonyms": ["snake", "serpent"],
         "synset": "snake.n.01"
@@ -8086,7 +7962,7 @@ LVIS_CATEGORIES = [
         "def": "a board that resembles a broad ski or a small surfboard; used in a standing "
                "position to slide down snow-covered slopes",
         "frequency": "f",
-        "id": 993,
+        "id": 976,
         "name": "snowboard",
         "synonyms": ["snowboard"],
         "synset": "snowboard.n.01"
@@ -8094,7 +7970,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a figure of a person made of packed snow",
         "frequency": "c",
-        "id": 994,
+        "id": 977,
         "name": "snowman",
         "synonyms": ["snowman"],
         "synset": "snowman.n.01"
@@ -8102,7 +7978,7 @@ LVIS_CATEGORIES = [
     {
         "def": "tracked vehicle for travel on snow having skis in front",
         "frequency": "c",
-        "id": 995,
+        "id": 978,
         "name": "snowmobile",
         "synonyms": ["snowmobile"],
         "synset": "snowmobile.n.01"
@@ -8110,7 +7986,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cleansing agent made from the salts of vegetable or animal fats",
         "frequency": "f",
-        "id": 996,
+        "id": 979,
         "name": "soap",
         "synonyms": ["soap"],
         "synset": "soap.n.01"
@@ -8119,7 +7995,7 @@ LVIS_CATEGORIES = [
         "def": "an inflated ball used in playing soccer (called `football' outside of the United "
                "States)",
         "frequency": "f",
-        "id": 997,
+        "id": 980,
         "name": "soccer_ball",
         "synonyms": ["soccer_ball"],
         "synset": "soccer_ball.n.01"
@@ -8128,31 +8004,15 @@ LVIS_CATEGORIES = [
         "def": "cloth covering for the foot; worn inside the shoe; reaches to between the ankle "
                "and the knee",
         "frequency": "f",
-        "id": 998,
+        "id": 981,
         "name": "sock",
         "synonyms": ["sock"],
         "synset": "sock.n.01"
     },
     {
-        "def": "an apparatus for dispensing soda water",
-        "frequency": "r",
-        "id": 999,
-        "name": "soda_fountain",
-        "synonyms": ["soda_fountain"],
-        "synset": "soda_fountain.n.02"
-    },
-    {
-        "def": "effervescent beverage artificially charged with carbon dioxide",
-        "frequency": "r",
-        "id": 1000,
-        "name": "carbonated_water",
-        "synonyms": ["carbonated_water", "club_soda", "seltzer", "sparkling_water"],
-        "synset": "soda_water.n.01"
-    },
-    {
         "def": "an upholstered seat for more than one person",
         "frequency": "f",
-        "id": 1001,
+        "id": 982,
         "name": "sofa",
         "synonyms": ["sofa", "couch", "lounge"],
         "synset": "sofa.n.01"
@@ -8160,7 +8020,7 @@ LVIS_CATEGORIES = [
     {
         "def": "ball used in playing softball",
         "frequency": "r",
-        "id": 1002,
+        "id": 983,
         "name": "softball",
         "synonyms": ["softball"],
         "synset": "softball.n.01"
@@ -8168,7 +8028,7 @@ LVIS_CATEGORIES = [
     {
         "def": "electrical device consisting of a large array of connected solar cells",
         "frequency": "c",
-        "id": 1003,
+        "id": 984,
         "name": "solar_array",
         "synonyms": ["solar_array", "solar_battery", "solar_panel"],
         "synset": "solar_array.n.01"
@@ -8177,7 +8037,7 @@ LVIS_CATEGORIES = [
         "def": "a straw hat with a tall crown and broad brim; worn in American southwest and in "
                "Mexico",
         "frequency": "r",
-        "id": 1004,
+        "id": 985,
         "name": "sombrero",
         "synonyms": ["sombrero"],
         "synset": "sombrero.n.02"
@@ -8185,8 +8045,8 @@ LVIS_CATEGORIES = [
     {
         "def": "liquid food especially of meat or fish or vegetable stock often containing pieces "
                "of solid food",
-        "frequency": "c",
-        "id": 1005,
+        "frequency": "f",
+        "id": 986,
         "name": "soup",
         "synonyms": ["soup"],
         "synset": "soup.n.01"
@@ -8194,7 +8054,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a bowl for serving soup",
         "frequency": "r",
-        "id": 1006,
+        "id": 987,
         "name": "soup_bowl",
         "synonyms": ["soup_bowl"],
         "synset": "soup_bowl.n.01"
@@ -8202,7 +8062,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a spoon with a rounded bowl for eating soup",
         "frequency": "c",
-        "id": 1007,
+        "id": 988,
         "name": "soupspoon",
         "synonyms": ["soupspoon"],
         "synset": "soupspoon.n.01"
@@ -8210,7 +8070,7 @@ LVIS_CATEGORIES = [
     {
         "def": "soured light cream",
         "frequency": "c",
-        "id": 1008,
+        "id": 989,
         "name": "sour_cream",
         "synonyms": ["sour_cream", "soured_cream"],
         "synset": "sour_cream.n.01"
@@ -8219,7 +8079,7 @@ LVIS_CATEGORIES = [
         "def": "a milk substitute containing soybean flour and water; used in some infant formulas "
                "and in making tofu",
         "frequency": "r",
-        "id": 1009,
+        "id": 990,
         "name": "soya_milk",
         "synonyms": ["soya_milk", "soybean_milk", "soymilk"],
         "synset": "soya_milk.n.01"
@@ -8228,7 +8088,7 @@ LVIS_CATEGORIES = [
         "def": "a reusable spacecraft with wings for a controlled descent through the Earth's "
                "atmosphere",
         "frequency": "r",
-        "id": 1010,
+        "id": 991,
         "name": "space_shuttle",
         "synonyms": ["space_shuttle"],
         "synset": "space_shuttle.n.01"
@@ -8236,7 +8096,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a firework that burns slowly and throws out a shower of sparks",
         "frequency": "r",
-        "id": 1011,
+        "id": 992,
         "name": "sparkler_(fireworks)",
         "synonyms": ["sparkler_(fireworks)"],
         "synset": "sparkler.n.02"
@@ -8244,7 +8104,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a hand tool with a thin flexible blade used to mix or spread soft substances",
         "frequency": "f",
-        "id": 1012,
+        "id": 993,
         "name": "spatula",
         "synonyms": ["spatula"],
         "synset": "spatula.n.02"
@@ -8252,7 +8112,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a long pointed rod used as a tool or weapon",
         "frequency": "r",
-        "id": 1013,
+        "id": 994,
         "name": "spear",
         "synonyms": ["spear", "lance"],
         "synset": "spear.n.01"
@@ -8261,7 +8121,7 @@ LVIS_CATEGORIES = [
         "def": "optical instrument consisting of a frame that holds a pair of lenses for "
                "correcting defective vision",
         "frequency": "f",
-        "id": 1014,
+        "id": 995,
         "name": "spectacles",
         "synonyms": ["spectacles", "specs", "eyeglasses", "glasses"],
         "synset": "spectacles.n.01"
@@ -8269,7 +8129,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a rack for displaying containers filled with spices",
         "frequency": "c",
-        "id": 1015,
+        "id": 996,
         "name": "spice_rack",
         "synonyms": ["spice_rack"],
         "synset": "spice_rack.n.01"
@@ -8277,16 +8137,25 @@ LVIS_CATEGORIES = [
     {
         "def": "predatory arachnid with eight legs, two poison fangs, two feelers, and usually two "
                "silk-spinning organs at the back end of the body",
-        "frequency": "r",
-        "id": 1016,
+        "frequency": "c",
+        "id": 997,
         "name": "spider",
         "synonyms": ["spider"],
         "synset": "spider.n.01"
     },
     {
+        "def": "large edible marine crustacean having a spiny carapace but lacking the large "
+               "pincers of true lobsters",
+        "frequency": "r",
+        "id": 998,
+        "name": "crawfish",
+        "synonyms": ["crawfish", "crayfish"],
+        "synset": "spiny_lobster.n.02"
+    },
+    {
         "def": "a porous mass usable to absorb water typically used for cleaning",
         "frequency": "c",
-        "id": 1017,
+        "id": 999,
         "name": "sponge",
         "synonyms": ["sponge"],
         "synset": "sponge.n.01"
@@ -8294,7 +8163,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a piece of cutlery with a shallow bowl-shaped container and a handle",
         "frequency": "f",
-        "id": 1018,
+        "id": 1000,
         "name": "spoon",
         "synonyms": ["spoon"],
         "synset": "spoon.n.01"
@@ -8302,7 +8171,7 @@ LVIS_CATEGORIES = [
     {
         "def": "attire worn for sport or for casual wear",
         "frequency": "c",
-        "id": 1019,
+        "id": 1001,
         "name": "sportswear",
         "synonyms": ["sportswear", "athletic_wear", "activewear"],
         "synset": "sportswear.n.01"
@@ -8311,32 +8180,49 @@ LVIS_CATEGORIES = [
         "def": "a lamp that produces a strong beam of light to illuminate a restricted area; used "
                "to focus attention of a stage performer",
         "frequency": "c",
-        "id": 1020,
+        "id": 1002,
         "name": "spotlight",
         "synonyms": ["spotlight"],
         "synset": "spotlight.n.02"
     },
     {
-        "def": "a kind of arboreal rodent having a long bushy tail",
+        "def": "(Italian cuisine) squid prepared as food",
         "frequency": "r",
-        "id": 1021,
+        "id": 1003,
+        "name": "squid_(food)",
+        "synonyms": ["squid_(food)", "calamari", "calamary"],
+        "synset": "squid.n.01"
+    },
+    {
+        "def": "a kind of arboreal rodent having a long bushy tail",
+        "frequency": "c",
+        "id": 1004,
         "name": "squirrel",
         "synonyms": ["squirrel"],
         "synset": "squirrel.n.01"
     },
     {
+        "def": "a large coach-and-four formerly used to carry passengers and mail on regular "
+               "routes between towns",
+        "frequency": "r",
+        "id": 1005,
+        "name": "stagecoach",
+        "synonyms": ["stagecoach"],
+        "synset": "stagecoach.n.01"
+    },
+    {
         "def": "a machine that inserts staples into sheets of paper in order to fasten them "
                "together",
         "frequency": "c",
-        "id": 1022,
+        "id": 1006,
         "name": "stapler_(stapling_machine)",
         "synonyms": ["stapler_(stapling_machine)"],
         "synset": "stapler.n.01"
     },
     {
         "def": "echinoderms characterized by five arms extending from a central disk",
-        "frequency": "r",
-        "id": 1023,
+        "frequency": "c",
+        "id": 1007,
         "name": "starfish",
         "synonyms": ["starfish", "sea_star"],
         "synset": "starfish.n.01"
@@ -8344,7 +8230,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a sculpture representing a human or animal",
         "frequency": "f",
-        "id": 1024,
+        "id": 1008,
         "name": "statue_(sculpture)",
         "synonyms": ["statue_(sculpture)"],
         "synset": "statue.n.01"
@@ -8352,7 +8238,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a slice of meat cut from the fleshy part of an animal or large fish",
         "frequency": "c",
-        "id": 1025,
+        "id": 1009,
         "name": "steak_(food)",
         "synonyms": ["steak_(food)"],
         "synset": "steak.n.01"
@@ -8360,41 +8246,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a sharp table knife used in eating steak",
         "frequency": "r",
-        "id": 1026,
+        "id": 1010,
         "name": "steak_knife",
         "synonyms": ["steak_knife"],
         "synset": "steak_knife.n.01"
     },
     {
-        "def": "a cooking utensil that can be used to cook food by steaming it",
-        "frequency": "r",
-        "id": 1027,
-        "name": "steamer_(kitchen_appliance)",
-        "synonyms": ["steamer_(kitchen_appliance)"],
-        "synset": "steamer.n.02"
-    },
-    {
         "def": "a handwheel that is used for steering",
         "frequency": "f",
-        "id": 1028,
+        "id": 1011,
         "name": "steering_wheel",
         "synonyms": ["steering_wheel"],
         "synset": "steering_wheel.n.01"
     },
     {
-        "def": "a sheet of material (metal, plastic, etc.) that has been perforated with a "
-               "pattern; ink or paint can pass through the perforations to create the printed "
-               "pattern on the surface below",
-        "frequency": "r",
-        "id": 1029,
-        "name": "stencil",
-        "synonyms": ["stencil"],
-        "synset": "stencil.n.01"
-    },
-    {
         "def": "a folding portable ladder hinged at the top",
         "frequency": "r",
-        "id": 1030,
+        "id": 1012,
         "name": "stepladder",
         "synonyms": ["stepladder"],
         "synset": "step_ladder.n.01"
@@ -8402,7 +8270,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a stool that has one or two steps that fold under the seat",
         "frequency": "c",
-        "id": 1031,
+        "id": 1013,
         "name": "step_stool",
         "synonyms": ["step_stool"],
         "synset": "step_stool.n.01"
@@ -8410,7 +8278,7 @@ LVIS_CATEGORIES = [
     {
         "def": "electronic device for playing audio",
         "frequency": "c",
-        "id": 1032,
+        "id": 1014,
         "name": "stereo_(sound_system)",
         "synonyms": ["stereo_(sound_system)"],
         "synset": "stereo.n.01"
@@ -8418,7 +8286,7 @@ LVIS_CATEGORIES = [
     {
         "def": "food prepared by stewing especially meat or fish with vegetables",
         "frequency": "r",
-        "id": 1033,
+        "id": 1015,
         "name": "stew",
         "synonyms": ["stew"],
         "synset": "stew.n.02"
@@ -8426,7 +8294,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an implement used for stirring",
         "frequency": "r",
-        "id": 1034,
+        "id": 1016,
         "name": "stirrer",
         "synonyms": ["stirrer"],
         "synset": "stirrer.n.02"
@@ -8434,23 +8302,15 @@ LVIS_CATEGORIES = [
     {
         "def": "support consisting of metal loops into which rider's feet go",
         "frequency": "f",
-        "id": 1035,
+        "id": 1017,
         "name": "stirrup",
         "synonyms": ["stirrup"],
         "synset": "stirrup.n.01"
     },
     {
-        "def": "close-fitting hosiery to cover the foot and leg; come in matched pairs",
-        "frequency": "c",
-        "id": 1036,
-        "name": "stockings_(leg_wear)",
-        "synonyms": ["stockings_(leg_wear)"],
-        "synset": "stocking.n.01"
-    },
-    {
         "def": "a simple seat without a back or arms",
         "frequency": "f",
-        "id": 1037,
+        "id": 1018,
         "name": "stool",
         "synonyms": ["stool"],
         "synset": "stool.n.01"
@@ -8458,7 +8318,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a traffic sign to notify drivers that they must come to a complete stop",
         "frequency": "f",
-        "id": 1038,
+        "id": 1019,
         "name": "stop_sign",
         "synonyms": ["stop_sign"],
         "synset": "stop_sign.n.01"
@@ -8467,7 +8327,7 @@ LVIS_CATEGORIES = [
         "def": "a red light on the rear of a motor vehicle that signals when the brakes are "
                "applied",
         "frequency": "f",
-        "id": 1039,
+        "id": 1020,
         "name": "brake_light",
         "synonyms": ["brake_light"],
         "synset": "stoplight.n.01"
@@ -8475,7 +8335,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a kitchen appliance used for cooking food",
         "frequency": "f",
-        "id": 1040,
+        "id": 1021,
         "name": "stove",
         "synonyms": ["stove", "kitchen_stove", "range_(kitchen_appliance)", "kitchen_range",
                      "cooking_stove"],
@@ -8484,7 +8344,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a filter to retain larger pieces while smaller pieces and liquids pass through",
         "frequency": "c",
-        "id": 1041,
+        "id": 1022,
         "name": "strainer",
         "synonyms": ["strainer"],
         "synset": "strainer.n.01"
@@ -8492,7 +8352,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an elongated strip of material for binding things together or holding",
         "frequency": "f",
-        "id": 1042,
+        "id": 1023,
         "name": "strap",
         "synonyms": ["strap"],
         "synset": "strap.n.01"
@@ -8500,7 +8360,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a thin paper or plastic tube used to suck liquids into the mouth",
         "frequency": "f",
-        "id": 1043,
+        "id": 1024,
         "name": "straw_(for_drinking)",
         "synonyms": ["straw_(for_drinking)", "drinking_straw"],
         "synset": "straw.n.04"
@@ -8508,7 +8368,7 @@ LVIS_CATEGORIES = [
     {
         "def": "sweet fleshy red fruit",
         "frequency": "f",
-        "id": 1044,
+        "id": 1025,
         "name": "strawberry",
         "synonyms": ["strawberry"],
         "synset": "strawberry.n.01"
@@ -8516,7 +8376,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a sign visible from the street",
         "frequency": "f",
-        "id": 1045,
+        "id": 1026,
         "name": "street_sign",
         "synonyms": ["street_sign"],
         "synset": "street_sign.n.01"
@@ -8524,7 +8384,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a lamp supported on a lamppost; for illuminating a street",
         "frequency": "f",
-        "id": 1046,
+        "id": 1027,
         "name": "streetlight",
         "synonyms": ["streetlight", "street_lamp"],
         "synset": "streetlight.n.01"
@@ -8532,15 +8392,15 @@ LVIS_CATEGORIES = [
     {
         "def": "cheese formed in long strings twisted together",
         "frequency": "r",
-        "id": 1047,
+        "id": 1028,
         "name": "string_cheese",
         "synonyms": ["string_cheese"],
         "synset": "string_cheese.n.01"
     },
     {
-        "def": "a pointed tool for writing or drawing or engraving",
+        "def": "a pointed tool for writing or drawing or engraving, including pens",
         "frequency": "r",
-        "id": 1048,
+        "id": 1029,
         "name": "stylus",
         "synonyms": ["stylus"],
         "synset": "stylus.n.02"
@@ -8548,7 +8408,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a loudspeaker that is designed to reproduce very low bass frequencies",
         "frequency": "r",
-        "id": 1049,
+        "id": 1030,
         "name": "subwoofer",
         "synonyms": ["subwoofer"],
         "synset": "subwoofer.n.01"
@@ -8556,7 +8416,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a dish in which sugar is served",
         "frequency": "r",
-        "id": 1050,
+        "id": 1031,
         "name": "sugar_bowl",
         "synonyms": ["sugar_bowl"],
         "synset": "sugar_bowl.n.01"
@@ -8565,7 +8425,7 @@ LVIS_CATEGORIES = [
         "def": "juicy canes whose sap is a source of molasses and commercial sugar; fresh canes "
                "are sometimes chewed for the juice",
         "frequency": "r",
-        "id": 1051,
+        "id": 1032,
         "name": "sugarcane_(plant)",
         "synonyms": ["sugarcane_(plant)"],
         "synset": "sugarcane.n.01"
@@ -8573,8 +8433,8 @@ LVIS_CATEGORIES = [
     {
         "def": "a set of garments (usually including a jacket and trousers or skirt) for outerwear "
                "all of the same fabric and color",
-        "frequency": "c",
-        "id": 1052,
+        "frequency": "f",
+        "id": 1033,
         "name": "suit_(clothing)",
         "synonyms": ["suit_(clothing)"],
         "synset": "suit.n.01"
@@ -8583,7 +8443,7 @@ LVIS_CATEGORIES = [
         "def": "any plant of the genus Helianthus having large flower heads with dark disk florets "
                "and showy yellow rays",
         "frequency": "c",
-        "id": 1053,
+        "id": 1034,
         "name": "sunflower",
         "synonyms": ["sunflower"],
         "synset": "sunflower.n.01"
@@ -8592,7 +8452,7 @@ LVIS_CATEGORIES = [
         "def": "spectacles that are darkened or polarized to protect the eyes from the glare of "
                "the sun",
         "frequency": "f",
-        "id": 1054,
+        "id": 1035,
         "name": "sunglasses",
         "synonyms": ["sunglasses"],
         "synset": "sunglasses.n.01"
@@ -8600,24 +8460,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a hat with a broad brim that protects the face from direct exposure to the sun",
         "frequency": "c",
-        "id": 1055,
+        "id": 1036,
         "name": "sunhat",
         "synonyms": ["sunhat"],
         "synset": "sunhat.n.01"
     },
     {
-        "def": "a cream spread on the skin; contains a chemical to filter out ultraviolet light "
-               "and so protect from sunburn",
-        "frequency": "r",
-        "id": 1056,
-        "name": "sunscreen",
-        "synonyms": ["sunscreen", "sunblock"],
-        "synset": "sunscreen.n.01"
-    },
-    {
         "def": "a narrow buoyant board for riding surf",
         "frequency": "f",
-        "id": 1057,
+        "id": 1037,
         "name": "surfboard",
         "synonyms": ["surfboard"],
         "synset": "surfboard.n.01"
@@ -8625,7 +8476,7 @@ LVIS_CATEGORIES = [
     {
         "def": "rice (with raw fish) wrapped in seaweed",
         "frequency": "c",
-        "id": 1058,
+        "id": 1038,
         "name": "sushi",
         "synonyms": ["sushi"],
         "synset": "sushi.n.01"
@@ -8634,7 +8485,7 @@ LVIS_CATEGORIES = [
         "def": "cleaning implement consisting of absorbent material fastened to a handle; for "
                "cleaning floors",
         "frequency": "c",
-        "id": 1059,
+        "id": 1039,
         "name": "mop",
         "synonyms": ["mop"],
         "synset": "swab.n.02"
@@ -8642,7 +8493,7 @@ LVIS_CATEGORIES = [
     {
         "def": "loose-fitting trousers with elastic cuffs; worn by athletes",
         "frequency": "c",
-        "id": 1060,
+        "id": 1040,
         "name": "sweat_pants",
         "synonyms": ["sweat_pants"],
         "synset": "sweat_pants.n.01"
@@ -8650,7 +8501,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a band of material tied around the forehead or wrist to absorb sweat",
         "frequency": "c",
-        "id": 1061,
+        "id": 1041,
         "name": "sweatband",
         "synonyms": ["sweatband"],
         "synset": "sweatband.n.02"
@@ -8658,7 +8509,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a crocheted or knitted garment covering the upper part of the body",
         "frequency": "f",
-        "id": 1062,
+        "id": 1042,
         "name": "sweater",
         "synonyms": ["sweater"],
         "synset": "sweater.n.01"
@@ -8666,7 +8517,7 @@ LVIS_CATEGORIES = [
     {
         "def": "cotton knit pullover with long sleeves worn during athletic activity",
         "frequency": "f",
-        "id": 1063,
+        "id": 1043,
         "name": "sweatshirt",
         "synonyms": ["sweatshirt"],
         "synset": "sweatshirt.n.01"
@@ -8674,7 +8525,7 @@ LVIS_CATEGORIES = [
     {
         "def": "the edible tuberous root of the sweet potato vine",
         "frequency": "c",
-        "id": 1064,
+        "id": 1044,
         "name": "sweet_potato",
         "synonyms": ["sweet_potato"],
         "synset": "sweet_potato.n.02"
@@ -8682,7 +8533,7 @@ LVIS_CATEGORIES = [
     {
         "def": "garment worn for swimming",
         "frequency": "f",
-        "id": 1065,
+        "id": 1045,
         "name": "swimsuit",
         "synonyms": ["swimsuit", "swimwear", "bathing_suit", "swimming_costume",
                      "bathing_costume", "swimming_trunks", "bathing_trunks"],
@@ -8691,7 +8542,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cutting or thrusting weapon that has a long metal blade",
         "frequency": "c",
-        "id": 1066,
+        "id": 1046,
         "name": "sword",
         "synonyms": ["sword"],
         "synset": "sword.n.01"
@@ -8699,7 +8550,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a medical instrument used to inject or withdraw fluids",
         "frequency": "r",
-        "id": 1067,
+        "id": 1047,
         "name": "syringe",
         "synonyms": ["syringe"],
         "synset": "syringe.n.01"
@@ -8707,7 +8558,7 @@ LVIS_CATEGORIES = [
     {
         "def": "very spicy sauce (trade name Tabasco) made from fully-aged red peppers",
         "frequency": "r",
-        "id": 1068,
+        "id": 1048,
         "name": "Tabasco_sauce",
         "synonyms": ["Tabasco_sauce"],
         "synset": "tabasco.n.02"
@@ -8715,7 +8566,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a table used for playing table tennis",
         "frequency": "r",
-        "id": 1069,
+        "id": 1049,
         "name": "table-tennis_table",
         "synonyms": ["table-tennis_table", "ping-pong_table"],
         "synset": "table-tennis_table.n.01"
@@ -8724,7 +8575,7 @@ LVIS_CATEGORIES = [
         "def": "a piece of furniture having a smooth flat top that is usually supported by one or "
                "more vertical legs",
         "frequency": "f",
-        "id": 1070,
+        "id": 1050,
         "name": "table",
         "synonyms": ["table"],
         "synset": "table.n.02"
@@ -8732,7 +8583,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a lamp that sits on a table",
         "frequency": "c",
-        "id": 1071,
+        "id": 1051,
         "name": "table_lamp",
         "synonyms": ["table_lamp"],
         "synset": "table_lamp.n.01"
@@ -8740,7 +8591,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a covering spread over a dining table",
         "frequency": "f",
-        "id": 1072,
+        "id": 1052,
         "name": "tablecloth",
         "synonyms": ["tablecloth"],
         "synset": "tablecloth.n.01"
@@ -8748,7 +8599,7 @@ LVIS_CATEGORIES = [
     {
         "def": "measuring instrument for indicating speed of rotation",
         "frequency": "r",
-        "id": 1073,
+        "id": 1053,
         "name": "tachometer",
         "synonyms": ["tachometer"],
         "synset": "tachometer.n.01"
@@ -8756,7 +8607,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small tortilla cupped around a filling",
         "frequency": "r",
-        "id": 1074,
+        "id": 1054,
         "name": "taco",
         "synonyms": ["taco"],
         "synset": "taco.n.02"
@@ -8764,7 +8615,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a label associated with something for the purpose of identification or information",
         "frequency": "f",
-        "id": 1075,
+        "id": 1055,
         "name": "tag",
         "synonyms": ["tag"],
         "synset": "tag.n.02"
@@ -8772,7 +8623,7 @@ LVIS_CATEGORIES = [
     {
         "def": "lamp (usually red) mounted at the rear of a motor vehicle",
         "frequency": "f",
-        "id": 1076,
+        "id": 1056,
         "name": "taillight",
         "synonyms": ["taillight", "rear_light"],
         "synset": "taillight.n.01"
@@ -8780,7 +8631,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a shallow drum with a single drumhead and with metallic disks in the sides",
         "frequency": "r",
-        "id": 1077,
+        "id": 1057,
         "name": "tambourine",
         "synonyms": ["tambourine"],
         "synset": "tambourine.n.01"
@@ -8788,15 +8639,15 @@ LVIS_CATEGORIES = [
     {
         "def": "an enclosed armored military vehicle; has a cannon and moves on caterpillar treads",
         "frequency": "r",
-        "id": 1078,
+        "id": 1058,
         "name": "army_tank",
         "synonyms": ["army_tank", "armored_combat_vehicle", "armoured_combat_vehicle"],
         "synset": "tank.n.01"
     },
     {
         "def": "a large (usually metallic) vessel for holding gases or liquids",
-        "frequency": "c",
-        "id": 1079,
+        "frequency": "f",
+        "id": 1059,
         "name": "tank_(storage_vessel)",
         "synonyms": ["tank_(storage_vessel)", "storage_tank"],
         "synset": "tank.n.02"
@@ -8805,15 +8656,15 @@ LVIS_CATEGORIES = [
         "def": "a tight-fitting sleeveless shirt with wide shoulder straps and low neck and no "
                "front opening",
         "frequency": "f",
-        "id": 1080,
+        "id": 1060,
         "name": "tank_top_(clothing)",
         "synonyms": ["tank_top_(clothing)"],
         "synset": "tank_top.n.01"
     },
     {
         "def": "a long thin piece of cloth or paper as used for binding or fastening",
-        "frequency": "c",
-        "id": 1081,
+        "frequency": "f",
+        "id": 1061,
         "name": "tape_(sticky_cloth_or_paper)",
         "synonyms": ["tape_(sticky_cloth_or_paper)"],
         "synset": "tape.n.01"
@@ -8822,7 +8673,7 @@ LVIS_CATEGORIES = [
         "def": "measuring instrument consisting of a narrow strip (cloth or metal) marked in "
                "inches or centimeters and used for measuring lengths",
         "frequency": "c",
-        "id": 1082,
+        "id": 1062,
         "name": "tape_measure",
         "synonyms": ["tape_measure", "measuring_tape"],
         "synset": "tape.n.04"
@@ -8830,7 +8681,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a heavy textile with a woven design; used for curtains and upholstery",
         "frequency": "c",
-        "id": 1083,
+        "id": 1063,
         "name": "tapestry",
         "synonyms": ["tapestry"],
         "synset": "tapestry.n.02"
@@ -8838,7 +8689,7 @@ LVIS_CATEGORIES = [
     {
         "def": "waterproofed canvas",
         "frequency": "f",
-        "id": 1084,
+        "id": 1064,
         "name": "tarp",
         "synonyms": ["tarp"],
         "synset": "tarpaulin.n.01"
@@ -8846,7 +8697,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cloth having a crisscross design",
         "frequency": "c",
-        "id": 1085,
+        "id": 1065,
         "name": "tartan",
         "synonyms": ["tartan", "plaid"],
         "synset": "tartan.n.01"
@@ -8854,15 +8705,15 @@ LVIS_CATEGORIES = [
     {
         "def": "adornment consisting of a bunch of cords fastened at one end",
         "frequency": "c",
-        "id": 1086,
+        "id": 1066,
         "name": "tassel",
         "synonyms": ["tassel"],
         "synset": "tassel.n.01"
     },
     {
         "def": "a measured amount of tea in a bag for an individual serving of tea",
-        "frequency": "r",
-        "id": 1087,
+        "frequency": "c",
+        "id": 1067,
         "name": "tea_bag",
         "synonyms": ["tea_bag"],
         "synset": "tea_bag.n.01"
@@ -8870,7 +8721,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a cup from which tea is drunk",
         "frequency": "c",
-        "id": 1088,
+        "id": 1068,
         "name": "teacup",
         "synonyms": ["teacup"],
         "synset": "teacup.n.02"
@@ -8878,15 +8729,15 @@ LVIS_CATEGORIES = [
     {
         "def": "kettle for boiling water to make tea",
         "frequency": "c",
-        "id": 1089,
+        "id": 1069,
         "name": "teakettle",
         "synonyms": ["teakettle"],
         "synset": "teakettle.n.01"
     },
     {
         "def": "pot for brewing tea; usually has a spout and handle",
-        "frequency": "c",
-        "id": 1090,
+        "frequency": "f",
+        "id": 1070,
         "name": "teapot",
         "synonyms": ["teapot"],
         "synset": "teapot.n.01"
@@ -8895,15 +8746,16 @@ LVIS_CATEGORIES = [
         "def": "plaything consisting of a child's toy bear (usually plush and stuffed with soft "
                "materials)",
         "frequency": "f",
-        "id": 1091,
+        "id": 1071,
         "name": "teddy_bear",
         "synonyms": ["teddy_bear"],
         "synset": "teddy.n.01"
     },
     {
-        "def": "electronic device for communicating by voice over long distances",
+        "def": "electronic device for communicating by voice over long distances (includes wired "
+               "and wireless/cell phones)",
         "frequency": "f",
-        "id": 1092,
+        "id": 1072,
         "name": "telephone",
         "synonyms": ["telephone", "phone", "telephone_set"],
         "synset": "telephone.n.01"
@@ -8911,7 +8763,7 @@ LVIS_CATEGORIES = [
     {
         "def": "booth for using a telephone",
         "frequency": "c",
-        "id": 1093,
+        "id": 1073,
         "name": "telephone_booth",
         "synonyms": ["telephone_booth", "phone_booth", "call_box", "telephone_box",
                      "telephone_kiosk"],
@@ -8920,7 +8772,7 @@ LVIS_CATEGORIES = [
     {
         "def": "tall pole supporting telephone wires",
         "frequency": "f",
-        "id": 1094,
+        "id": 1074,
         "name": "telephone_pole",
         "synonyms": ["telephone_pole", "telegraph_pole", "telegraph_post"],
         "synset": "telephone_pole.n.01"
@@ -8928,7 +8780,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a camera lens that magnifies the image",
         "frequency": "r",
-        "id": 1095,
+        "id": 1075,
         "name": "telephoto_lens",
         "synonyms": ["telephoto_lens", "zoom_lens"],
         "synset": "telephoto_lens.n.01"
@@ -8936,7 +8788,7 @@ LVIS_CATEGORIES = [
     {
         "def": "television equipment for capturing and recording video",
         "frequency": "c",
-        "id": 1096,
+        "id": 1076,
         "name": "television_camera",
         "synonyms": ["television_camera", "tv_camera"],
         "synset": "television_camera.n.01"
@@ -8945,7 +8797,7 @@ LVIS_CATEGORIES = [
         "def": "an electronic device that receives television signals and displays them on a "
                "screen",
         "frequency": "f",
-        "id": 1097,
+        "id": 1077,
         "name": "television_set",
         "synonyms": ["television_set", "tv", "tv_set"],
         "synset": "television_receiver.n.01"
@@ -8953,7 +8805,7 @@ LVIS_CATEGORIES = [
     {
         "def": "ball about the size of a fist used in playing tennis",
         "frequency": "f",
-        "id": 1098,
+        "id": 1078,
         "name": "tennis_ball",
         "synonyms": ["tennis_ball"],
         "synset": "tennis_ball.n.01"
@@ -8961,7 +8813,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a racket used to play tennis",
         "frequency": "f",
-        "id": 1099,
+        "id": 1079,
         "name": "tennis_racket",
         "synonyms": ["tennis_racket"],
         "synset": "tennis_racket.n.01"
@@ -8969,7 +8821,7 @@ LVIS_CATEGORIES = [
     {
         "def": "Mexican liquor made from fermented juices of an agave plant",
         "frequency": "r",
-        "id": 1100,
+        "id": 1080,
         "name": "tequila",
         "synonyms": ["tequila"],
         "synset": "tequila.n.01"
@@ -8977,7 +8829,7 @@ LVIS_CATEGORIES = [
     {
         "def": "measuring instrument for measuring temperature",
         "frequency": "c",
-        "id": 1101,
+        "id": 1081,
         "name": "thermometer",
         "synonyms": ["thermometer"],
         "synset": "thermometer.n.01"
@@ -8985,7 +8837,7 @@ LVIS_CATEGORIES = [
     {
         "def": "vacuum flask that preserves temperature of hot or cold drinks",
         "frequency": "c",
-        "id": 1102,
+        "id": 1082,
         "name": "thermos_bottle",
         "synonyms": ["thermos_bottle"],
         "synset": "thermos.n.01"
@@ -8993,8 +8845,8 @@ LVIS_CATEGORIES = [
     {
         "def": "a regulator for automatically regulating temperature by starting or stopping the "
                "supply of heat",
-        "frequency": "c",
-        "id": 1103,
+        "frequency": "f",
+        "id": 1083,
         "name": "thermostat",
         "synonyms": ["thermostat"],
         "synset": "thermostat.n.01"
@@ -9003,7 +8855,7 @@ LVIS_CATEGORIES = [
         "def": "a small metal cap to protect the finger while sewing; can be used as a small "
                "container",
         "frequency": "r",
-        "id": 1104,
+        "id": 1084,
         "name": "thimble",
         "synonyms": ["thimble"],
         "synset": "thimble.n.02"
@@ -9012,7 +8864,7 @@ LVIS_CATEGORIES = [
         "def": "a fine cord of twisted fibers (of cotton or silk or wool or nylon etc.) used in "
                "sewing and weaving",
         "frequency": "c",
-        "id": 1105,
+        "id": 1085,
         "name": "thread",
         "synonyms": ["thread", "yarn"],
         "synset": "thread.n.01"
@@ -9020,7 +8872,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a tack for attaching papers to a bulletin board or drawing board",
         "frequency": "c",
-        "id": 1106,
+        "id": 1086,
         "name": "thumbtack",
         "synonyms": ["thumbtack", "drawing_pin", "pushpin"],
         "synset": "thumbtack.n.01"
@@ -9028,7 +8880,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a jeweled headdress worn by women on formal occasions",
         "frequency": "c",
-        "id": 1107,
+        "id": 1087,
         "name": "tiara",
         "synonyms": ["tiara"],
         "synset": "tiara.n.01"
@@ -9036,7 +8888,7 @@ LVIS_CATEGORIES = [
     {
         "def": "large feline of forests in most of Asia having a tawny coat with black stripes",
         "frequency": "c",
-        "id": 1108,
+        "id": 1088,
         "name": "tiger",
         "synonyms": ["tiger"],
         "synset": "tiger.n.02"
@@ -9045,7 +8897,7 @@ LVIS_CATEGORIES = [
         "def": "skintight knit hose covering the body from the waist to the feet worn by acrobats "
                "and dancers and as stockings by women and girls",
         "frequency": "c",
-        "id": 1109,
+        "id": 1089,
         "name": "tights_(clothing)",
         "synonyms": ["tights_(clothing)", "leotards"],
         "synset": "tights.n.01"
@@ -9053,7 +8905,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a timepiece that measures a time interval and signals its end",
         "frequency": "c",
-        "id": 1110,
+        "id": 1090,
         "name": "timer",
         "synonyms": ["timer", "stopwatch"],
         "synset": "timer.n.01"
@@ -9061,15 +8913,15 @@ LVIS_CATEGORIES = [
     {
         "def": "foil made of tin or an alloy of tin and lead",
         "frequency": "f",
-        "id": 1111,
+        "id": 1091,
         "name": "tinfoil",
         "synonyms": ["tinfoil"],
         "synset": "tinfoil.n.01"
     },
     {
         "def": "a showy decoration that is basically valueless",
-        "frequency": "r",
-        "id": 1112,
+        "frequency": "c",
+        "id": 1092,
         "name": "tinsel",
         "synonyms": ["tinsel"],
         "synset": "tinsel.n.01"
@@ -9077,7 +8929,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a soft thin (usually translucent) paper",
         "frequency": "f",
-        "id": 1113,
+        "id": 1093,
         "name": "tissue_paper",
         "synonyms": ["tissue_paper"],
         "synset": "tissue.n.02"
@@ -9085,7 +8937,7 @@ LVIS_CATEGORIES = [
     {
         "def": "slice of bread that has been toasted",
         "frequency": "c",
-        "id": 1114,
+        "id": 1094,
         "name": "toast_(food)",
         "synonyms": ["toast_(food)"],
         "synset": "toast.n.01"
@@ -9093,15 +8945,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a kitchen appliance (usually electric) for toasting bread",
         "frequency": "f",
-        "id": 1115,
+        "id": 1095,
         "name": "toaster",
         "synonyms": ["toaster"],
         "synset": "toaster.n.02"
     },
     {
         "def": "kitchen appliance consisting of a small electric oven for toasting or warming food",
-        "frequency": "c",
-        "id": 1116,
+        "frequency": "f",
+        "id": 1096,
         "name": "toaster_oven",
         "synonyms": ["toaster_oven"],
         "synset": "toaster_oven.n.01"
@@ -9109,7 +8961,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a plumbing fixture for defecation and urination",
         "frequency": "f",
-        "id": 1117,
+        "id": 1097,
         "name": "toilet",
         "synonyms": ["toilet"],
         "synset": "toilet.n.02"
@@ -9117,7 +8969,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a soft thin absorbent paper for use in toilets",
         "frequency": "f",
-        "id": 1118,
+        "id": 1098,
         "name": "toilet_tissue",
         "synonyms": ["toilet_tissue", "toilet_paper", "bathroom_tissue"],
         "synset": "toilet_tissue.n.01"
@@ -9125,7 +8977,7 @@ LVIS_CATEGORIES = [
     {
         "def": "mildly acid red or yellow pulpy fruit eaten as a vegetable",
         "frequency": "f",
-        "id": 1119,
+        "id": 1099,
         "name": "tomato",
         "synonyms": ["tomato"],
         "synset": "tomato.n.01"
@@ -9133,8 +8985,8 @@ LVIS_CATEGORIES = [
     {
         "def": "any of various devices for taking hold of objects; usually have two hinged legs "
                "with handles above and pointed hooks below",
-        "frequency": "c",
-        "id": 1120,
+        "frequency": "f",
+        "id": 1100,
         "name": "tongs",
         "synonyms": ["tongs"],
         "synset": "tongs.n.01"
@@ -9142,7 +8994,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a box or chest or cabinet for holding hand tools",
         "frequency": "c",
-        "id": 1121,
+        "id": 1101,
         "name": "toolbox",
         "synonyms": ["toolbox"],
         "synset": "toolbox.n.01"
@@ -9150,7 +9002,7 @@ LVIS_CATEGORIES = [
     {
         "def": "small brush; has long handle; used to clean teeth",
         "frequency": "f",
-        "id": 1122,
+        "id": 1102,
         "name": "toothbrush",
         "synonyms": ["toothbrush"],
         "synset": "toothbrush.n.01"
@@ -9158,7 +9010,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a dentifrice in the form of a paste",
         "frequency": "f",
-        "id": 1123,
+        "id": 1103,
         "name": "toothpaste",
         "synonyms": ["toothpaste"],
         "synset": "toothpaste.n.01"
@@ -9166,16 +9018,16 @@ LVIS_CATEGORIES = [
     {
         "def": "pick consisting of a small strip of wood or plastic; used to pick food from "
                "between the teeth",
-        "frequency": "c",
-        "id": 1124,
+        "frequency": "f",
+        "id": 1104,
         "name": "toothpick",
         "synonyms": ["toothpick"],
         "synset": "toothpick.n.01"
     },
     {
         "def": "covering for a hole (especially a hole in the top of a container)",
-        "frequency": "c",
-        "id": 1125,
+        "frequency": "f",
+        "id": 1105,
         "name": "cover",
         "synonyms": ["cover"],
         "synset": "top.n.09"
@@ -9183,7 +9035,7 @@ LVIS_CATEGORIES = [
     {
         "def": "thin unleavened pancake made from cornmeal or wheat flour",
         "frequency": "c",
-        "id": 1126,
+        "id": 1106,
         "name": "tortilla",
         "synonyms": ["tortilla"],
         "synset": "tortilla.n.01"
@@ -9192,7 +9044,7 @@ LVIS_CATEGORIES = [
         "def": "a truck equipped to hoist and pull wrecked cars (or to remove cars from no-parking "
                "zones)",
         "frequency": "c",
-        "id": 1127,
+        "id": 1107,
         "name": "tow_truck",
         "synonyms": ["tow_truck"],
         "synset": "tow_truck.n.01"
@@ -9200,7 +9052,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a rectangular piece of absorbent cloth (or paper) for drying or wiping",
         "frequency": "f",
-        "id": 1128,
+        "id": 1108,
         "name": "towel",
         "synonyms": ["towel"],
         "synset": "towel.n.01"
@@ -9208,7 +9060,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a rack consisting of one or more bars on which towels can be hung",
         "frequency": "f",
-        "id": 1129,
+        "id": 1109,
         "name": "towel_rack",
         "synonyms": ["towel_rack", "towel_rail", "towel_bar"],
         "synset": "towel_rack.n.01"
@@ -9216,7 +9068,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a device regarded as providing amusement",
         "frequency": "f",
-        "id": 1130,
+        "id": 1110,
         "name": "toy",
         "synonyms": ["toy"],
         "synset": "toy.n.03"
@@ -9224,7 +9076,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a wheeled vehicle with large wheels; used in farming and other applications",
         "frequency": "c",
-        "id": 1131,
+        "id": 1111,
         "name": "tractor_(farm_equipment)",
         "synonyms": ["tractor_(farm_equipment)"],
         "synset": "tractor.n.01"
@@ -9232,7 +9084,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a device to control vehicle traffic often consisting of three or more lights",
         "frequency": "f",
-        "id": 1132,
+        "id": 1112,
         "name": "traffic_light",
         "synonyms": ["traffic_light"],
         "synset": "traffic_light.n.01"
@@ -9240,16 +9092,16 @@ LVIS_CATEGORIES = [
     {
         "def": "a lightweight motorcycle equipped with rugged tires and suspension for off-road "
                "use",
-        "frequency": "r",
-        "id": 1133,
+        "frequency": "c",
+        "id": 1113,
         "name": "dirt_bike",
         "synonyms": ["dirt_bike"],
         "synset": "trail_bike.n.01"
     },
     {
         "def": "a truck consisting of a tractor and trailer together",
-        "frequency": "c",
-        "id": 1134,
+        "frequency": "f",
+        "id": 1114,
         "name": "trailer_truck",
         "synonyms": ["trailer_truck", "tractor_trailer", "trucking_rig", "articulated_lorry",
                      "semi_truck"],
@@ -9259,7 +9111,7 @@ LVIS_CATEGORIES = [
         "def": "public or private transport provided by a line of railway cars coupled together "
                "and drawn by a locomotive",
         "frequency": "f",
-        "id": 1135,
+        "id": 1115,
         "name": "train_(railroad_vehicle)",
         "synonyms": ["train_(railroad_vehicle)", "railroad_train"],
         "synset": "train.n.01"
@@ -9268,7 +9120,7 @@ LVIS_CATEGORIES = [
         "def": "gymnastic apparatus consisting of a strong canvas sheet attached with springs to a "
                "metal frame",
         "frequency": "r",
-        "id": 1136,
+        "id": 1116,
         "name": "trampoline",
         "synonyms": ["trampoline"],
         "synset": "trampoline.n.01"
@@ -9276,23 +9128,15 @@ LVIS_CATEGORIES = [
     {
         "def": "an open receptacle for holding or displaying or serving articles or food",
         "frequency": "f",
-        "id": 1137,
+        "id": 1117,
         "name": "tray",
         "synonyms": ["tray"],
         "synset": "tray.n.01"
     },
     {
-        "def": "(NOT A TREE) a PLAYHOUSE built in the branches of a tree",
-        "frequency": "r",
-        "id": 1138,
-        "name": "tree_house",
-        "synonyms": ["tree_house"],
-        "synset": "tree_house.n.01"
-    },
-    {
         "def": "a military style raincoat; belted with deep pockets",
         "frequency": "r",
-        "id": 1139,
+        "id": 1118,
         "name": "trench_coat",
         "synonyms": ["trench_coat"],
         "synset": "trench_coat.n.01"
@@ -9301,23 +9145,23 @@ LVIS_CATEGORIES = [
         "def": "a percussion instrument consisting of a metal bar bent in the shape of an open "
                "triangle",
         "frequency": "r",
-        "id": 1140,
+        "id": 1119,
         "name": "triangle_(musical_instrument)",
         "synonyms": ["triangle_(musical_instrument)"],
         "synset": "triangle.n.05"
     },
     {
         "def": "a vehicle with three wheels that is moved by foot pedals",
-        "frequency": "r",
-        "id": 1141,
+        "frequency": "c",
+        "id": 1120,
         "name": "tricycle",
         "synonyms": ["tricycle"],
         "synset": "tricycle.n.01"
     },
     {
         "def": "a three-legged rack used for support",
-        "frequency": "c",
-        "id": 1142,
+        "frequency": "f",
+        "id": 1121,
         "name": "tripod",
         "synonyms": ["tripod"],
         "synset": "tripod.n.01"
@@ -9326,7 +9170,7 @@ LVIS_CATEGORIES = [
         "def": "a garment extending from the waist to the knee or ankle, covering each leg "
                "separately",
         "frequency": "f",
-        "id": 1143,
+        "id": 1122,
         "name": "trousers",
         "synonyms": ["trousers", "pants_(clothing)"],
         "synset": "trouser.n.01"
@@ -9334,7 +9178,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an automotive vehicle suitable for hauling",
         "frequency": "f",
-        "id": 1144,
+        "id": 1123,
         "name": "truck",
         "synonyms": ["truck"],
         "synset": "truck.n.01"
@@ -9342,7 +9186,7 @@ LVIS_CATEGORIES = [
     {
         "def": "creamy chocolate candy",
         "frequency": "r",
-        "id": 1145,
+        "id": 1124,
         "name": "truffle_(chocolate)",
         "synonyms": ["truffle_(chocolate)", "chocolate_truffle"],
         "synset": "truffle.n.03"
@@ -9350,15 +9194,15 @@ LVIS_CATEGORIES = [
     {
         "def": "luggage consisting of a large strong case used when traveling or for storage",
         "frequency": "c",
-        "id": 1146,
+        "id": 1125,
         "name": "trunk",
         "synonyms": ["trunk"],
         "synset": "trunk.n.02"
     },
     {
-        "def": "a large open vessel for holding or storing liquids",
+        "def": "a large vessel for holding or storing liquids",
         "frequency": "r",
-        "id": 1147,
+        "id": 1126,
         "name": "vat",
         "synonyms": ["vat"],
         "synset": "tub.n.02"
@@ -9366,23 +9210,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a traditional headdress consisting of a long scarf wrapped around the head",
         "frequency": "c",
-        "id": 1148,
+        "id": 1127,
         "name": "turban",
         "synonyms": ["turban"],
         "synset": "turban.n.01"
     },
     {
-        "def": "large gallinaceous bird with fan-shaped tail; widely domesticated for food",
-        "frequency": "r",
-        "id": 1149,
-        "name": "turkey_(bird)",
-        "synonyms": ["turkey_(bird)"],
-        "synset": "turkey.n.01"
-    },
-    {
         "def": "flesh of large domesticated fowl usually roasted",
         "frequency": "c",
-        "id": 1150,
+        "id": 1128,
         "name": "turkey_(food)",
         "synonyms": ["turkey_(food)"],
         "synset": "turkey.n.04"
@@ -9390,7 +9226,7 @@ LVIS_CATEGORIES = [
     {
         "def": "widely cultivated plant having a large fleshy edible white or yellow root",
         "frequency": "r",
-        "id": 1151,
+        "id": 1129,
         "name": "turnip",
         "synonyms": ["turnip"],
         "synset": "turnip.n.01"
@@ -9399,15 +9235,15 @@ LVIS_CATEGORIES = [
         "def": "any of various aquatic and land reptiles having a bony shell and flipper-like "
                "limbs for swimming",
         "frequency": "c",
-        "id": 1152,
+        "id": 1130,
         "name": "turtle",
         "synonyms": ["turtle"],
         "synset": "turtle.n.02"
     },
     {
         "def": "a sweater or jersey with a high close-fitting collar",
-        "frequency": "r",
-        "id": 1153,
+        "frequency": "c",
+        "id": 1131,
         "name": "turtleneck_(clothing)",
         "synonyms": ["turtleneck_(clothing)", "polo-neck"],
         "synset": "turtleneck.n.01"
@@ -9415,8 +9251,8 @@ LVIS_CATEGORIES = [
     {
         "def": "hand-operated character printer for printing written messages one character at a "
                "time",
-        "frequency": "r",
-        "id": 1154,
+        "frequency": "c",
+        "id": 1132,
         "name": "typewriter",
         "synonyms": ["typewriter"],
         "synset": "typewriter.n.01"
@@ -9424,15 +9260,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a lightweight handheld collapsible canopy",
         "frequency": "f",
-        "id": 1155,
+        "id": 1133,
         "name": "umbrella",
         "synonyms": ["umbrella"],
         "synset": "umbrella.n.01"
     },
     {
         "def": "undergarment worn next to the skin and under the outer garments",
-        "frequency": "c",
-        "id": 1156,
+        "frequency": "f",
+        "id": 1134,
         "name": "underwear",
         "synonyms": ["underwear", "underclothes", "underclothing", "underpants"],
         "synset": "underwear.n.01"
@@ -9440,23 +9276,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a vehicle with a single wheel that is driven by pedals",
         "frequency": "r",
-        "id": 1157,
+        "id": 1135,
         "name": "unicycle",
         "synonyms": ["unicycle"],
         "synset": "unicycle.n.01"
     },
     {
         "def": "a plumbing fixture (usually attached to the wall) used by men to urinate",
-        "frequency": "c",
-        "id": 1158,
+        "frequency": "f",
+        "id": 1136,
         "name": "urinal",
         "synonyms": ["urinal"],
         "synset": "urinal.n.01"
     },
     {
         "def": "a large vase that usually has a pedestal or feet",
-        "frequency": "r",
-        "id": 1159,
+        "frequency": "c",
+        "id": 1137,
         "name": "urn",
         "synonyms": ["urn"],
         "synset": "urn.n.01"
@@ -9464,23 +9300,15 @@ LVIS_CATEGORIES = [
     {
         "def": "an electrical home appliance that cleans by suction",
         "frequency": "c",
-        "id": 1160,
+        "id": 1138,
         "name": "vacuum_cleaner",
         "synonyms": ["vacuum_cleaner"],
         "synset": "vacuum.n.04"
     },
     {
-        "def": "control consisting of a mechanical device for controlling the flow of a fluid",
-        "frequency": "c",
-        "id": 1161,
-        "name": "valve",
-        "synonyms": ["valve"],
-        "synset": "valve.n.03"
-    },
-    {
         "def": "an open jar of glass or porcelain used as an ornament or to hold flowers",
         "frequency": "f",
-        "id": 1162,
+        "id": 1139,
         "name": "vase",
         "synonyms": ["vase"],
         "synset": "vase.n.01"
@@ -9488,7 +9316,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a slot machine for selling goods",
         "frequency": "c",
-        "id": 1163,
+        "id": 1140,
         "name": "vending_machine",
         "synonyms": ["vending_machine"],
         "synset": "vending_machine.n.01"
@@ -9496,15 +9324,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a hole for the escape of gas or air",
         "frequency": "f",
-        "id": 1164,
+        "id": 1141,
         "name": "vent",
         "synonyms": ["vent", "blowhole", "air_vent"],
         "synset": "vent.n.01"
     },
     {
+        "def": "a man's sleeveless garment worn underneath a coat",
+        "frequency": "f",
+        "id": 1142,
+        "name": "vest",
+        "synonyms": ["vest", "waistcoat"],
+        "synset": "vest.n.01"
+    },
+    {
         "def": "a video recording made on magnetic tape",
         "frequency": "c",
-        "id": 1165,
+        "id": 1143,
         "name": "videotape",
         "synonyms": ["videotape"],
         "synset": "videotape.n.01"
@@ -9513,7 +9349,7 @@ LVIS_CATEGORIES = [
         "def": "sour-tasting liquid produced usually by oxidation of the alcohol in wine or cider "
                "and used as a condiment or food preservative",
         "frequency": "r",
-        "id": 1166,
+        "id": 1144,
         "name": "vinegar",
         "synonyms": ["vinegar"],
         "synset": "vinegar.n.01"
@@ -9521,7 +9357,7 @@ LVIS_CATEGORIES = [
     {
         "def": "bowed stringed instrument that is the highest member of the violin family",
         "frequency": "r",
-        "id": 1167,
+        "id": 1145,
         "name": "violin",
         "synonyms": ["violin", "fiddle"],
         "synset": "violin.n.01"
@@ -9529,15 +9365,15 @@ LVIS_CATEGORIES = [
     {
         "def": "unaged colorless liquor originating in Russia",
         "frequency": "r",
-        "id": 1168,
+        "id": 1146,
         "name": "vodka",
         "synonyms": ["vodka"],
         "synset": "vodka.n.01"
     },
     {
         "def": "an inflated ball used in playing volleyball",
-        "frequency": "r",
-        "id": 1169,
+        "frequency": "c",
+        "id": 1147,
         "name": "volleyball",
         "synonyms": ["volleyball"],
         "synset": "volleyball.n.02"
@@ -9546,7 +9382,7 @@ LVIS_CATEGORIES = [
         "def": "any of various large birds of prey having naked heads and weak claws and feeding "
                "chiefly on carrion",
         "frequency": "r",
-        "id": 1170,
+        "id": 1148,
         "name": "vulture",
         "synonyms": ["vulture"],
         "synset": "vulture.n.01"
@@ -9554,7 +9390,7 @@ LVIS_CATEGORIES = [
     {
         "def": "pancake batter baked in a waffle iron",
         "frequency": "c",
-        "id": 1171,
+        "id": 1149,
         "name": "waffle",
         "synonyms": ["waffle"],
         "synset": "waffle.n.01"
@@ -9562,7 +9398,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a kitchen appliance for baking waffles",
         "frequency": "r",
-        "id": 1172,
+        "id": 1150,
         "name": "waffle_iron",
         "synonyms": ["waffle_iron"],
         "synset": "waffle_iron.n.01"
@@ -9570,7 +9406,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any of various kinds of wheeled vehicles drawn by an animal or a tractor",
         "frequency": "c",
-        "id": 1173,
+        "id": 1151,
         "name": "wagon",
         "synonyms": ["wagon"],
         "synset": "wagon.n.01"
@@ -9578,7 +9414,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a wheel of a wagon",
         "frequency": "c",
-        "id": 1174,
+        "id": 1152,
         "name": "wagon_wheel",
         "synonyms": ["wagon_wheel"],
         "synset": "wagon_wheel.n.01"
@@ -9586,7 +9422,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a stick carried in the hand for support in walking",
         "frequency": "c",
-        "id": 1175,
+        "id": 1153,
         "name": "walking_stick",
         "synonyms": ["walking_stick"],
         "synset": "walking_stick.n.01"
@@ -9594,7 +9430,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a clock mounted on a wall",
         "frequency": "c",
-        "id": 1176,
+        "id": 1154,
         "name": "wall_clock",
         "synonyms": ["wall_clock"],
         "synset": "wall_clock.n.01"
@@ -9603,7 +9439,7 @@ LVIS_CATEGORIES = [
         "def": "receptacle providing a place in a wiring system where current can be taken to run "
                "electrical devices",
         "frequency": "f",
-        "id": 1177,
+        "id": 1155,
         "name": "wall_socket",
         "synonyms": ["wall_socket", "wall_plug", "electric_outlet", "electrical_outlet",
                      "outlet", "electric_receptacle"],
@@ -9611,8 +9447,8 @@ LVIS_CATEGORIES = [
     },
     {
         "def": "a pocket-size case for holding papers and paper money",
-        "frequency": "c",
-        "id": 1178,
+        "frequency": "f",
+        "id": 1156,
         "name": "wallet",
         "synonyms": ["wallet", "billfold"],
         "synset": "wallet.n.01"
@@ -9621,7 +9457,7 @@ LVIS_CATEGORIES = [
         "def": "either of two large northern marine mammals having ivory tusks and tough hide over "
                "thick blubber",
         "frequency": "r",
-        "id": 1179,
+        "id": 1157,
         "name": "walrus",
         "synonyms": ["walrus"],
         "synset": "walrus.n.01"
@@ -9630,24 +9466,24 @@ LVIS_CATEGORIES = [
         "def": "a tall piece of furniture that provides storage space for clothes; has a door and "
                "rails or hooks for hanging clothes",
         "frequency": "r",
-        "id": 1180,
+        "id": 1158,
         "name": "wardrobe",
         "synonyms": ["wardrobe"],
         "synset": "wardrobe.n.01"
     },
     {
-        "def": "the thick green root of the wasabi plant that the Japanese use in cooking and that "
-               "tastes like strong horseradish",
+        "def": "a bathroom sink that is permanently installed and connected to a water supply and "
+               "drainpipe; where you can wash your hands and face",
         "frequency": "r",
-        "id": 1181,
-        "name": "wasabi",
-        "synonyms": ["wasabi"],
-        "synset": "wasabi.n.02"
+        "id": 1159,
+        "name": "washbasin",
+        "synonyms": ["washbasin", "basin_(for_washing)", "washbowl", "washstand", "handbasin"],
+        "synset": "washbasin.n.01"
     },
     {
         "def": "a home appliance for washing clothes and linens automatically",
         "frequency": "c",
-        "id": 1182,
+        "id": 1160,
         "name": "automatic_washer",
         "synonyms": ["automatic_washer", "washing_machine"],
         "synset": "washer.n.03"
@@ -9655,7 +9491,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a small, portable timepiece",
         "frequency": "f",
-        "id": 1183,
+        "id": 1161,
         "name": "watch",
         "synonyms": ["watch", "wristwatch"],
         "synset": "watch.n.01"
@@ -9663,7 +9499,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a bottle for holding water",
         "frequency": "f",
-        "id": 1184,
+        "id": 1162,
         "name": "water_bottle",
         "synonyms": ["water_bottle"],
         "synset": "water_bottle.n.01"
@@ -9671,7 +9507,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a device for cooling and dispensing drinking water",
         "frequency": "c",
-        "id": 1185,
+        "id": 1163,
         "name": "water_cooler",
         "synonyms": ["water_cooler"],
         "synset": "water_cooler.n.01"
@@ -9679,31 +9515,23 @@ LVIS_CATEGORIES = [
     {
         "def": "a faucet for drawing water from a pipe or cask",
         "frequency": "c",
-        "id": 1186,
+        "id": 1164,
         "name": "water_faucet",
         "synonyms": ["water_faucet", "water_tap", "tap_(water_faucet)"],
         "synset": "water_faucet.n.01"
     },
     {
-        "def": "a filter to remove impurities from the water supply",
-        "frequency": "r",
-        "id": 1187,
-        "name": "water_filter",
-        "synonyms": ["water_filter"],
-        "synset": "water_filter.n.01"
-    },
-    {
         "def": "a heater and storage tank to supply heated water",
         "frequency": "r",
-        "id": 1188,
+        "id": 1165,
         "name": "water_heater",
         "synonyms": ["water_heater", "hot-water_heater"],
         "synset": "water_heater.n.01"
     },
     {
         "def": "a jug that holds water",
-        "frequency": "r",
-        "id": 1189,
+        "frequency": "c",
+        "id": 1166,
         "name": "water_jug",
         "synonyms": ["water_jug"],
         "synset": "water_jug.n.01"
@@ -9711,7 +9539,7 @@ LVIS_CATEGORIES = [
     {
         "def": "plaything consisting of a toy pistol that squirts water",
         "frequency": "r",
-        "id": 1190,
+        "id": 1167,
         "name": "water_gun",
         "synonyms": ["water_gun", "squirt_gun"],
         "synset": "water_pistol.n.01"
@@ -9719,7 +9547,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a motorboat resembling a motor scooter (NOT A SURFBOARD OR WATER SKI)",
         "frequency": "c",
-        "id": 1191,
+        "id": 1168,
         "name": "water_scooter",
         "synonyms": ["water_scooter", "sea_scooter", "jet_ski"],
         "synset": "water_scooter.n.01"
@@ -9727,7 +9555,7 @@ LVIS_CATEGORIES = [
     {
         "def": "broad ski for skimming over water towed by a speedboat (DO NOT MARK WATER)",
         "frequency": "c",
-        "id": 1192,
+        "id": 1169,
         "name": "water_ski",
         "synonyms": ["water_ski"],
         "synset": "water_ski.n.01"
@@ -9735,7 +9563,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a large reservoir for water",
         "frequency": "c",
-        "id": 1193,
+        "id": 1170,
         "name": "water_tower",
         "synonyms": ["water_tower"],
         "synset": "water_tower.n.01"
@@ -9744,7 +9572,7 @@ LVIS_CATEGORIES = [
         "def": "a container with a handle and a spout with a perforated nozzle; used to sprinkle "
                "water over plants",
         "frequency": "c",
-        "id": 1194,
+        "id": 1171,
         "name": "watering_can",
         "synonyms": ["watering_can"],
         "synset": "watering_can.n.01"
@@ -9752,8 +9580,8 @@ LVIS_CATEGORIES = [
     {
         "def": "large oblong or roundish melon with a hard green rind and sweet watery red or "
                "occasionally yellowish pulp",
-        "frequency": "c",
-        "id": 1195,
+        "frequency": "f",
+        "id": 1172,
         "name": "watermelon",
         "synonyms": ["watermelon"],
         "synset": "watermelon.n.02"
@@ -9762,7 +9590,7 @@ LVIS_CATEGORIES = [
         "def": "mechanical device attached to an elevated structure; rotates freely to show the "
                "direction of the wind",
         "frequency": "f",
-        "id": 1196,
+        "id": 1173,
         "name": "weathervane",
         "synonyms": ["weathervane", "vane_(weathervane)", "wind_vane"],
         "synset": "weathervane.n.01"
@@ -9771,7 +9599,7 @@ LVIS_CATEGORIES = [
         "def": "a digital camera designed to take digital photographs and transmit them over the "
                "internet",
         "frequency": "c",
-        "id": 1197,
+        "id": 1174,
         "name": "webcam",
         "synonyms": ["webcam"],
         "synset": "webcam.n.01"
@@ -9780,7 +9608,7 @@ LVIS_CATEGORIES = [
         "def": "a rich cake with two or more tiers and covered with frosting and decorations; "
                "served at a wedding reception",
         "frequency": "c",
-        "id": 1198,
+        "id": 1175,
         "name": "wedding_cake",
         "synonyms": ["wedding_cake", "bridecake"],
         "synset": "wedding_cake.n.01"
@@ -9788,7 +9616,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a ring given to the bride and/or groom at the wedding",
         "frequency": "c",
-        "id": 1199,
+        "id": 1176,
         "name": "wedding_ring",
         "synonyms": ["wedding_ring", "wedding_band"],
         "synset": "wedding_ring.n.01"
@@ -9797,7 +9625,7 @@ LVIS_CATEGORIES = [
         "def": "a close-fitting garment made of a permeable material; worn in cold water to retain "
                "body heat",
         "frequency": "f",
-        "id": 1200,
+        "id": 1177,
         "name": "wet_suit",
         "synonyms": ["wet_suit"],
         "synset": "wet_suit.n.01"
@@ -9805,7 +9633,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a circular frame with spokes (or a solid disc) that can rotate on a shaft or axle",
         "frequency": "f",
-        "id": 1201,
+        "id": 1178,
         "name": "wheel",
         "synonyms": ["wheel"],
         "synset": "wheel.n.01"
@@ -9813,7 +9641,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a movable chair mounted on large wheels",
         "frequency": "c",
-        "id": 1202,
+        "id": 1179,
         "name": "wheelchair",
         "synonyms": ["wheelchair"],
         "synset": "wheelchair.n.01"
@@ -9821,39 +9649,23 @@ LVIS_CATEGORIES = [
     {
         "def": "cream that has been beaten until light and fluffy",
         "frequency": "c",
-        "id": 1203,
+        "id": 1180,
         "name": "whipped_cream",
         "synonyms": ["whipped_cream"],
         "synset": "whipped_cream.n.01"
     },
     {
-        "def": "a liquor made from fermented mash of grain",
-        "frequency": "r",
-        "id": 1204,
-        "name": "whiskey",
-        "synonyms": ["whiskey"],
-        "synset": "whiskey.n.01"
-    },
-    {
         "def": "a small wind instrument that produces a whistling sound by blowing into it",
-        "frequency": "r",
-        "id": 1205,
+        "frequency": "c",
+        "id": 1181,
         "name": "whistle",
         "synonyms": ["whistle"],
         "synset": "whistle.n.03"
     },
     {
-        "def": "a loosely woven cord in a candle or oil lamp that is lit on fire",
-        "frequency": "r",
-        "id": 1206,
-        "name": "wick",
-        "synonyms": ["wick"],
-        "synset": "wick.n.02"
-    },
-    {
         "def": "hairpiece covering the head and made of real or synthetic hair",
         "frequency": "c",
-        "id": 1207,
+        "id": 1182,
         "name": "wig",
         "synonyms": ["wig"],
         "synset": "wig.n.01"
@@ -9862,15 +9674,15 @@ LVIS_CATEGORIES = [
         "def": "a decorative arrangement of pieces of metal or glass or pottery that hang together "
                "loosely so the wind can cause them to tinkle",
         "frequency": "c",
-        "id": 1208,
+        "id": 1183,
         "name": "wind_chime",
         "synonyms": ["wind_chime"],
         "synset": "wind_chime.n.01"
     },
     {
-        "def": "a mill that is powered by the wind",
+        "def": "A mill or turbine that is powered by wind",
         "frequency": "c",
-        "id": 1209,
+        "id": 1184,
         "name": "windmill",
         "synonyms": ["windmill"],
         "synset": "windmill.n.01"
@@ -9878,7 +9690,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a container for growing plants on a windowsill",
         "frequency": "c",
-        "id": 1210,
+        "id": 1185,
         "name": "window_box_(for_plants)",
         "synonyms": ["window_box_(for_plants)"],
         "synset": "window_box.n.01"
@@ -9886,7 +9698,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a mechanical device that cleans the windshield",
         "frequency": "f",
-        "id": 1211,
+        "id": 1186,
         "name": "windshield_wiper",
         "synonyms": ["windshield_wiper", "windscreen_wiper", "wiper_(for_windshield/screen)"],
         "synset": "windshield_wiper.n.01"
@@ -9894,7 +9706,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a truncated cloth cone mounted on a mast/pole; shows wind direction",
         "frequency": "c",
-        "id": 1212,
+        "id": 1187,
         "name": "windsock",
         "synonyms": ["windsock", "air_sock", "air-sleeve", "wind_sleeve", "wind_cone"],
         "synset": "windsock.n.01"
@@ -9902,15 +9714,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a bottle for holding wine",
         "frequency": "f",
-        "id": 1213,
+        "id": 1188,
         "name": "wine_bottle",
         "synonyms": ["wine_bottle"],
         "synset": "wine_bottle.n.01"
     },
     {
         "def": "a bucket of ice used to chill a bottle of wine",
-        "frequency": "r",
-        "id": 1214,
+        "frequency": "c",
+        "id": 1189,
         "name": "wine_bucket",
         "synonyms": ["wine_bucket", "wine_cooler"],
         "synset": "wine_bucket.n.01"
@@ -9918,23 +9730,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a glass that has a stem and in which wine is served",
         "frequency": "f",
-        "id": 1215,
+        "id": 1190,
         "name": "wineglass",
         "synonyms": ["wineglass"],
         "synset": "wineglass.n.01"
     },
     {
-        "def": "easy chair having wings on each side of a high back",
-        "frequency": "r",
-        "id": 1216,
-        "name": "wing_chair",
-        "synonyms": ["wing_chair"],
-        "synset": "wing_chair.n.01"
-    },
-    {
         "def": "blinds that prevent a horse from seeing something on either side",
-        "frequency": "c",
-        "id": 1217,
+        "frequency": "f",
+        "id": 1191,
         "name": "blinder_(for_horses)",
         "synonyms": ["blinder_(for_horses)"],
         "synset": "winker.n.02"
@@ -9942,7 +9746,7 @@ LVIS_CATEGORIES = [
     {
         "def": "pan with a convex bottom; used for frying in Chinese cooking",
         "frequency": "c",
-        "id": 1218,
+        "id": 1192,
         "name": "wok",
         "synonyms": ["wok"],
         "synset": "wok.n.01"
@@ -9950,7 +9754,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a wild carnivorous mammal of the dog family, living and hunting in packs",
         "frequency": "r",
-        "id": 1219,
+        "id": 1193,
         "name": "wolf",
         "synonyms": ["wolf"],
         "synset": "wolf.n.01"
@@ -9958,7 +9762,7 @@ LVIS_CATEGORIES = [
     {
         "def": "a spoon made of wood",
         "frequency": "c",
-        "id": 1220,
+        "id": 1194,
         "name": "wooden_spoon",
         "synonyms": ["wooden_spoon"],
         "synset": "wooden_spoon.n.02"
@@ -9966,7 +9770,7 @@ LVIS_CATEGORIES = [
     {
         "def": "an arrangement of flowers, leaves, or stems fastened in a ring",
         "frequency": "c",
-        "id": 1221,
+        "id": 1195,
         "name": "wreath",
         "synonyms": ["wreath"],
         "synset": "wreath.n.01"
@@ -9974,15 +9778,15 @@ LVIS_CATEGORIES = [
     {
         "def": "a hand tool that is used to hold or twist a nut or bolt",
         "frequency": "c",
-        "id": 1222,
+        "id": 1196,
         "name": "wrench",
         "synonyms": ["wrench", "spanner"],
         "synset": "wrench.n.03"
     },
     {
         "def": "band consisting of a part of a sleeve that covers the wrist",
-        "frequency": "c",
-        "id": 1223,
+        "frequency": "f",
+        "id": 1197,
         "name": "wristband",
         "synonyms": ["wristband"],
         "synset": "wristband.n.01"
@@ -9990,39 +9794,31 @@ LVIS_CATEGORIES = [
     {
         "def": "a band or bracelet worn around the wrist",
         "frequency": "f",
-        "id": 1224,
+        "id": 1198,
         "name": "wristlet",
         "synonyms": ["wristlet", "wrist_band"],
         "synset": "wristlet.n.01"
     },
     {
         "def": "an expensive vessel propelled by sail or power and used for cruising or racing",
-        "frequency": "r",
-        "id": 1225,
+        "frequency": "c",
+        "id": 1199,
         "name": "yacht",
         "synonyms": ["yacht"],
         "synset": "yacht.n.01"
     },
     {
-        "def": "large long-haired wild ox of Tibet often domesticated",
-        "frequency": "r",
-        "id": 1226,
-        "name": "yak",
-        "synonyms": ["yak"],
-        "synset": "yak.n.02"
-    },
-    {
         "def": "a custard-like food made from curdled milk",
         "frequency": "c",
-        "id": 1227,
+        "id": 1200,
         "name": "yogurt",
         "synonyms": ["yogurt", "yoghurt", "yoghourt"],
         "synset": "yogurt.n.01"
     },
     {
         "def": "gear joining two animals at the neck; NOT egg yolk",
-        "frequency": "r",
-        "id": 1228,
+        "frequency": "c",
+        "id": 1201,
         "name": "yoke_(animal_equipment)",
         "synonyms": ["yoke_(animal_equipment)"],
         "synset": "yoke.n.07"
@@ -10030,7 +9826,7 @@ LVIS_CATEGORIES = [
     {
         "def": "any of several fleet black-and-white striped African equines",
         "frequency": "f",
-        "id": 1229,
+        "id": 1202,
         "name": "zebra",
         "synonyms": ["zebra"],
         "synset": "zebra.n.01"
@@ -10038,7 +9834,7 @@ LVIS_CATEGORIES = [
     {
         "def": "small cucumber-shaped vegetable marrow; typically dark green",
         "frequency": "c",
-        "id": 1230,
+        "id": 1203,
         "name": "zucchini",
         "synonyms": ["zucchini", "courgette"],
         "synset": "zucchini.n.02"
