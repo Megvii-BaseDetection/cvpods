@@ -158,6 +158,40 @@ class COCOEvaluator(DatasetEvaluator):
         # Copy so the caller can do whatever with results
         return copy.deepcopy(self._results)
 
+    def evaluate_files(self):
+        """
+        Only evaluate files without inference
+        """
+        if self._distributed:
+            comm.synchronize()
+
+            if not comm.is_main_process():
+                return
+
+        del self._predictions
+
+        if self._output_dir:
+            file_path = os.path.join(self._output_dir, "instances_predictions.pth")
+            self._predictions = torch.load(file_path)
+            self._logger.info("Read predictions from {}".format(file_path))
+        else:
+            self._logger.warning(
+                "Stored predictions is None, you need to run the inference_on_dataset"
+            )
+            raise NotImplementedError
+
+        self._results = OrderedDict()
+        if "proposals" in self._predictions[0]:
+            self._eval_box_proposals()
+        if "instances" in self._predictions[0]:
+            self._eval_predictions(set(self._tasks))
+
+        if self._dump:
+            _dump_to_markdown(self._dump_infos)
+
+        # Copy so the caller can do whatever with results
+        return copy.deepcopy(self._results)
+
     def _eval_predictions(self, tasks):
         """
         Evaluate self._predictions on the given tasks.

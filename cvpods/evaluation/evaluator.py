@@ -171,11 +171,9 @@ def inference_on_dataset(model, data_loader, evaluator):
 def inference_on_files(evaluator):
     """
     Evaluate the metrics with evaluator on the predicted files
-
     Args:
         evaluator (DatasetEvaluator): the evaluator to run. Use `None` if you only want
             to benchmark, but don't want to do any evaluation.
-
     Returns:
         The return value of `evaluator.evaluate()`
     """
