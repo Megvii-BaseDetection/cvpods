@@ -5,8 +5,6 @@ from typing import Callable, Iterable, Type, Union
 
 import torch
 
-from cvpods.layers import LARC
-
 from .optimizer_builder import OPTIMIZER_BUILDER
 from .scheduler_builder import SCHEDULER_BUILDER
 
@@ -89,27 +87,6 @@ def maybe_add_gradient_clipping(cfg, optimizer: torch.optim.Optimizer) -> torch.
     return optimizer
 
 
-def maybe_use_lars_optimizer(cfg, optimizer: torch.optim.Optimizer) -> torch.optim.Optimizer:
-    """
-    warp optimizer with LARS, see :clsss:`cvpods.solver.lars.LARS` for more information.
-
-    Args:
-        cfg(BaseConfig):
-        optimizer(Optimizer): optimizer for warp
-
-    Return:
-        optimizer(Optimizer): optimizer with LARS warped
-    """
-
-    if hasattr(cfg.SOLVER.OPTIMIZER, "LARC") and cfg.SOLVER.OPTIMIZER.LARC.ENABLED:
-        eps = cfg.SOLVER.OPTIMIZER.LARC.EPS
-        trust_coef = cfg.SOLVER.OPTIMIZER.LARC.TRUST_COEF
-        clip = cfg.SOLVER.OPTIMIZER.LARC.CLIP
-        optimizer = LARC(optimizer, eps, trust_coef, clip)
-
-    return optimizer
-
-
 def build_optimizer(cfg, model: torch.nn.Module) -> torch.optim.Optimizer:
     """
     Build an optimizer with clip and LARS wraper from config.
@@ -132,7 +109,6 @@ def build_optimizer(cfg, model: torch.nn.Module) -> torch.optim.Optimizer:
     optimizer = OPTIMIZER_BUILDER.get(NAME).build(model, cfg)
 
     # warp optimizer
-    optimizer = maybe_use_lars_optimizer(cfg, optimizer)
     optimizer = maybe_add_gradient_clipping(cfg, optimizer)
     return optimizer
 
