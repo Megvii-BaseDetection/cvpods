@@ -53,10 +53,7 @@ class WarmupMultiStepLR(_LRScheduler):
         self.warmup_factor = warmup_factor
         self.warmup_iters = warmup_iters
         self.warmup_method = warmup_method
-        if isinstance(optimizer, torch.optim.Optimizer):
-            super().__init__(optimizer, last_epoch)
-        else:
-            super().__init__(optimizer.optim, last_epoch)
+        super().__init__(optimizer, last_epoch)
 
     def get_lr(self) -> List[float]:
         warmup_factor = _get_warmup_factor_at_iter(
@@ -98,10 +95,7 @@ class WarmupCosineLR(_LRScheduler):
         self.warmup_iters = warmup_iters
         self.warmup_method = warmup_method
         self.epoch_iters = epoch_iters
-        if isinstance(optimizer, torch.optim.Optimizer):
-            super().__init__(optimizer, last_epoch)
-        else:
-            super().__init__(optimizer.optim, last_epoch)
+        super().__init__(optimizer, last_epoch)
 
     def get_lr(self) -> List[float]:
         warmup_factor = _get_warmup_factor_at_iter(
@@ -156,10 +150,7 @@ class PolyLR(_LRScheduler):
         self.warmup_factor = warmup_factor
         self.warmup_iters = warmup_iters
         self.warmup_method = warmup_method
-        if isinstance(optimizer, torch.optim.Optimizer):
-            super().__init__(optimizer, last_epoch)
-        else:
-            super().__init__(optimizer.optim, last_epoch)
+        super().__init__(optimizer, last_epoch)
 
     def get_lr(self) -> List[float]:
         warmup_factor = _get_warmup_factor_at_iter(

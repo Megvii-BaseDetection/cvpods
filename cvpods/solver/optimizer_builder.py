@@ -8,6 +8,7 @@ import torch
 from torch import optim
 
 from cvpods.utils.registry import Registry
+from .lars_sgd import LARS_SGD
 
 OPTIMIZER_BUILDER = Registry("Optimizer builder")
 
@@ -24,6 +25,23 @@ NORM_MODULE_TYPES = (
     torch.nn.LayerNorm,
     torch.nn.LocalResponseNorm,
 )
+
+
+def exclude_from_wd(named_params, weight_decay, skip_list=['bias', 'bn']):
+    params = []
+    excluded_params = []
+    for name, param in named_params:
+        if not param.requires_grad:
+            continue
+        elif any(layer_name in name for layer_name in skip_list):
+            excluded_params.append(param)
+        else:
+            params.append(param)
+
+    return [
+        {'params': params, 'weight_decay': weight_decay},
+        {'params': excluded_params, 'weight_decay': 0., 'lars_exclude': True},
+    ]
 
 
 @OPTIMIZER_BUILDER.register()
@@ -79,6 +97,30 @@ class D2SGDBuilder(OptimizerBuilder):
             params,
             cfg.SOLVER.OPTIMIZER.BASE_LR,
             momentum=cfg.SOLVER.OPTIMIZER.MOMENTUM
+        )
+        return optimizer
+
+
+@OPTIMIZER_BUILDER.register()
+class LARS_SGDBuilder(OptimizerBuilder):
+
+    @staticmethod
+    def build(model, cfg):
+        exclude = cfg.SOLVER.OPTIMIZER.get("WD_EXCLUDE_BN_BIAS", False)
+        if exclude:
+            param = exclude_from_wd(
+                model.named_parameters(), cfg.SOLVER.OPTIMIZER.WEIGHT_DECAY
+            )
+        else:
+            param = model.parameters()
+        optimizer = LARS_SGD(
+            param,
+            lr=cfg.SOLVER.OPTIMIZER.BASE_LR,
+            momentum=cfg.SOLVER.OPTIMIZER.MOMENTUM,
+            weight_decay=cfg.SOLVER.OPTIMIZER.WEIGHT_DECAY,
+            nesterov=cfg.SOLVER.OPTIMIZER.get("NESTERROV", False),
+            eta=cfg.SOLVER.OPTIMIZER.TRUST_COEF,
+            eps=cfg.SOLVER.OPTIMIZER.EPS,
         )
         return optimizer
 
