@@ -95,6 +95,7 @@ def build_optimizer(cfg, model: torch.nn.Module) -> torch.optim.Optimizer:
         map_dict = {
             "SGD": "SGDBuilder",
             "D2SGD": "D2SGDBuilder",  # Detectron2's SGD
+            "LARS_SGD": "LARS_SGDBuilder",
             "Adam": "AdamBuilder",
             "AdamW": "AdamWBuilder",
             "SGD_GATE_LR_MULTI": "SGDGateLRBuilder",
