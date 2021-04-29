@@ -123,6 +123,7 @@ class CascadeROIHeads(StandardROIHeads):
                 image_sizes,
                 self.test_score_thresh,
                 self.test_nms_thresh,
+                self.test_nms_type,
                 self.test_detections_per_img,
             )
             return pred_instances
