@@ -5,6 +5,7 @@ from .focal_loss import (
     sigmoid_focal_loss_star,
     sigmoid_focal_loss_star_jit
 )
+from .grw_loss import GRWCrossEntropyLoss
 from .iou_loss import IOULoss, iou_loss
 from .label_smooth_ce_loss import LabelSmoothCELoss, label_smooth_ce_loss
 from .reg_l1_loss import reg_l1_loss

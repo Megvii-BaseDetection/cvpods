@@ -116,6 +116,7 @@ class DefaultRunner(SimpleRunner):
             self.data_loader,
             self.optimizer,
         )
+        auto_scale_config(cfg, self.data_loader)
 
         if not cfg.SOLVER.LR_SCHEDULER.get("EPOCH_WISE", False):
             epoch_iters = -1
@@ -123,7 +124,6 @@ class DefaultRunner(SimpleRunner):
             epoch_iters = cfg.SOLVER.LR_SCHEDULER.get("EPOCH_ITERS")
             self.logger.warning(f"Setup LR Scheduler in EPOCH mode: {epoch_iters}")
 
-        auto_scale_config(cfg, self.data_loader)
         self.scheduler = self.build_lr_scheduler(cfg, self.optimizer, epoch_iters=epoch_iters)
         # Assume no other objects need to be checkpointed.
         # We can later make it checkpoint the stateful hooks

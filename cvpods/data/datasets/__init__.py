@@ -5,6 +5,7 @@ from .cityscapes import CityScapesDataset
 from .coco import COCODataset
 from .crowdhuman import CrowdHumanDataset
 from .imagenet import ImageNetDataset
+from .imagenetlt import ImageNetLTDataset
 from .lvis import LVISDataset
 from .objects365 import Objects365Dataset
 from .torchvision_datasets import CIFAR10Dataset, STL10Datasets
@@ -16,6 +17,7 @@ __all__ = [
     "VOCDataset",
     "CityScapesDataset",
     "ImageNetDataset",
+    "ImageNetLTDataset",
     "WiderFaceDataset",
     "LVISDataset",
     "CityPersonsDataset",

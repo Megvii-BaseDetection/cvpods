@@ -269,6 +269,22 @@ _PREDEFINED_SPLITS_IMAGENET = {
 
 PATH_ROUTES.register(_PREDEFINED_SPLITS_IMAGENET, "IMAGENET")
 
+# ==== Predefined datasets and splits for ImageNet-LT ==========
+
+_PREDEFINED_SPLITS_IMAGENETLT = {
+    "dataset_type": "ImageNetLTDataset",
+    "evaluator_type": {
+        "imagenetlt": "longtailclassification"
+    },
+    "imagenetlt": {
+        "imagenetlt_train": ("imagenetlt/", "imagenetlt/ImageNet_LT_train.txt"),
+        "imagenetlt_val": ("imagenetlt/", "imagenetlt/ImageNet_LT_val.txt"),
+        "imagenetlt_test": ("imagenetlt/", "imagenetlt/ImageNet_LT_test.txt"),
+    }
+}
+
+PATH_ROUTES.register(_PREDEFINED_SPLITS_IMAGENETLT, "IMAGENETLT")
+
 # ==== Predefined splits for CrowdHuman ===========
 
 _PREDEFINED_SPLITS_CROWDHUMAN = {
