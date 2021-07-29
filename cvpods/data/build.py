@@ -123,7 +123,7 @@ def build_train_loader(cfg):
     rank = comm.get_rank()
 
     # use subdivision batchsize
-    images_per_minibatch = cfg.SOLVER.IMS_PER_DEVICE // cfg.SOLVER.BATCH_SUBDIVISIONS
+    images_per_minibatch = cfg.SOLVER.IMS_PER_DEVICE
 
     logger = logging.getLogger(__name__)
 

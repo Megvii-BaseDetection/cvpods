@@ -137,7 +137,8 @@ class OptimizationHook(HookBase):
         self.mixed_precision = mixed_precision
 
     def before_step(self):
-        self.trainer.optimizer.zero_grad()
+        if self.trainer.iter % self.accumulate_grad_steps == 0:
+            self.trainer.optimizer.zero_grad()
 
     def after_step(self):
         losses = self.trainer.step_outputs["loss_for_backward"]

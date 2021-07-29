@@ -116,7 +116,7 @@ class BaseDataset(Dataset):
         if isinstance(self.transforms, dict):
             dataset_dict = {}
             for key, tfms in self.transforms.items():
-                img = deepcopy(image)
+                img = np.copy(image)
                 annos = deepcopy(annotations)
                 for tfm in tfms:
                     img, annos = tfm(img, annos, **kwargs)

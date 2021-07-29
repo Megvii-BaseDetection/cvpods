@@ -66,10 +66,15 @@ class ImageNetDataset(BaseDataset):
             elif len(img.shape) == 3 and img.shape[-1] == 3:
                 dd["image"] = torch.as_tensor(
                     np.ascontiguousarray(img.transpose(2, 0, 1)))
-            elif len(img.shape) == 4 and img.shape[-1] == 3:
-                # NHWC -> NCHW
-                dd["image"] = torch.as_tensor(
-                    np.ascontiguousarray(img.transpose(0, 3, 1, 2)))
+            elif len(img.shape) == 4:
+                if img.shape[-1] == 3:
+                    # NHWC -> NCHW
+                    dd["image"] = torch.as_tensor(
+                        np.ascontiguousarray(img.transpose(0, 3, 1, 2)))
+                elif img.shape[1] == 3:
+                    # NCHW
+                    dd["image"] = torch.as_tensor(np.ascontiguousarray(img))
+
             return dd
 
         if isinstance(images, dict):

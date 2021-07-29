@@ -85,12 +85,13 @@ class DefaultRunner(SimpleRunner):
         self.logger = logger
 
         self.data_loader = self.build_train_loader(cfg)
+        auto_scale_config(cfg, self.data_loader)
+
         # Assume these objects must be constructed in this order.
         model = build_model(cfg)
         self.model = maybe_convert_module(model)
         self.logger.info(f"Model: \n{self.model}")
 
-        # Assume these objects must be constructed in this order.
         self.optimizer = self.build_optimizer(cfg, self.model)
 
         # For training, wrap with DDP. But don't need this for inference.
@@ -118,13 +119,12 @@ class DefaultRunner(SimpleRunner):
         )
 
         if not cfg.SOLVER.LR_SCHEDULER.get("EPOCH_WISE", False):
-            epoch_iters = -1
+            self.epoch_iters = -1
         else:
-            epoch_iters = cfg.SOLVER.LR_SCHEDULER.get("EPOCH_ITERS")
-            self.logger.warning(f"Setup LR Scheduler in EPOCH mode: {epoch_iters}")
+            self.epoch_iters = cfg.SOLVER.LR_SCHEDULER.get("EPOCH_ITERS")
+            self.logger.warning(f"Setup LR Scheduler in EPOCH mode: {self.epoch_iters}")
 
-        auto_scale_config(cfg, self.data_loader)
-        self.scheduler = self.build_lr_scheduler(cfg, self.optimizer, epoch_iters=epoch_iters)
+        self.scheduler = self.build_lr_scheduler(cfg, self.optimizer, epoch_iters=self.epoch_iters)
         # Assume no other objects need to be checkpointed.
         # We can later make it checkpoint the stateful hooks
         self.checkpointer = DefaultCheckpointer(
@@ -406,8 +406,7 @@ def auto_scale_config(cfg, dataloader):
     Here we use batch size * subdivision to simulator large batch training
     """
     if max_epoch:
-        epoch_iter = math.ceil(
-            len(dataloader.dataset) / (cfg.SOLVER.IMS_PER_BATCH * subdivision))
+        epoch_iter = math.ceil(len(dataloader.dataset) / cfg.SOLVER.IMS_PER_BATCH)
 
         if max_iter is not None:
             logger.warning(
