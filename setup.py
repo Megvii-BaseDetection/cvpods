@@ -132,6 +132,7 @@ if __name__ == "__main__":
             "appdirs",
             "seaborn",
             "pandas",
+            "sklearn",
         ],
         extras_require={
             "all": [
