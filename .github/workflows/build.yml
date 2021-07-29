@@ -25,20 +25,24 @@ jobs:
           pip install interrogate
           interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-regex "__repr__" --fail-under 50 cvpods 
 
-  build_cuda:
-    runs-on: ubuntu-latest
-
+  build_cuda101:
+    runs-on: ubuntu-18.04
     env:
-      CUDA: 10.2.89-1
-      CUDA_SHORT: 10.2
+      CUDA: 10.1.105-1
+      CUDA_SHORT: 10.1
       UBUNTU_VERSION: ubuntu1804
+      FORCE_CUDA: 1
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.6.0]
+        torch: [1.6.0+cu101, 1.7.0+cu101, 1.8.0+cu101]
         include:
-          - torch: 1.6.0
-            torchvision: 0.7.0
+          - torch: 1.6.0+cu101
+            torchvision: 0.7.0+cu101
+          - torch: 1.7.0+cu101
+            torchvision: 0.8.1+cu101
+          - torch: 1.8.0+cu101
+            torchvision: 0.9.0+cu101
 
     steps:
       - uses: actions/checkout@v2
@@ -57,15 +61,15 @@ jobs:
           sudo apt install -y cuda-${CUDA_SHORT/./-} cuda-cufft-dev-${CUDA_SHORT/./-}
           sudo apt clean
           export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
+          sudo cp /usr/local/cuda-10.2/include/* /usr/local/cuda/include
+          sudo cp -r /usr/local/cuda-10.2/lib64/* /usr/local/cuda/lib64/
           export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/include:${LD_LIBRARY_PATH}
           export PATH=${CUDA_HOME}/bin:${PATH}
+          sudo apt-get install -y ninja-build
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Build and install
         run: |
-          sudo apt -y install gcc-8
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
-          sudo update-alternatives --config gcc
           pip install opencv-python-headless ninja
           FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST="Pascal;Volta;Turing" pip install -e .[all] 
       - name: Run unittests
