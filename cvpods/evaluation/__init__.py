@@ -13,6 +13,7 @@ from .evaluator import (
     inference_on_files
 )
 from .lvis_evaluation import LVISEvaluator
+from .longtail_classification_evaluation import LongTailClassificationEvaluator
 from .panoptic_evaluation import COCOPanopticEvaluator
 from .pascal_voc_evaluation import PascalVOCDetectionEvaluator
 from .registry import EVALUATOR

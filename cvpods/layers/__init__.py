@@ -30,6 +30,8 @@ from .wrappers import (
     Conv2d,
     Conv2dSamePadding,
     ConvTranspose2d,
+    DisAlignLinear,
+    DisAlignNormalizedLinear,
     MaxPool2dSamePadding,
     NormalizedConv2d,
     NormalizedLinear,
