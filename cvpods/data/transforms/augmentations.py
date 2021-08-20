@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Facebook, Inc. and its affiliates.
+# Modified by BaseDetection, Inc. and its affiliates.
+
+# pylint: disable=W0613
 
 import inspect
+import pprint
 import random
+import sys
 from abc import ABCMeta, abstractmethod
-from typing import Callable, TypeVar
+from typing import Callable
 
 import cv2
 import numpy as np
@@ -13,42 +18,41 @@ from PIL import Image, ImageFilter, ImageOps
 import pycocotools.mask as mask_util
 
 import torch
-import torchvision.transforms as transforms
 
 import cvpods
-from cvpods.structures import BoxMode
+from cvpods.structures import Boxes, BoxMode, pairwise_iou
 
-from .transform_util import to_float_tensor, to_numpy
+from ..registry import TRANSFORMS
 
 __all__ = [
-    "ExpandTransform",
-    "AffineTransform",
-    "BlendTransform",
-    "IoUCropTransform",
-    "CropTransform",
-    "CropPadTransform",
-    "GridSampleTransform",
-    "RotationTransform",
-    "HFlipTransform",
-    "VFlipTransform",
-    "NoOpTransform",
-    "ScaleTransform",
-    "DistortTransform",
-    "Transform",
-    "TransformList",
-    "ExtentTransform",
-    "ResizeTransform",
-    # Transform used in ssl
-    "GaussianBlurTransform",
-    "GaussianBlurConvTransform",
-    "SolarizationTransform",
-    "ComposeTransform",
-    "LabSpaceTransform",
-    "PadTransform",
+    "Pad",
+    "RandomScale",
+    "Expand",
+    "MinIoURandomCrop",
+    "RandomSwapChannels",
+    "CenterAffine",
+    "RandomBrightness",
+    "RandomContrast",
+    "RandomCrop",
+    "RandomCropWithInstance",
+    "RandomCropWithMaxAreaLimit",
+    "RandomCropPad",
+    "RandomExtent",
+    "RandomFlip",
+    "RandomSaturation",
+    "RandomDistortion",
+    "Resize",
+    "ResizeShortestEdge",
+    "ResizeLongestEdge",
+    "ShuffleList",
+    "RandomList",
+    "RepeatList",
+    "TorchTransformGen",
+    # transforms used in ssl
+    "RandomGaussianBlur",
+    "RandomSolarization",
+    "RandomLightning",
 ]
-
-# NOTE: to document methods in subclasses, it's sufficient to only document those whose
-# implemenation needs special attention.
 
 
 class Transform(metaclass=ABCMeta):
@@ -58,11 +62,12 @@ class Transform(metaclass=ABCMeta):
     all methods of this class are deterministic w.r.t their input arguments. In
     training, there should be a higher-level policy that generates (likely with
     random variations) these transform ops. Each transform op may handle several
-    data types, e.g.: image, coordinates, segmentation, bounding boxes. Some of
-    them have a default implementation, but can be overwritten if the default
-    isn't appropriate. The implementation of each method may choose to modify
-    its input data in-place for efficient transformation.
+    data types, e.g.: image, point cloud, coordinates, segmentation, bounding boxes.
+    Some of them have a default implementation, but can be overwritten if the
+    default isn't appropriate. The implementation of each method may choose to
+    modify its input data in-place for efficient transformation.
     """
+
     def _set_attributes(self, params: list = None):
         """
         Set attributes from the input list of parameters.
@@ -71,10 +76,185 @@ class Transform(metaclass=ABCMeta):
             params (list): list of parameters.
         """
 
-        if params:
+        if params is not None:
             for k, v in params.items():
                 if k != "self" and not k.startswith("_"):
                     setattr(self, k, v)
+
+    def __call__(self, data: list, annotations: list = None, **kwargs):
+        """
+        Apply transform to the data and corresponding annotations (if exist).
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def register_type(cls, data_type: str, func: Callable):
+        """
+        Register the given function as a handler that this transform will use
+        for a specific data type.
+
+        Args:
+            data_type (str): the name of the data type (e.g., box)
+            func (callable): takes a transform and a data, returns the
+                transformed data.
+
+        Examples:
+
+        .. code-block:: python
+
+            def func(flip_transform, voxel_data):
+                return transformed_voxel_data
+            HFlipTransform.register_type("voxel", func)
+
+            # ...
+            transform = HFlipTransform(...)
+            transform.apply_voxel(voxel_data)  # func will be called
+        """
+        assert callable(
+            func
+        ), "You can only register a callable to a Transform. Got {} instead.".format(
+            func)
+        argspec = inspect.getfullargspec(func)
+        assert len(argspec.args) == 2, (
+            "You can only register a function that takes two positional "
+            "arguments to a Transform! Got a function with spec {}".format(
+                str(argspec)))
+        setattr(cls, "apply_" + data_type, func)
+
+    def _rand_range(self, low=1.0, high=None, size=None):
+        """
+        Uniform float random number between low and high.
+        """
+        if high is None:
+            low, high = 0, low
+        if size is None:
+            size = []
+        return np.random.uniform(low, high, size)
+
+    def __repr__(self):
+        """
+        Produce something like:
+        "MyTransformGen(field1={self.field1}, field2={self.field2})"
+        """
+        try:
+            sig = inspect.signature(self.__init__)
+            classname = type(self).__name__
+            argstr = []
+            for name, param in sig.parameters.items():
+                assert (
+                    param.kind != param.VAR_POSITIONAL
+                    and param.kind != param.VAR_KEYWORD
+                ), "The default __repr__ doesn't support *args or **kwargs"
+                assert hasattr(self, name), (
+                    "Attribute {} not found! "
+                    "Default __repr__ only works if attributes match the constructor.".format(
+                        name
+                    )
+                )
+                attr = getattr(self, name)
+                default = param.default
+                if default is attr:
+                    continue
+                argstr.append("{}={}".format(name, pprint.pformat(attr)))
+            return "{}({})".format(classname, ", ".join(argstr))
+        except AssertionError:
+            return super().__repr__()
+
+
+class ComposeTransform(Transform):
+    """
+    Composes several transforms together.
+    """
+
+    def __init__(self, transforms: list):
+        """
+        Args:
+            transforms (list[Transform]): list of transforms to compose.
+        """
+        super().__init__()
+        self._set_attributes(locals())
+
+    def __eq__(self, other):
+        if not isinstance(other, ComposeTransform):
+            return False
+        return self.transforms == other.transforms
+
+    def __call__(self, img, annotations=None, **kwargs):
+        for tfm in self.transforms:
+            img, annotations = tfm(img, annotations, **kwargs)
+        return img, annotations
+
+    def __repr__(self):
+        return "".join([tfm for tfm in self.transforms])
+
+
+@TRANSFORMS.register()
+class RandomList(ComposeTransform):
+    """
+    Random select subset of provided augmentations.
+    """
+    def __init__(self, transforms, num_layers=2, choice_weights=None):
+        """
+        Args:
+            transforms (List[TorchTransformGen]): list of transforms need to be performed.
+            num_layers (int): parameters of np.random.choice.
+            choice_weights (optional, float): parameters of np.random.choice.
+        """
+        self.all_transforms = transforms
+        self.num_layers = num_layers
+        self.choice_weights = choice_weights
+
+    def __call__(self, img, annotations=None, **kwargs):
+        self.transforms = np.random.choice(
+            self.all_transforms,
+            self.num_layers,
+            replace=self.choice_weights is None,
+            p=self.choice_weights)
+
+        return super().__call__(img, annotations)
+
+
+@TRANSFORMS.register()
+class ShuffleList(ComposeTransform):
+    """
+    Randomly shuffle the `transforms` order.
+    """
+
+    def __call__(self, img, annotations=None, **kwargs):
+        np.random.shuffle(self.transforms)
+        return super().__call__(img, annotations)
+
+
+@TRANSFORMS.register()
+class RepeatList(ComposeTransform):
+    """
+    Forward several times of provided transforms for a given image.
+    """
+    def __init__(self, transforms, repeat_times=2):
+        """
+        Args:
+            transforms (list[TransformGen]): List of transform to be repeated.
+            repeat_times (int): number of duplicates desired.
+        """
+        super().__init__(transforms)
+        self.times = repeat_times
+
+    def __call__(self, img, annotations=None, **kwargs):
+        repeat_imgs = []
+        repeat_annotations = []
+        for t in range(self.times):
+            tmp_img, tmp_anno = super().__call__(img, annotations, **kwargs)
+            repeat_imgs.append(tmp_img)
+            repeat_annotations.append(tmp_anno)
+        repeat_imgs = np.stack(repeat_imgs, axis=0)
+
+        return repeat_imgs, repeat_annotations
+
+
+class DefaultTransorm(Transform):
+    """
+    Default transform for 2D detection, segmentation, keypoints, etc.
+    """
 
     @abstractmethod
     def apply_image(self, img: np.ndarray):
@@ -222,7 +402,8 @@ class Transform(metaclass=ABCMeta):
                     keypoints[:, :2] = self.apply_coords(keypoints[:, :2])
 
                     # This assumes that HorizFlipTransform is the only one that does flip
-                    do_hflip = isinstance(self, cvpods.data.transforms.transform.HFlipTransform)
+                    do_hflip = isinstance(self, cvpods.data.transforms.augmentations.RandomFlip) \
+                        and self.horizontal
 
                     # Alternative way: check if probe points was horizontally flipped.
                     # probe = np.asarray([[0.0, 0.0], [image_width, 0.0]])
@@ -257,168 +438,19 @@ class Transform(metaclass=ABCMeta):
                             "Supported type is ndarray.".format(type(sem_seg)))
         return image, annotations
 
-    @classmethod
-    def register_type(cls, data_type: str, func: Callable):
-        """
-        Register the given function as a handler that this transform will use
-        for a specific data type.
 
-        Args:
-            data_type (str): the name of the data type (e.g., box)
-            func (callable): takes a transform and a data, returns the
-                transformed data.
-
-        Examples:
-
-        .. code-block:: python
-
-            def func(flip_transform, voxel_data):
-                return transformed_voxel_data
-            HFlipTransform.register_type("voxel", func)
-
-            # ...
-            transform = HFlipTransform(...)
-            transform.apply_voxel(voxel_data)  # func will be called
-        """
-        assert callable(
-            func
-        ), "You can only register a callable to a Transform. Got {} instead.".format(
-            func)
-        argspec = inspect.getfullargspec(func)
-        assert len(argspec.args) == 2, (
-            "You can only register a function that takes two positional "
-            "arguments to a Transform! Got a function with spec {}".format(
-                str(argspec)))
-        setattr(cls, "apply_" + data_type, func)
-
-
-_T = TypeVar("_T")
-
-
-class ComposeTransform(object):
-    """
-    Composes several transforms together.
-    """
-
-    def __init__(self, tfms):
-        """
-        Args:
-            transforms (list[Transform]): list of transforms to compose.
-        """
-        super().__init__()
-        self.transforms = tfms
-
-    def __eq__(self, other):
-        if not isinstance(other, ComposeTransform):
-            return False
-        return self.transforms == other.transforms
-
-    def __call__(self, img, annotations=None, **kwargs):
-        for tfm in self.transforms:
-            img, annotations = tfm(img, annotations, **kwargs)
-        return img, annotations
-
-    def __repr__(self):
-        return "".join([tfm for tfm in self.transforms])
-
-
-# TODO: Deprecated
-# pyre-ignore-all-errors
-class TransformList:
-    """
-    Maintain a list of transform operations which will be applied in sequence.
-    Attributes:
-        transforms (list[Transform])
-    """
-    def __init__(self, transforms: list):
-        """
-        Args:
-            transforms (list[Transform]): list of transforms to perform.
-        """
-        super().__init__()
-        for t in transforms:
-            assert isinstance(t, Transform), t
-        self.transforms = transforms
-
-    def _apply(self, x: _T, meth: str) -> _T:
-        """
-        Apply the transforms on the input.
-        Args:
-            x: input to apply the transform operations.
-            meth (str): meth.
-        Returns:
-            x: after apply the transformation.
-        """
-        for t in self.transforms:
-            x = getattr(t, meth)(x)
-        return x
-
-    def __getattr__(self, name: str):
-        """
-        Args:
-            name (str): name of the attribute.
-        """
-        if name.startswith("apply_"):
-            return lambda x: self._apply(x, name)
-        raise AttributeError(
-            "TransformList object has no attribute {}".format(name))
-
-    def __add__(self, other: "TransformList") -> "TransformList":
-        """
-        Args:
-            other (TransformList): transformation to add.
-        Returns:
-            TransformList: list of transforms.
-        """
-        others = (other.transforms
-                  if isinstance(other, TransformList) else [other])
-        return TransformList(self.transforms + others)
-
-    def __iadd__(self, other: "TransformList") -> "TransformList":
-        """
-        Args:
-            other (TransformList): transformation to add.
-        Returns:
-            TransformList: list of transforms.
-        """
-        others = (other.transforms
-                  if isinstance(other, TransformList) else [other])
-        self.transforms.extend(others)
-        return self
-
-    def __radd__(self, other: "TransformList") -> "TransformList":
-        """
-        Args:
-            other (TransformList): transformation to add.
-        Returns:
-            TransformList: list of transforms.
-        """
-        others = (other.transforms
-                  if isinstance(other, TransformList) else [other])
-        return TransformList(others + self.transforms)
-
-    def insert(self, idx: int, other: "TransformList") -> "TransformList":
-        """
-        Args:
-            idx (int): insert position.
-            other (TransformList): transformation to insert.
-        Returns:
-            None
-        """
-        assert idx in range(len(self.transforms))
-        others = (other.transforms
-                  if isinstance(other, TransformList) else [other])
-        self.transforms = self.transforms[:idx] + others + self.transforms[idx:]
-
-
-class DistortTransform(Transform):
+# Simplify this to inherent SimpleTransform
+@TRANSFORMS.register()
+class RandomDistortion(Transform):
     """
     Distort image w.r.t hue, saturation and exposure.
     """
 
-    def __init__(self, hue, saturation, exposure, image_format):
+    def __init__(self, hue, saturation, exposure, image_format="BGR", prob=0.5):
+        assert image_format in ["RGB", "BGR"]
         super().__init__()
         self._set_attributes(locals())
+
         self.cvt_code = {
             "RGB": (cv2.COLOR_RGB2HSV, cv2.COLOR_HSV2RGB),
             "BGR": (cv2.COLOR_BGR2HSV, cv2.COLOR_HSV2BGR),
@@ -426,7 +458,7 @@ class DistortTransform(Transform):
         if saturation > 1.0:
             saturation /= 255.  # in range [0, 1]
 
-    def apply_image(self, img: np.ndarray) -> np.ndarray:
+    def __call__(self, img, annotations=None, **kwargs):
         """
         Args:
             img (ndarray): of shape HxW, HxWxC, or NxHxWxC. The array can be
@@ -436,31 +468,30 @@ class DistortTransform(Transform):
         Returns:
             ndarray: the distorted image(s).
         """
-        dhue = np.random.uniform(low=-self.hue, high=self.hue)
-        dsat = self._rand_scale(self.saturation)
-        dexp = self._rand_scale(self.exposure)
+        do = self._rand_range() < self.prob
+        if do:
+            dhue = np.random.uniform(low=-self.hue, high=self.hue)
+            dsat = self._rand_scale(self.saturation)
+            dexp = self._rand_scale(self.exposure)
 
-        dtype = img.dtype
-        img = cv2.cvtColor(img, self.cvt_code[0])
-        img = np.asarray(img, dtype=np.float32) / 255.
-        img[:, :, 1] *= dsat
-        img[:, :, 2] *= dexp
-        H = img[:, :, 0] + dhue
+            dtype = img.dtype
+            img = cv2.cvtColor(img, self.cvt_code[0])
+            img = np.asarray(img, dtype=np.float32) / 255.
+            img[:, :, 1] *= dsat
+            img[:, :, 2] *= dexp
+            H = img[:, :, 0] + dhue
 
-        if dhue > 0:
-            H[H > 1.0] -= 1.0
-        else:
-            H[H < 0.0] += 1.0
+            if dhue > 0:
+                H[H > 1.0] -= 1.0
+            else:
+                H[H < 0.0] += 1.0
 
-        img[:, :, 0] = H
-        img = (img * 255).clip(0, 255).astype(np.uint8)
-        img = cv2.cvtColor(img, self.cvt_code[1])
-        img = np.asarray(img, dtype=dtype)
+            img[:, :, 0] = H
+            img = (img * 255).clip(0, 255).astype(np.uint8)
+            img = cv2.cvtColor(img, self.cvt_code[1])
+            img = np.asarray(img, dtype=dtype)
 
-        return img
-
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        return coords
+        return img, annotations
 
     def _rand_scale(self, upper_bound):
         """
@@ -477,21 +508,26 @@ class DistortTransform(Transform):
             return scale
         return 1 / scale
 
-    def apply_segmentation(self, segmentation: np.ndarray) -> np.ndarray:
-        return segmentation
 
-
-class AffineTransform(Transform):
+@TRANSFORMS.register()
+class CenterAffine(DefaultTransorm):
     """
     Augmentation from CenterNet
     """
-    def __init__(self, src, dst, output_size, pad_value=[0, 0, 0]):
+    def __init__(self, boarder, output_size, pad_value=[0, 0, 0], random_aug=True):
+
         """
         output_size:(w, h)
         """
         super().__init__()
-        affine = cv2.getAffineTransform(np.float32(src), np.float32(dst))
         self._set_attributes(locals())
+
+    def __call__(self, image, annotations, **kwargs):
+        self.img_shape = image.shape[:2]
+        self.center, self.scale = self.generate_center_and_scale(self.img_shape)
+        self.src, self.dst = self.generate_src_and_dst(self.center, self.scale, self.output_size)
+        self.affine = cv2.getAffineTransform(np.float32(self.src), np.float32(self.dst))
+        return super().__call__(image, annotations)
 
     def apply_image(self, img: np.ndarray) -> np.ndarray:
         """
@@ -534,102 +570,42 @@ class AffineTransform(Transform):
         return coords
 
 
-class RotationTransform(Transform):
-    """
-    This method returns a copy of this image, rotated the given
-    number of degrees counter clockwise around its center.
-    """
-
-    def __init__(self, h, w, angle, expand=True, center=None, interp=None):
-        """
-        Args:
-            h, w (int): original image size
-            angle (float): degrees for rotation
-            expand (bool): choose if the image should be resized to fit the whole
-                rotated image (default), or simply cropped
-            center (tuple (width, height)): coordinates of the rotation center
-                if left to None, the center will be fit to the center of each image
-                center has no effect if expand=True because it only affects shifting
-            interp: cv2 interpolation method, default cv2.INTER_LINEAR
-        """
-        super().__init__()
-        image_center = np.array((w / 2, h / 2))
-        if center is None:
-            center = image_center
-        if interp is None:
-            interp = cv2.INTER_LINEAR
-        abs_cos, abs_sin = (abs(np.cos(np.deg2rad(angle))), abs(np.sin(np.deg2rad(angle))))
-        if expand:
-            # find the new width and height bounds
-            bound_w, bound_h = np.rint(
-                [h * abs_sin + w * abs_cos, h * abs_cos + w * abs_sin]
-            ).astype(int)
-        else:
-            bound_w, bound_h = w, h
-
-        self._set_attributes(locals())
-        self.rm_coords = self.create_rotation_matrix()
-        # Needed because of this problem https://github.com/opencv/opencv/issues/11784
-        self.rm_image = self.create_rotation_matrix(offset=-0.5)
-
-    def apply_image(self, img, interp=None):
-        """
-        img should be a numpy array, formatted as Height * Width * Nchannels
-        """
-        if len(img) == 0 or self.angle % 360 == 0:
-            return img
-        assert img.shape[:2] == (self.h, self.w)
-        interp = interp if interp is not None else self.interp
-        return cv2.warpAffine(img, self.rm_image, (self.bound_w, self.bound_h), flags=interp)
-
-    def apply_coords(self, coords):
-        """
-        coords should be a N * 2 array-like, containing N couples of (x, y) points
-        """
-        coords = np.asarray(coords, dtype=float)
-        if len(coords) == 0 or self.angle % 360 == 0:
-            return coords
-        return cv2.transform(coords[:, np.newaxis, :], self.rm_coords)[:, 0, :]
-
-    def apply_segmentation(self, segmentation):
-        segmentation = self.apply_image(segmentation, interp=cv2.INTER_NEAREST)
-        return segmentation
-
-    def create_rotation_matrix(self, offset=0):
-        center = (self.center[0] + offset, self.center[1] + offset)
-        rm = cv2.getRotationMatrix2D(tuple(center), self.angle, 1)
-        if self.expand:
-            # Find the coordinates of the center of rotation in the new image
-            # The only point for which we know the future coordinates is the center of the image
-            rot_im_center = cv2.transform(self.image_center[None, None, :] + offset, rm)[0, 0, :]
-            new_center = np.array([self.bound_w / 2, self.bound_h / 2]) + offset - rot_im_center
-            # shift the rotation center to the new coordinates
-            rm[:, 2] += new_center
-        return rm
-
-    def inverse(self):
-        """
-        The inverse is to rotate it back with expand, and crop to get the original shape.
-        """
-        if not self.expand:  # Not possible to inverse if a part of the image is lost
-            raise NotImplementedError()
-        rotation = RotationTransform(
-            self.bound_h, self.bound_w, -self.angle, True, None, self.interp
-        )
-        crop = CropTransform(
-            (rotation.bound_w - self.w) // 2, (rotation.bound_h - self.h) // 2, self.w, self.h
-        )
-        return TransformList([rotation, crop])
-
-
-class HFlipTransform(Transform):
+@TRANSFORMS.register()
+class RandomFlip(DefaultTransorm):
     """
     Perform horizontal flip.
     """
 
-    def __init__(self, width: int):
+    def __init__(self, prob=0.5, *, horizontal=True, vertical=False):
+        """
+        Args:
+            prob (float): probability of flip.
+            horizontal (boolean): whether to apply horizontal flipping
+            vertical (boolean): whether to apply vertical flipping
+        """
         super().__init__()
+
+        if horizontal and vertical:
+            raise ValueError(
+                "Cannot do both horiz and vert. Please use two Flip instead."
+            )
+        if not horizontal and not vertical:
+            raise ValueError("At least one of horiz or vert has to be True!")
         self._set_attributes(locals())
+
+    def __call__(self, image, annotations, **kwargs):
+        h, w = image.shape[:2]
+        do = self._rand_range() < self.prob
+
+        if self.horizontal:
+            self.width = w
+        else:
+            self.height = h
+
+        if do:
+            return super().__call__(image, annotations, **kwargs)
+        else:
+            return image, annotations
 
     def apply_image(self, img: np.ndarray) -> np.ndarray:
         """
@@ -643,13 +619,23 @@ class HFlipTransform(Transform):
         Returns:
             ndarray: the flipped image(s).
         """
-        tensor = torch.from_numpy(np.ascontiguousarray(img).copy())
-        if len(tensor.shape) == 2:
-            # For dimension of HxW.
-            tensor = tensor.flip((-1))
-        elif len(tensor.shape) > 2:
-            # For dimension of HxWxC, NxHxWxC.
-            tensor = tensor.flip((-2))
+        if self.horizontal:
+            tensor = torch.from_numpy(np.ascontiguousarray(img).copy())
+            if len(tensor.shape) == 2:
+                # For dimension of HxW.
+                tensor = tensor.flip((-1))
+            elif len(tensor.shape) > 2:
+                # For dimension of HxWxC, NxHxWxC.
+                tensor = tensor.flip((-2))
+        else:
+            tensor = torch.from_numpy(np.ascontiguousarray(img).copy())
+            if len(tensor.shape) == 2:
+                # For dimension of HxW.
+                tensor = tensor.flip((-2))
+            elif len(tensor.shape) > 2:
+                # For dimension of HxWxC, NxHxWxC.
+                tensor = tensor.flip((-3))
+
         return tensor.numpy()
 
     def apply_coords(self, coords: np.ndarray) -> np.ndarray:
@@ -667,56 +653,11 @@ class HFlipTransform(Transform):
             Therefore they are flipped by `(W - x, H - y)`, not
             `(W - 1 - x, H 1 - y)`.
         """
-        coords[:, 0] = self.width - coords[:, 0]
-        return coords
+        if self.horizontal:
+            coords[:, 0] = self.width - coords[:, 0]
+        else:
+            coords[:, 1] = self.height - coords[:, 1]
 
-
-class VFlipTransform(Transform):
-    """
-    Perform vertical flip.
-    """
-
-    def __init__(self, height: int):
-        super().__init__()
-        self._set_attributes(locals())
-
-    def apply_image(self, img: np.ndarray) -> np.ndarray:
-        """
-        Flip the image(s).
-
-        Args:
-            img (ndarray): of shape HxW, HxWxC, or NxHxWxC. The array can be
-                of type uint8 in range [0, 255], or floating point in range
-                [0, 1] or [0, 255].
-
-        Returns:
-            ndarray: the flipped image(s).
-        """
-        tensor = torch.from_numpy(np.ascontiguousarray(img).copy())
-        if len(tensor.shape) == 2:
-            # For dimension of HxW.
-            tensor = tensor.flip((-2))
-        elif len(tensor.shape) > 2:
-            # For dimension of HxWxC, NxHxWxC.
-            tensor = tensor.flip((-3))
-        return tensor.numpy()
-
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        """
-        Flip the coordinates.
-
-        Args:
-            coords (ndarray): floating point array of shape Nx2. Each row is (x, y).
-
-        Returns:
-            ndarray: the flipped coordinates.
-
-        Note:
-            The inputs are floating point coordinates, not pixel indices.
-            Therefore they are flipped by `(W - x, H - y)`, not
-            `(W - 1 - x, H - 1 - y)`.
-        """
-        coords[:, 1] = self.height - coords[:, 1]
         return coords
 
 
@@ -727,14 +668,12 @@ class NoOpTransform(Transform):
     def __init__(self):
         super().__init__()
 
-    def apply_image(self, img: np.ndarray) -> np.ndarray:
-        return img
-
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        return coords
+    def __call__(self, data, annotations):
+        return data, annotations
 
 
-class GaussianBlurTransform(Transform):
+@TRANSFORMS.register()
+class RandomGaussianBlur(Transform):
     """
     GaussianBlur using PIL.ImageFilter.GaussianBlur
     """
@@ -747,100 +686,29 @@ class GaussianBlurTransform(Transform):
         super().__init__()
         self._set_attributes(locals())
 
-    def apply_image(self, img: np.ndarray) -> np.ndarray:
+    def __call__(self, image, annotations=None, **kwargs):
         if np.random.random() < self.p:
             sigma = random.uniform(self.sigma[0], self.sigma[1])
-            img = Image.fromarray(img).filter(ImageFilter.GaussianBlur(radius=sigma))
-        return np.array(img)
+            img = Image.fromarray(image).filter(ImageFilter.GaussianBlur(radius=sigma))
 
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        return coords
+        return np.array(img), annotations
 
 
-class SolarizationTransform(Transform):
+@TRANSFORMS.register()
+class RandomSolarization(Transform):
     def __init__(self, thresh=128, p=0.5):
         super().__init__()
-        self.thresh = thresh
-        self.p = p
+        self._set_attributes(locals)
 
-    def apply_image(self, img: np.ndarray) -> np.ndarray:
+    def __call__(self, img, annotations=None, **kwargs) -> np.ndarray:
         if np.random.random() < self.p:
-            return np.array(ImageOps.solarize(Image.fromarray(img), self.thresh))
-        else:
-            return img
+            img = np.array(ImageOps.solarize(Image.fromarray(img), self.thresh))
 
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        return coords
+        return img, annotations
 
 
-class GaussianBlurConvTransform(Transform):
-    def __init__(self, kernel_size, p=1.0):
-        super().__init__()
-        self._set_attributes(locals())
-        radias = kernel_size // 2
-        kernel_size = radias * 2 + 1
-        self.blur_h = torch.nn.Conv2d(3, 3, kernel_size=(kernel_size, 1),
-                                      stride=1, padding=0, bias=False, groups=3)
-        self.blur_v = torch.nn.Conv2d(3, 3, kernel_size=(1, kernel_size),
-                                      stride=1, padding=0, bias=False, groups=3)
-        self.k = kernel_size
-        self.r = radias
-
-        self.blur = torch.nn.Sequential(
-            torch.nn.ReflectionPad2d(radias),
-            self.blur_h,
-            self.blur_v
-        )
-
-        self.pil_to_tensor = transforms.ToTensor()
-        self.tensor_to_pil = transforms.ToPILImage()
-
-    def apply_image(self, img: np.ndarray) -> np.ndarray:
-        if np.random.random() < self.p:
-            img = self.pil_to_tensor(Image.fromarray(img)).unsqueeze(0)
-
-            sigma = np.random.uniform(0.1, 2.0)
-            x = np.arange(-self.r, self.r + 1)
-            x = np.exp(-np.power(x, 2) / (2 * sigma * sigma))
-            x = x / x.sum()
-            x = torch.from_numpy(x).view(1, -1).repeat(3, 1)
-
-            self.blur_h.weight.data.copy_(x.view(3, 1, self.k, 1))
-            self.blur_v.weight.data.copy_(x.view(3, 1, 1, self.k))
-
-            with torch.no_grad():
-                img = self.blur(img)
-                img = img.squeeze()
-
-            img = np.array(self.tensor_to_pil(img))
-        return img
-
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        return coords
-
-
-class LabSpaceTransform(Transform):
-    """
-    Convert image from RGB into Lab color space
-    """
-    def __init__(self):
-        super().__init__()
-        self._set_attributes(locals())
-
-    def apply_image(self, img: np.ndarray) -> np.ndarray:
-        assert len(img.shape) == 3, 'Image should have dim H x W x 3'
-        assert img.shape[2] == 3, 'Image should have dim H x W x 3'
-        img_lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-        img_lab = img_lab.astype(np.float32)
-        img_lab[:, :, 0] = (img_lab[:, :, 0] * (100.0 / 255.0)) - 50.0
-        img_lab[:, :, 1:] = img_lab[:, :, 1:] - 128.0
-        return img_lab
-
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        return coords
-
-
-class PadTransform(Transform):
+@TRANSFORMS.register()
+class Pad(DefaultTransorm):
     """
     Pad image with `pad_value` to the specified `target_h` and `target_w`.
 
@@ -911,17 +779,14 @@ class PadTransform(Transform):
         return segmentation
 
 
-class ScaleTransform(Transform):
+@TRANSFORMS.register()
+class RandomScale(DefaultTransorm):
     """
     Resize the image to a target size.
     """
 
-    def __init__(self,
-                 h: int,
-                 w: int,
-                 new_h: int,
-                 new_w: int,
-                 interp: str = "BILINEAR"):
+    def __init__(self, output_size, ratio_range=(0.1, 2), interp="BILINEAR"):
+
         """
         Args:
             h, w (int): original image size.
@@ -936,6 +801,10 @@ class ScaleTransform(Transform):
         """
         super().__init__()
         self._set_attributes(locals())
+        self.min_ratio, self.max_ratio = ratio_range
+        if isinstance(self.output_size, int):
+            self.output_size = [self.output_size] * 2
+
         _str_to_pil_interpolation = {
             "NEAREST": Image.NEAREST,
             "BILINEAR": Image.BILINEAR,
@@ -948,6 +817,29 @@ class ScaleTransform(Transform):
         )), "This interpolation mode ({}) is not currently supported!".format(
             interp)
         self.interp = _str_to_pil_interpolation[interp]
+
+    def __call__(self, img, annotations=None, **kwargs):
+        h, w = img.shape[:2]
+        output_h, output_w = self.output_size
+
+        # 1. Select a random scale factor.
+        random_scale_factor = np.random.uniform(self.min_ratio, self.max_ratio)
+
+        scaled_size_h = int(random_scale_factor * output_h)
+        scaled_size_w = int(random_scale_factor * output_w)
+
+        # 2. Recompute the accurate scale_factor using rounded scaled image size.
+        image_scale_h = scaled_size_h * 1.0 / h
+        image_scale_w = scaled_size_w * 1.0 / w
+        image_scale = min(image_scale_h, image_scale_w)
+
+        # 3. Select non-zero random offset (x, y) if scaled image is larger than output_size.
+        scaled_h = int(h * 1.0 * image_scale)
+        scaled_w = int(w * 1.0 * image_scale)
+
+        self.h, self.w, self.new_h, self.new_w = h, w, scaled_h, scaled_w
+
+        return super().__call__(img, annotations)
 
     def apply_image(self, img: np.ndarray, interp: str = None) -> np.ndarray:
         """
@@ -1000,64 +892,7 @@ class ScaleTransform(Transform):
         return segmentation
 
 
-class GridSampleTransform(Transform):
-    def __init__(self, grid: np.ndarray, interp: str):
-        """
-        Args:
-            grid (ndarray): grid has x and y input pixel locations which are
-                used to compute output. Grid has values in the range of [-1, 1],
-                which is normalized by the input height and width. The dimension
-                is `N x H x W x 2`.
-            interp (str): interpolation methods. Options include `nearest` and
-                `bilinear`.
-        """
-        super().__init__()
-        self._set_attributes(locals())
-
-    def apply_image(self, img: np.ndarray, interp: str = None) -> np.ndarray:
-        """
-        Apply grid sampling on the image(s).
-
-        Args:
-            img (ndarray): of shape NxHxWxC, or HxWxC or HxW. The array can be
-                of type uint8 in range [0, 255], or floating point in range
-                [0, 1] or [0, 255].
-            interp (str): interpolation methods. Options include `nearest` and
-                `bilinear`.
-        Returns:
-            ndarray: grid sampled image(s).
-        """
-        interp_method = interp if interp is not None else self.interp
-        float_tensor = torch.nn.functional.grid_sample(
-            to_float_tensor(img),    # NxHxWxC -> NxCxHxW.
-            torch.from_numpy(self.grid),
-            mode=interp_method,
-            padding_mode="border",
-            align_corners=False,
-        )
-        return to_numpy(float_tensor, img.shape, img.dtype)
-
-    def apply_coords(self, coords: np.ndarray):
-        """
-        Not supported.
-        """
-        raise NotImplementedError()
-
-    def apply_segmentation(self, segmentation: np.ndarray) -> np.ndarray:
-        """
-        Apply grid sampling on the full-image segmentation.
-
-        Args:
-            segmentation (ndarray): of shape HxW. The array should have integer
-                or bool dtype.
-        Returns:
-            ndarray: grid sampled segmentation.
-        """
-        segmentation = self.apply_image(segmentation, interp=Image.NEAREST)
-        return segmentation
-
-
-class IoUCropTransform(Transform):
+class IoUCropTransform(DefaultTransorm):
     """
     Perform crop operations on images.
 
@@ -1188,7 +1023,85 @@ class IoUCropTransform(Transform):
         return [self.apply_coords(p) for p in cropped_polygons]
 
 
-class CropTransform(Transform):
+@TRANSFORMS.register()
+class MinIoURandomCrop(IoUCropTransform):
+    """
+    Random crop the image & bboxes, the cropped patches have minimum IoU
+    requirement with original image & bboxes, the IoU threshold is randomly
+    selected from min_ious.
+    """
+
+    def __init__(self, min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3):
+        """
+        Args:
+            min_ious (tuple): minimum IoU threshold for all intersections with bounding boxes
+            min_crop_size (float): minimum crop's size
+                (i.e. h,w := a*h, a*w, where a >= min_crop_size).
+        """
+        self._set_attributes(locals())
+
+    def __call__(self, img, annotations=None, **kwargs):
+        """
+        Args:
+            img (ndarray): of shape HxWxC(RGB). The array can be of type uint8
+                in range [0, 255], or floating point in range [0, 255].
+            annotations (list[dict[str->str]]):
+                Each item in the list is a bbox label of an object. The object is
+                    represented by a dict,
+                which contains:
+                 - bbox (list): bbox coordinates, top left and bottom right.
+                 - bbox_mode (str): bbox label mode, for example: `XYXY_ABS`,
+                    `XYWH_ABS` and so on...
+        """
+        sample_mode = (1, *self.min_ious, 0)
+        h, w = img.shape[:2]
+
+        boxes = list()
+        for obj in annotations:
+            boxes.append(BoxMode.convert(obj["bbox"], obj["bbox_mode"], BoxMode.XYXY_ABS))
+        boxes = torch.tensor(boxes)
+
+        while True:
+            mode = np.random.choice(sample_mode)
+            if mode == 1:
+                return NoOpTransform()
+
+            min_iou = mode
+            for i in range(50):
+                new_w = np.random.uniform(self.min_crop_size * w, w)
+                new_h = np.random.uniform(self.min_crop_size * h, h)
+
+                # h / w in [0.5, 2]
+                if new_h / new_w < 0.5 or new_h / new_w > 2:
+                    continue
+
+                left = np.random.uniform(w - new_w)
+                top = np.random.uniform(h - new_h)
+
+                patch = np.array(
+                    (int(left), int(top), int(left + new_w), int(top + new_h)))
+
+                overlaps = pairwise_iou(
+                    Boxes(patch.reshape(-1, 4)),
+                    Boxes(boxes.reshape(-1, 4))
+                )
+
+                if overlaps.min() < min_iou:
+                    continue
+
+                # center of boxes should inside the crop img
+                center = (boxes[:, :2] + boxes[:, 2:]) / 2
+                mask = ((center[:, 0] > patch[0]) * (center[:, 1] > patch[1])
+                        * (center[:, 0] < patch[2]) * (center[:, 1] < patch[3]))
+                if not mask.any():
+                    continue
+
+                self.x0, self.y0, self.w, self.h = int(left), int(top), int(new_w), int(new_h)
+
+                return super().__call__(img, annotations)
+
+
+class CropTransform(DefaultTransorm):
     """
     Perform crop operations on images.
     """
@@ -1278,23 +1191,91 @@ class CropTransform(Transform):
         return [self.apply_coords(p) for p in cropped_polygons]
 
 
-class CropPadTransform(Transform):
+@TRANSFORMS.register()
+class RandomCrop(CropTransform):
+    """
+    Randomly crop a subimage out of an image.
+    """
+
+    def __init__(self, crop_type: str, crop_size, strict_mode=True):
+        """
+        Args:
+            crop_type (str): one of "relative_range", "relative", "absolute".
+                See `config/defaults.py` for explanation.
+            crop_size (tuple[float]): the relative ratio or absolute pixels of
+                height and width
+            strict_mode (bool): if `True`, the target `crop_size` must be smaller than
+                the original image size.
+        """
+        assert crop_type in ["relative_range", "relative", "absolute"]
+        self._set_attributes(locals())
+
+    def __call__(self, img, annotations=None, **kwargs):
+        h, w = img.shape[:2]
+        croph, cropw = self.get_crop_size((h, w))
+        if self.strict_mode:
+            assert h >= croph and w >= cropw, "Shape computation in {} has bugs.".format(
+                self
+            )
+        offset_range_h = max(h - croph, 0)
+        offset_range_w = max(w - cropw, 0)
+        self.y0 = np.random.randint(offset_range_h + 1)
+        self.x0 = np.random.randint(offset_range_w + 1)
+
+        self.w = cropw
+        self.h = croph
+
+        return super().__call__(img, annotations)
+
+    def get_crop_size(self, image_size):
+        """
+        Args:
+            image_size (tuple): height, width
+
+        Returns:
+            crop_size (tuple): height, width in absolute pixels
+        """
+        h, w = image_size
+        if self.crop_type == "relative":
+            ch, cw = self.crop_size
+            return int(h * ch + 0.5), int(w * cw + 0.5)
+        elif self.crop_type == "relative_range":
+            crop_size = np.asarray(self.crop_size, dtype=np.float32)
+            ch, cw = crop_size + np.random.rand(2) * (1 - crop_size)
+            return int(h * ch + 0.5), int(w * cw + 0.5)
+        elif self.crop_type == "absolute":
+            return self.crop_size
+        else:
+            NotImplementedError("Unknown crop type {}".format(self.crop_type))
+
+
+@TRANSFORMS.register()
+class RandomCropPad(RandomCrop):
     def __init__(self,
-                 x0: int,
-                 y0: int,
-                 w: int,
-                 h: int,
-                 new_w: int,
-                 new_h: int,
+                 crop_type: str,
+                 crop_size,
                  img_value=None,
                  seg_value=None):
-        super().__init__()
+        super().__init__(crop_type, crop_size, strict_mode=False)
         self._set_attributes(locals())
-        self.crop_trans = CropTransform(x0, y0, w, h)
-        pad_top_offset = self.get_pad_offset(h, new_h)
-        pad_left_offset = self.get_pad_offset(w, new_w)
-        self.pad_trans = PadTransform(
-            pad_top_offset, pad_left_offset, new_h, new_w, img_value, seg_value)
+
+    def __call__(self, img, annotations=None, **kwargs):
+        h, w = img.shape[:2]
+        croph, cropw = self.get_crop_size((h, w))
+        h0 = np.random.randint(h - croph + 1) if h >= croph else 0
+        w0 = np.random.randint(w - cropw + 1) if w >= cropw else 0
+        dh = min(h, croph)
+        dw = min(w, cropw)
+        # print(w0, h0, dw, dh)
+
+        self.x0, self.y0, self.w, self.h, self.new_w, self.new_h = w0, h0, dw, dh, cropw, croph
+        self.crop_trans = CropTransform(self.x0, self.y0, self.w, self.h)
+        pad_top_offset = self.get_pad_offset(self.h, self.new_h)
+        pad_left_offset = self.get_pad_offset(self.w, self.new_w)
+        self.pad_trans = Pad(
+            pad_top_offset, pad_left_offset, self.new_h, self.new_w, self.img_value, self.seg_value)
+
+        return super().__call__(img, annotations)
 
     def get_pad_offset(self, ori: int, tar: int):
         pad_length = max(tar - ori, 0)
@@ -1363,6 +1344,77 @@ class CropPadTransform(Transform):
         return segmentation
 
 
+@TRANSFORMS.register()
+class RandomCropWithInstance(RandomCrop):
+    """
+    Make sure the cropping region contains the center of a random instance from annotations.
+    """
+
+    def __call__(self, img, annotations=None, **kwargs):
+        h, w = img.shape[:2]
+        croph, cropw = self.get_crop_size((h, w))
+        if self.strict_mode:
+            assert h >= croph and w >= cropw, "Shape computation in {} has bugs.".format(
+                self
+            )
+        offset_range_h = max(h - croph, 0)
+        offset_range_w = max(w - cropw, 0)
+        # Make sure there is always at least one instance in the image
+        assert annotations is not None, "Can not get annotations infos."
+        instance = np.random.choice(annotations)
+        bbox = BoxMode.convert(instance["bbox"], instance["bbox_mode"], BoxMode.XYXY_ABS)
+        bbox = torch.tensor(bbox)
+        center_xy = (bbox[:2] + bbox[2:]) / 2.0
+
+        offset_range_h_min = max(center_xy[1] - croph, 0)
+        offset_range_w_min = max(center_xy[0] - cropw, 0)
+        offset_range_h_max = min(offset_range_h, center_xy[1] - 1)
+        offset_range_w_max = min(offset_range_w, center_xy[0] - 1)
+
+        self.y0 = np.random.randint(offset_range_h_min, offset_range_h_max + 1)
+        self.x0 = np.random.randint(offset_range_w_min, offset_range_w_max + 1)
+
+        self.w = cropw
+        self.h = croph
+
+        return super().__call__(img, annotations)
+
+
+@TRANSFORMS.register()
+class RandomCropWithMaxAreaLimit(RandomCrop):
+    """
+    Find a cropping window such that no single category occupies more than
+    `single_category_max_area` in `sem_seg`.
+
+    The function retries random cropping 10 times max.
+    """
+
+    def __init__(self, crop_type: str, crop_size, strict_mode=True,
+                 single_category_max_area=1.0, ignore_value=255):
+        super().__init__(crop_type, crop_size, strict_mode)
+        self._set_attributes(locals())
+
+    def __call__(self, img, annotations=None, **kwargs):
+        if self.single_category_max_area >= 1.0:
+            return super().__call__(img, annotations)
+        else:
+            h, w = img.shape[:2]
+            assert "sem_seg" in annotations[0]
+            sem_seg = annotations[0]["sem_seg"]
+            croph, cropw = self.get_crop_size((h, w))
+            for _ in range(10):
+                y0 = np.random.randint(h - croph + 1)
+                x0 = np.random.randint(w - cropw + 1)
+                sem_seg_temp = sem_seg[y0: y0 + croph, x0: x0 + cropw]
+                labels, cnt = np.unique(sem_seg_temp, return_counts=True)
+                cnt = cnt[labels != self.ignore_value]
+                if len(cnt) > 1 and np.max(cnt) / np.sum(cnt) < self.single_category_max_area:
+                    break
+            self.x0, self.y0, self.w, self.h = x0, y0, cropw, croph
+
+            return super().__call__(img, annotations)
+
+
 class BlendTransform(Transform):
     """
     Transforms pixel colors with PIL enhance functions.
@@ -1382,7 +1434,8 @@ class BlendTransform(Transform):
         super().__init__()
         self._set_attributes(locals())
 
-    def apply_image(self, img: np.ndarray, interp: str = None) -> np.ndarray:
+    # def __call__(self, img: np.ndarray, interp: str = None) -> np.ndarray:
+    def __call__(self, img, annotations=None, **kwargs):
         """
         Apply blend transform on the image(s).
 
@@ -1399,54 +1452,174 @@ class BlendTransform(Transform):
         if img.dtype == np.uint8:
             img = img.astype(np.float32)
             img = self.src_weight * self.src_image + self.dst_weight * img
-            return np.clip(img, 0, 255).astype(np.uint8)
+            return np.clip(img, 0, 255).astype(np.uint8), annotations
         else:
-            return self.src_weight * self.src_image + self.dst_weight * img
-
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        """
-        Apply no transform on the coordinates.
-        """
-        return coords
-
-    def apply_segmentation(self, segmentation: np.ndarray) -> np.ndarray:
-        """
-        Apply no transform on the full-image segmentation.
-        """
-        return segmentation
+            return self.src_weight * self.src_image + self.dst_weight * img, annotations
 
 
-class RandomSwapChannelsTransform(Transform):
+@TRANSFORMS.register()
+class RandomContrast(BlendTransform):
+    """
+    Randomly transforms image contrast.
+
+    Contrast intensity is uniformly sampled in (intensity_min, intensity_max).
+    - intensity < 1 will reduce contrast
+    - intensity = 1 will preserve the input image
+    - intensity > 1 will increase contrast
+
+    See: https://pillow.readthedocs.io/en/3.0.x/reference/ImageEnhance.html
+    """
+
+    def __init__(self, intensity_min, intensity_max, prob=1.0):
+        """
+        Args:
+            intensity_min (float): Minimum augmentation.
+            intensity_max (float): Maximum augmentation.
+            prob (float): probability of transforms image contrast.
+        """
+        super().__init__()
+        self._set_attributes(locals())
+
+    def __call__(self, img, annotations=None, **kwargs):
+        if self._rand_range() < self.prob:
+            w = np.random.uniform(self.intensity_min, self.intensity_max)
+            self.src_image, self.src_weight, self.dst_weight = img.mean(), 1 - w, w
+            return super().__call__(img, annotations)
+        else:
+            return img, annotations
+
+
+@TRANSFORMS.register()
+class RandomBrightness(BlendTransform):
+    """
+    Randomly transforms image brightness.
+
+    Brightness intensity is uniformly sampled in (intensity_min, intensity_max).
+    - intensity < 1 will reduce brightness
+    - intensity = 1 will preserve the input image
+    - intensity > 1 will increase brightness
+
+    See: https://pillow.readthedocs.io/en/3.0.x/reference/ImageEnhance.html
+    """
+
+    def __init__(self, intensity_min, intensity_max, prob=1.):
+        """
+        Args:
+            intensity_min (float): Minimum augmentation.
+            intensity_max (float): Maximum augmentation.
+            prob (float): probability of transforms image brightness.
+        """
+        super().__init__()
+        self._set_attributes(locals())
+
+    def __call__(self, img, annotations=None, **kwargs):
+        do = self._rand_range() < self.prob
+        if do:
+            w = np.random.uniform(self.intensity_min, self.intensity_max)
+            self.src_image, self.src_weight, self.dst_weight = 0, 1 - w, w
+            return super().__call__(img, annotations)
+        else:
+            return img, annotations
+
+
+@TRANSFORMS.register()
+class RandomSaturation(BlendTransform):
+    """
+    Randomly transforms image saturation.
+
+    Saturation intensity is uniformly sampled in (intensity_min, intensity_max).
+    - intensity < 1 will reduce saturation (make the image more grayscale)
+    - intensity = 1 will preserve the input image
+    - intensity > 1 will increase saturation
+
+    See: https://pillow.readthedocs.io/en/3.0.x/reference/ImageEnhance.html
+    """
+
+    def __init__(self, intensity_min, intensity_max, prob=1.0):
+        """
+        Args:
+            intensity_min (float): Minimum augmentation (1 preserves input).
+            intensity_max (float): Maximum augmentation (1 preserves input).
+            prob (float): probability of transforms image saturation.
+        """
+        super().__init__()
+        self._set_attributes(locals())
+
+    def __call__(self, img, annotations=None, **kwargs):
+        do = self._rand_range() < self.prob
+        if do:
+            assert img.shape[-1] == 3, "Saturation only works on RGB images"
+            w = np.random.uniform(self.intensity_min, self.intensity_max)
+            grayscale = img.dot([0.299, 0.587, 0.114])[:, :, np.newaxis]
+            self.src_image, self.src_weight, self.dst_weight = grayscale, 1 - w, w
+            return super().__call__(img, annotations)
+        else:
+            return img, annotations
+
+
+@TRANSFORMS.register()
+class RandomLightning(BlendTransform):
+    """
+    Randomly transforms image color using fixed PCA over ImageNet.
+
+    The degree of color jittering is randomly sampled via a normal distribution,
+    with standard deviation given by the scale parameter.
+    """
+
+    def __init__(self, scale, prob=0.5):
+        """
+        Args:
+            scale (float): Standard deviation of principal component weighting.
+        """
+        super().__init__()
+        self._set_attributes(locals())
+        self.eigen_vecs = np.array(
+            [
+                [-0.5675, 0.7192, 0.4009],
+                [-0.5808, -0.0045, -0.8140],
+                [-0.5836, -0.6948, 0.4203],
+            ]
+        )
+        self.eigen_vals = np.array([0.2175, 0.0188, 0.0045])
+
+    def __call__(self, img, annotations=None, **kwargs):
+        assert img.shape[-1] == 3, "Saturation only works on RGB images"
+        do = self._rand_range() < self.prob
+        if do:
+            weights = np.random.normal(scale=self.scale, size=3)
+            self.src_image, self.src_weight, self.dst_weight = \
+                self.eigen_vecs.dot(weights * self.eigen_vals), 1, 1
+            return super().__call__(img, annotations)
+        else:
+            return img, annotations
+
+
+@TRANSFORMS.register()
+class RandomSwapChannels(Transform):
     """
     Randomly swap image channels.
     """
 
-    def __init__(self):
+    def __init__(self, prob=0.5):
         super().__init__()
+        self._set_attributes()
 
-    def apply_image(self, img):
+    def __call__(self, img, annotations=None, **kwargs):
         assert len(img.shape) > 2
-        return img[..., np.random.permutation(3)]
-
-    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
-        """
-        Apply no transform on the coordinates.
-        """
-        return coords
-
-    def apply_segmentation(self, segmentation: np.ndarray) -> np.ndarray:
-        """
-        Apply no transform on the full-image segmentation.
-        """
-        return segmentation
+        if self._rand_range() < self.prob:
+            return img[..., np.random.permutation(3)], annotations
+        else:
+            return img, annotations
 
 
-class ExpandTransform(Transform):
+@TRANSFORMS.register()
+class Expand(DefaultTransorm):
     """
     Expand the image and boxes according the specified expand ratio.
     """
 
-    def __init__(self, left, top, ratio, mean=(0, 0, 0)):
+    def __init__(self, ratio_range=(1, 4), mean=(0, 0, 0), prob=0.5):
+
         """
         Args:
             left, top (int): crop the image by img[top: top+h, left:left+w].
@@ -1455,6 +1628,18 @@ class ExpandTransform(Transform):
         """
         super().__init__()
         self._set_attributes(locals())
+        self.min_ratio, self.max_ratio = ratio_range
+
+    def __call__(self, img, annotations=None, **kwargs):
+        if self._rand_range() < self.prob:
+            return img, annotations
+        else:
+            h, w, c = img.shape
+            ratio = np.random.uniform(self.min_ratio, self.max_ratio)
+            left = int(np.random.uniform(0, w * ratio - w))
+            top = int(np.random.uniform(0, h * ratio - h))
+            self.left, self.top, self.ratio = left, top, ratio
+            return super().__call__(img, annotations)
 
     def apply_image(self, img):
         """
@@ -1483,7 +1668,8 @@ class ExpandTransform(Transform):
         return coords
 
 
-class ExtentTransform(Transform):
+@TRANSFORMS.register()
+class RandomExtent(DefaultTransorm):
     """
     Extracts a subregion from the source image and scales it to the output size.
 
@@ -1492,16 +1678,46 @@ class ExtentTransform(Transform):
 
     See: https://pillow.readthedocs.io/en/latest/PIL.html#PIL.ImageTransform.ExtentTransform
     """
-    def __init__(self, src_rect, output_size, interp=Image.LINEAR, fill=0):
+    def __init__(self, scale_range, shift_range, interp=Image.LINEAR, fill=0, prob=0.5):
         """
         Args:
-            src_rect (x0, y0, x1, y1): src coordinates
-            output_size (h, w): dst image size
-            interp: PIL interpolation methods
-            fill: Fill color used when src_rect extends outside image
+            scale_range (l, h): Range of input-to-output size scaling factor.
+            shift_range (x, y): Range of shifts of the cropped subrect. The rect
+                is shifted by [w / 2 * Uniform(-x, x), h / 2 * Uniform(-y, y)],
+                where (w, h) is the (width, height) of the input image. Set each
+                component to zero to crop at the image's center.
         """
         super().__init__()
         self._set_attributes(locals())
+
+    def __call__(self, img, annotations=None, **kwargs):
+
+        if self._rand_range() < self.prob:
+            return img, annotations
+        else:
+            img_h, img_w = img.shape[:2]
+
+            # Initialize src_rect to fit the input image.
+            src_rect = np.array([-0.5 * img_w, -0.5 * img_h, 0.5 * img_w, 0.5 * img_h])
+
+            # Apply a random scaling to the src_rect.
+            src_rect *= np.random.uniform(self.scale_range[0], self.scale_range[1])
+
+            # Apply a random shift to the coordinates origin.
+            src_rect[0::2] += self.shift_range[0] * img_w * (np.random.rand() - 0.5)
+            src_rect[1::2] += self.shift_range[1] * img_h * (np.random.rand() - 0.5)
+
+            # Map src_rect coordinates into image coordinates (center at corner).
+            src_rect[0::2] += 0.5 * img_w
+            src_rect[1::2] += 0.5 * img_h
+
+            self.src_rect = (src_rect[0], src_rect[1], src_rect[2], src_rect[3])
+            self.output_size = (
+                int(src_rect[3] - src_rect[1]),
+                int(src_rect[2] - src_rect[0]),
+            )
+
+            return super().__call__(img, annotations)
 
     def apply_image(self, img, interp=None):
         h, w = self.output_size
@@ -1533,7 +1749,7 @@ class ExtentTransform(Transform):
         return segmentation
 
 
-class ResizeTransform(Transform):
+class ResizeTransform(DefaultTransorm):
     """
     Resize the image to a target size.
     """
@@ -1564,6 +1780,140 @@ class ResizeTransform(Transform):
     def apply_segmentation(self, segmentation):
         segmentation = self.apply_image(segmentation, interp=Image.NEAREST)
         return segmentation
+
+
+@TRANSFORMS.register()
+class Resize(ResizeTransform):
+    """
+    Resize image to a target size
+    """
+
+    def __init__(self, shape, interp=Image.BILINEAR):
+        """
+        Args:
+            shape: (h, w) tuple or a int.
+            interp: PIL interpolation method.
+        """
+        if isinstance(shape, int):
+            shape = (shape, shape)
+        shape = tuple(shape)
+        self._set_attributes(locals())
+
+    def __call__(self, img, annotations=None, **kwargs):
+        self.h, self.w, self.new_h, self.new_w = \
+            img.shape[0], img.shape[1], self.shape[0], self.shape[1]
+        return super().__call__(img, annotations)
+
+
+@TRANSFORMS.register()
+class ResizeLongestEdge(ResizeTransform):
+    """
+    Scale the longer edge to the given size.
+    """
+
+    def __init__(self, long_edge_length, sample_style="range", interp=Image.BILINEAR,
+                 jitter=(0.0, 32)):
+        """
+        Args:
+            long_edge_length (list[int]): If ``sample_style=="range"``,
+                a [min, max] interval from which to sample the shortest edge length.
+                If ``sample_style=="choice"``, a list of shortest edge lengths to sample from.
+            sample_style (str): either "range" or "choice".
+            interp: PIL interpolation method.
+        """
+        assert sample_style in ["range", "choice"], sample_style
+
+        self.is_range = sample_style == "range"
+        if isinstance(long_edge_length, int):
+            long_edge_length = (long_edge_length, long_edge_length)
+        self._set_attributes(locals())
+
+    def __call__(self, img, annotations=None, **kwargs):
+        h, w = img.shape[:2]
+        if self.is_range:
+            size = np.random.randint(
+                self.long_edge_length[0], self.long_edge_length[1] + 1
+            )
+        else:
+            size = np.random.choice(self.long_edge_length)
+        if size == 0:
+            return NoOpTransform()
+
+        if self.jitter[0] > 0:
+            dw = self.jitter[0] * w
+            dh = self.jitter[0] * h
+            size = max(h, w) + np.random.uniform(low=-max(dw, dh), high=max(dw, dh))
+            size -= size % self.jitter[1]
+
+        scale = size * 1.0 / max(h, w)
+        if h < w:
+            newh, neww = scale * h, size
+        else:
+            newh, neww = size, scale * w
+
+        neww = int(neww + 0.5)
+        newh = int(newh + 0.5)
+
+        self.h, self.w, self.new_h, self.new_w = h, w, newh, neww
+        return super().__call__(img, annotations)
+
+
+@TRANSFORMS.register()
+class ResizeShortestEdge(ResizeTransform):
+    """
+    Scale the shorter edge to the given size, with a limit of `max_size` on the longer edge.
+    If `max_size` is reached, then downscale so that the longer edge does not exceed max_size.
+    """
+
+    def __init__(
+        self,
+        short_edge_length,
+        max_size=sys.maxsize,
+        sample_style="range",
+        interp=Image.BILINEAR,
+    ):
+        """
+        Args:
+            short_edge_length (list[int]): If ``sample_style=="range"``,
+                a [min, max] interval from which to sample the shortest edge length.
+                If ``sample_style=="choice"``, a list of shortest edge lengths to sample from.
+            max_size (int): maximum allowed longest edge length.
+            sample_style (str): either "range" or "choice".
+            interp: PIL interpolation method.
+        """
+        assert sample_style in ["range", "choice"], sample_style
+
+        self.is_range = sample_style == "range"
+        if isinstance(short_edge_length, int):
+            short_edge_length = (short_edge_length, short_edge_length)
+        self._set_attributes(locals())
+
+    def __call__(self, img, annotations=None, **kwargs):
+        h, w = img.shape[:2]
+
+        if self.is_range:
+            size = np.random.randint(
+                self.short_edge_length[0], self.short_edge_length[1] + 1
+            )
+        else:
+            size = np.random.choice(self.short_edge_length)
+        if size == 0:
+            return NoOpTransform()
+
+        scale = size * 1.0 / min(h, w)
+        if h < w:
+            newh, neww = size, scale * w
+        else:
+            newh, neww = scale * h, size
+        if max(newh, neww) > self.max_size:
+            scale = self.max_size * 1.0 / max(newh, neww)
+            newh = newh * scale
+            neww = neww * scale
+        neww = int(neww + 0.5)
+        newh = int(newh + 0.5)
+
+        self.h, self.w, self.new_h, self.new_w = h, w, newh, neww
+        return super().__call__(img, annotations)
 
 
 def HFlip_rotated_box(transform, rotated_boxes):
@@ -1609,6 +1959,21 @@ def Resize_rotated_box(transform, rotated_boxes):
     return rotated_boxes
 
 
-HFlipTransform.register_type("rotated_box", HFlip_rotated_box)
+# RandomFlip is horizontal by default.
+RandomFlip.register_type("rotated_box", HFlip_rotated_box)
 NoOpTransform.register_type("rotated_box", lambda t, x: x)
 ResizeTransform.register_type("rotated_box", Resize_rotated_box)
+
+
+@TRANSFORMS.register()
+class TorchTransformGen(Transform):
+    """
+    Wrapper transfrom of transforms in torchvision.
+    It convert img (np.ndarray) to PIL image, and convert back to np.ndarray after transform.
+    """
+    def __init__(self, tfm):
+        self.tfm = tfm
+
+    def __call__(self, img: np.ndarray, annotations: None, **kwargs):
+        pil_image = Image.fromarray(img)
+        return np.array(self.tfm(pil_image)), annotations

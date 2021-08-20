@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from cvpods.data.transforms.transform_gen import CenterAffine
+from cvpods.data.transforms.augmentations import CenterAffine
 from cvpods.layers import DeformConvWithOff, ModulatedDeformConvWithOff, ShapeSpec
 from cvpods.modeling.losses import reg_l1_loss
 from cvpods.modeling.nn_utils.feature_utils import gather_feature
