@@ -76,7 +76,7 @@ pods_train --num-gpus 8 --num-machines N --machine-rank 0/1/.../N-1 --dist-url "
 
 ### Tutorials
 
-We provide a detailed tutorial, which covers introduction, usage, and extend guides in [cvpods_tutorials](https://github.com/poodarchu/cvpods/blob/master/docs/tutorials/cvpods%20tutorials.ipynb). For all API usages, please
+We provide a detailed tutorial, which covers introduction, usage, and extend guides in [cvpods_tutorials](https://github.com/Megvii-BaseDetection/cvpods/blob/master/docs/tutorials/cvpods%20tutorials.ipynb). For all API usages, please
 refer to our [documentation](https://cvpods.readthedocs.io/).
 
 ## Model ZOO 
