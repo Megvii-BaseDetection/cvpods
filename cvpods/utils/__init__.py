@@ -1,8 +1,13 @@
 #!/usr/bin/python3
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
+from .distributed import comm  # isort:skip
+from .file import *  # isort:skip
+from .apex_wrapper import float_function, is_amp_training
 from .benchmark import Timer, benchmark, timeit
-from .distributed import comm
 from .dump import (
     CommonMetricPrinter,
     EventStorage,
@@ -19,7 +24,6 @@ from .dump import (
     setup_logger
 )
 from .env import collect_env_info, seed_all_rng, setup_custom_environment, setup_environment
-from .file import PathHandler, PathManager, PicklableWrapper, download, file_lock, get_cache_dir
 from .imports import dynamic_import
 from .memory import retry_if_cuda_oom
 from .metrics import accuracy

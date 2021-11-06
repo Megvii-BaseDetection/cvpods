@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates.
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import collections
 import os
@@ -43,6 +43,11 @@ _config_dict = dict(
         # std has been absorbed into its conv1 weights, so the std needs to be
         # set 1. Otherwise, you can use [57.375, 57.120, 58.395] (ImageNet std)
         PIXEL_STD=[1.0, 1.0, 1.0],
+        # Choose which DDP backend to use with mulitple GPUS.
+        # Currently supported values are "torch", "apex".
+        # User need to install apex in advance before using apex's DistributedDataParallel
+        # as the DDP backend. See: https://github.com/NVIDIA/apex
+        DDP_BACKEND="torch",
     ),
     INPUT=dict(
         AUG=dict(
@@ -89,11 +94,27 @@ _config_dict = dict(
         ASPECT_RATIO_GROUPING=True,
         # Default sampler for dataloader
         SAMPLER_TRAIN="DistributedGroupSampler",
+        # Use infinite wraper for sampler or not.
+        ENABLE_INF_SAMPLER=True,
         # Repeat threshold for RepeatFactorTrainingSampler
         REPEAT_THRESHOLD=0.0,
         # If True, the dataloader will filter out images that have no associated
         # annotations at train time.
         FILTER_EMPTY_ANNOTATIONS=True,
+    ),
+    # Trainer is used to specify options related to control the training process
+    TRAINER=dict(
+        NAME="DefaultRunner",
+        FP16=dict(
+            ENABLED=False,
+            # options: [APEX, PyTorch]
+            TYPE="APEX",
+            # OPTS: kwargs for each option
+            OPTS=dict(
+                OPT_LEVEL="O1",
+            ),
+        ),
+        WINDOW_SIZE=20,
     ),
     SOLVER=dict(
         # Configs of lr scheduler
@@ -137,6 +158,8 @@ _config_dict = dict(
             NORM_TYPE=2.0,
         ),
         # Save a checkpoint after every this number of iterations
+        # If using 0 as EVAL_PERIOD, only the final checkpoint will be saved.
+        # If using negative EVAL_PERIOD, no checkpoint will be saved.
         CHECKPOINT_PERIOD=5000,
         # Number of images per batch across all machines.
         # If we have 16 GPUs and IMS_PER_BATCH = 32,
@@ -172,22 +195,6 @@ _config_dict = dict(
             SCALE_RANGES=(),
         ),
         PRECISE_BN=dict(ENABLED=False, NUM_ITER=200),
-        # If True, evaluate the dumped prediction without run the inference on dataset.
-        ON_FILES=False,
-    ),
-    # Trainer is used to specify options related to control the training process
-    TRAINER=dict(
-        NAME="DefaultRunner",
-        WINDOW_SIZE=20,
-        FP16=dict(
-            ENABLED=False,
-            # options: [APEX, PyTorch]
-            TYPE="APEX",
-            # OPTS: kwargs for each option
-            OPTS=dict(
-                OPT_LEVEL="O1",
-            ),
-        ),
     ),
     # Directory where output files are written
     OUTPUT_DIR="./output",
@@ -208,8 +215,16 @@ _config_dict = dict(
     # Do not commit any configs into it.
     GLOBAL=dict(
         HACK=1.0,
+        LOG_INTERVAL=20,
         DUMP_TRAIN=True,
         DUMP_TEST=False,
+        CLEARML=dict(
+            ENABLE=False,
+            PROJECT_NAME="cvpods",
+            TASK_NAME=None,
+            TAGS=None,
+            OUTPUT_URI=None,
+        ),
     ),
 )
 
@@ -285,7 +300,7 @@ class ConfigDict(dict):
     def merge_from_list(self, cfg_list):
         """
         Merge config (keys, values) in a list (e.g., from command line) into
-        this config dict.
+        this CfgNode.
 
         Args:
             cfg_list (list): cfg_list must be divided exactly.

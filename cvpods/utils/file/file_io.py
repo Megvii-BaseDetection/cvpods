@@ -1,18 +1,25 @@
-#!/usr/bin/env python3
-# Copyright (c) Facebook, Inc. and its affiliates.
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-import errno
-import logging
+import functools
 import os
-import shutil
-from collections import OrderedDict
-from typing import IO, Any, Dict, List, MutableMapping, Optional
-from urllib.parse import urlparse
+from typing import Optional
+import megfile
 import portalocker
 
+from ..compat_wrapper import deprecated_func
 from .download import download
 
-__all__ = ["PathHandler", "PathManager", "get_cache_dir", "file_lock"]
+__all__ = ["get_cache_dir", "file_lock", "ensure_dir", "set_megfile"]
+
+
+def ensure_dir(path: str):
+    """create directories if *path* does not exist"""""
+    if not megfile.smart_isdir(path):
+        megfile.smart_makedirs(path, exist_ok=True)
 
 
 def get_cache_dir(cache_dir: Optional[str] = None) -> str:
@@ -66,286 +73,50 @@ def file_lock(path: str):  # type: ignore
     return portalocker.Lock(path + ".lock", timeout=1800)  # type: ignore
 
 
-class PathHandler:
-    """
-    PathHandler is a base class that defines common I/O functionality for a URI
-    protocol. It routes I/O for a generic URI which may look like "protocol://*"
-    or a canonical filepath "/foo/bar/baz".
-    """
+def cache_file(f):
+    """wrapper of caching file logic for s3/http/https protocols in megfile"""
 
-    def _get_supported_prefixes(self) -> List[str]:
-        """
-        Returns:
-            List[str]: the list of URI prefixes this PathHandler can support
-        """
-        raise NotImplementedError()
+    @functools.wraps(f)
+    def inner_func(path, *args, **kwargs):
+        cache_dir = get_cache_dir()
+        protocol, path_without_protocol = megfile.SmartPath._extract_protocol(path)
+        local_path = os.path.join(cache_dir, path_without_protocol)
+        if megfile.smart_exists(local_path):  # already cached
+            return megfile.smart_open(local_path, *args, **kwargs)
 
-    def _get_local_path(self, path: str) -> str:
-        """
-        Get a filepath which is compatible with native Python I/O such as `open`
-        and `os.path`.
+        # caching logic
+        if protocol == "s3":
+            with file_lock(local_path):
+                megfile.s3_download(path, local_path)
+        elif protocol == "http" or protocol == "https":
+            with file_lock(local_path):
+                if not isinstance(path, str):
+                    path = path.abspath()
+                download(
+                    path, os.path.dirname(local_path),
+                    filename=os.path.basename(local_path)
+                )
 
-        If URI points to a remote resource, this function may download and cache
-        the resource to local disk. In this case, this function is meant to be
-        used with read-only resources.
+        return megfile.smart_open(local_path, *args, **kwargs)
 
-        Args:
-            path (str): A URI supported by this PathHandler
-
-        Returns:
-            local_path (str): a file path which exists on the local file system
-        """
-        raise NotImplementedError()
-
-    def _open(self, path: str, mode: str = "r") -> IO[Any]:
-        """
-        Open a stream to a URI, similar to the built-in `open`.
-
-        Args:
-            path (str): A URI supported by this PathHandler
-            mode (str): Specifies the mode in which the file is opened. It defaults
-                to 'r'.
-
-        Returns:
-            file: a file-like object.
-        """
-        raise NotImplementedError()
-
-    def _copy(
-        self, src_path: str, dst_path: str, overwrite: bool = False
-    ) -> bool:
-        """
-        Copies a source path to a destination path.
-
-        Args:
-            src_path (str): A URI supported by this PathHandler
-            dst_path (str): A URI supported by this PathHandler
-            overwrite (bool): Bool flag for forcing overwrite of existing file
-
-        Returns:
-            status (bool): True on success
-        """
-        raise NotImplementedError()
-
-    def _exists(self, path: str) -> bool:
-        """
-        Checks if there is a resource at the given URI.
-
-        Args:
-            path (str): A URI supported by this PathHandler
-
-        Returns:
-            bool: true if the path exists
-        """
-        raise NotImplementedError()
-
-    def _isfile(self, path: str) -> bool:
-        """
-        Checks if the resource at the given URI is a file.
-
-        Args:
-            path (str): A URI supported by this PathHandler
-
-        Returns:
-            bool: true if the path is a file
-        """
-        raise NotImplementedError()
-
-    def _isdir(self, path: str) -> bool:
-        """
-        Checks if the resource at the given URI is a directory.
-
-        Args:
-            path (str): A URI supported by this PathHandler
-
-        Returns:
-            bool: true if the path is a directory
-        """
-        raise NotImplementedError()
-
-    def _ls(self, path: str) -> List[str]:
-        """
-        List the contents of the directory at the provided URI.
-
-        Args:
-            path (str): A URI supported by this PathHandler
-
-        Returns:
-            List[str]: list of contents in given path
-        """
-        raise NotImplementedError()
-
-    def _mkdirs(self, path: str) -> None:
-        """
-        Recursive directory creation function. Like mkdir(), but makes all
-        intermediate-level directories needed to contain the leaf directory.
-        Similar to the native `os.makedirs`.
-
-        Args:
-            path (str): A URI supported by this PathHandler
-        """
-        raise NotImplementedError()
-
-    def _rm(self, path: str) -> None:
-        """
-        Remove the file (not directory) at the provided URI.
-
-        Args:
-            path (str): A URI supported by this PathHandler
-        """
-        raise NotImplementedError()
-
-    def _stat(self, path: str):
-        """
-        Get stat of file (not directory) at the provided URI.
-
-        Args:
-            path (str): A URI supported by this PathHandler
-        """
-        raise NotImplementedError()
+    return inner_func
 
 
-class NativePathHandler(PathHandler):
-    """
-    Handles paths that can be accessed using Python native system calls. This
-    handler uses `open()` and `os.*` calls on the given path.
-    """
-
-    def _get_local_path(self, path: str) -> str:
-        return path
-
-    def _open(self, path: str, mode: str = "r") -> IO[Any]:
-        return open(path, mode)
-
-    def _copy(
-        self, src_path: str, dst_path: str, overwrite: bool = False
-    ) -> bool:
-        """
-        Copies a source path to a destination path.
-
-        Args:
-            src_path (str): A URI supported by this PathHandler
-            dst_path (str): A URI supported by this PathHandler
-            overwrite (bool): Bool flag for forcing overwrite of existing file
-
-        Returns:
-            status (bool): True on success
-        """
-        if os.path.exists(dst_path) and not overwrite:
-            logger = logging.getLogger(__name__)
-            logger.error("Destination file {} already exists.".format(dst_path))
-            return False
-
-        try:
-            shutil.copyfile(src_path, dst_path)
-            return True
-        except Exception as e:
-            logger = logging.getLogger(__name__)
-            logger.error("Error in file copy - {}".format(str(e)))
-            return False
-
-    def _exists(self, path: str) -> bool:
-        return os.path.exists(path)
-
-    def _isfile(self, path: str) -> bool:
-        return os.path.isfile(path)
-
-    def _isdir(self, path: str) -> bool:
-        return os.path.isdir(path)
-
-    def _ls(self, path: str) -> List[str]:
-        return os.listdir(path)
-
-    def _mkdirs(self, path: str) -> None:
-        try:
-            os.makedirs(path, exist_ok=True)
-        except OSError as e:
-            # EEXIST it can still happen if multiple processes are creating the dir
-            if e.errno != errno.EEXIST:
-                raise
-
-    def _rm(self, path: str) -> None:
-        os.remove(path)
-
-    def _stat(self, path: str):
-        return os.stat(path)
+def set_megfile():
+    import cvpods.checkpoint.catalog  # register d2 and catelog  # noqa
+    megfile.HttpPath.open = cache_file(megfile.HttpPath.open)
+    megfile.HttpsPath.open = cache_file(megfile.HttpsPath.open)
 
 
-class HTTPURLHandler(PathHandler):
-    """
-    Download URLs and cache them to disk.
-    """
-
-    def __init__(self) -> None:
-        self.cache_map: Dict[str, str] = {}
-
-    def _get_supported_prefixes(self) -> List[str]:
-        return ["http://", "https://", "ftp://"]
-
-    def _get_local_path(self, path: str) -> str:
-        """
-        This implementation downloads the remote resource and caches it locally.
-        The resource will only be downloaded if not previously requested.
-        """
-        if path not in self.cache_map or not os.path.exists(
-            self.cache_map[path]
-        ):
-            logger = logging.getLogger(__name__)
-            parsed_url = urlparse(path)
-            dirname = os.path.join(
-                get_cache_dir(), os.path.dirname(parsed_url.path.lstrip("/"))
-            )
-            filename = path.split("/")[-1]
-            cached = os.path.join(dirname, filename)
-            with file_lock(cached):
-                if not os.path.isfile(cached):
-                    logger.info("Downloading {} ...".format(path))
-                    cached = download(path, dirname, filename=filename)
-            logger.info("URL {} cached in {}".format(path, cached))
-            self.cache_map[path] = cached
-        return self.cache_map[path]
-
-    def _open(self, path: str, mode: str = "r") -> IO[Any]:
-        assert mode in (
-            "r",
-            "rb",
-        ), "{} does not support open with {} mode".format(
-            self.__class__.__name__, mode
-        )
-        local_path = self._get_local_path(path)
-        return open(local_path, mode)
-
-    def _stat(self, path: str):
-        return os.stat(self._get_local_path(path))
+set_megfile()
 
 
+# PathManager will be deprecated in the future.
 class PathManager:
-    """
-    A class for users to open generic paths or translate generic paths to file names.
-    """
 
-    _PATH_HANDLERS: MutableMapping[str, PathHandler] = OrderedDict()
-    _NATIVE_PATH_HANDLER = NativePathHandler()
-
+    @deprecated_func("use megfile.smart_open instead")
     @staticmethod
-    def __get_path_handler(path: str) -> PathHandler:
-        """
-        Finds a PathHandler that supports the given path. Falls back to the native
-        PathHandler if no other handler is found.
-
-        Args:
-            path (str): URI path to resource
-
-        Returns:
-            handler (PathHandler)
-        """
-        for p in PathManager._PATH_HANDLERS.keys():
-            if path.startswith(p):
-                return PathManager._PATH_HANDLERS[p]
-        return PathManager._NATIVE_PATH_HANDLER
-
-    @staticmethod
-    def open(path: str, mode: str = "r") -> IO[Any]:
+    def open(path: str, mode: str = "r"):
         """
         Open a stream to a URI, similar to the built-in `open`.
 
@@ -355,10 +126,11 @@ class PathManager:
         Returns:
             file: a file-like object.
         """
-        return PathManager.__get_path_handler(path)._open(path, mode)
+        return megfile.smart_open(path, mode)
 
+    @deprecated_func("use megfile.smart_copy instead")
     @staticmethod
-    def copy(src_path: str, dst_path: str, overwrite: bool = False) -> bool:
+    def copy(src_path: str, dst_path: str) -> bool:
         """
         Copies a source path to a destination path.
 
@@ -370,15 +142,9 @@ class PathManager:
         Returns:
             status (bool): True on success
         """
+        return megfile.smart_copy(src_path, dst_path)
 
-        # Copying across handlers is not supported.
-        assert PathManager.__get_path_handler(
-            src_path
-        ) == PathManager.__get_path_handler(dst_path)
-        return PathManager.__get_path_handler(src_path)._copy(
-            src_path, dst_path, overwrite
-        )
-
+    @deprecated_func("use megfile.smart_realpath instead")
     @staticmethod
     def get_local_path(path: str) -> str:
         """
@@ -394,8 +160,9 @@ class PathManager:
         Returns:
             local_path (str): a file path which exists on the local file system
         """
-        return PathManager.__get_path_handler(path)._get_local_path(path)
+        return megfile.smart_realpath(path)
 
+    @deprecated_func("use megfile.smart_exists instead")
     @staticmethod
     def exists(path: str) -> bool:
         """
@@ -407,8 +174,9 @@ class PathManager:
         Returns:
             bool: true if the path exists
         """
-        return PathManager.__get_path_handler(path)._exists(path)
+        return megfile.smart_exists(path)
 
+    @deprecated_func("use megfile.smart_isfile instead")
     @staticmethod
     def isfile(path: str) -> bool:
         """
@@ -420,8 +188,9 @@ class PathManager:
         Returns:
             bool: true if the path is a file
         """
-        return PathManager.__get_path_handler(path)._isfile(path)
+        return megfile.smart_isfile(path)
 
+    @deprecated_func("use megfile.smart_isdir instead")
     @staticmethod
     def isdir(path: str) -> bool:
         """
@@ -433,10 +202,11 @@ class PathManager:
         Returns:
             bool: true if the path is a directory
         """
-        return PathManager.__get_path_handler(path)._isdir(path)
+        return megfile.smart_isdir(path)
 
+    @deprecated_func("use megfile.smart_listdir instead")
     @staticmethod
-    def ls(path: str) -> List[str]:
+    def ls(path: str):
         """
         List the contents of the directory at the provided URI.
 
@@ -446,10 +216,11 @@ class PathManager:
         Returns:
             List[str]: list of contents in given path
         """
-        return PathManager.__get_path_handler(path)._ls(path)
+        return megfile.smart_listdir(path)
 
+    @deprecated_func("use megfile.smart_makedirs instead")
     @staticmethod
-    def mkdirs(path: str) -> None:
+    def mkdirs(path: str, exist_ok: bool = True) -> None:
         """
         Recursive directory creation function. Like mkdir(), but makes all
         intermediate-level directories needed to contain the leaf directory.
@@ -457,9 +228,11 @@ class PathManager:
 
         Args:
             path (str): A URI supported by this PathHandler
+            exist_ok (str): An exception will be raised if dir exist and exist_ok is Flase.
         """
-        return PathManager.__get_path_handler(path)._mkdirs(path)
+        return megfile.smart_makedirs(path, exist_ok=exist_ok)
 
+    @deprecated_func("use megfile.smart_remove instead")
     @staticmethod
     def rm(path: str) -> None:
         """
@@ -468,8 +241,9 @@ class PathManager:
         Args:
             path (str): A URI supported by this PathHandler
         """
-        return PathManager.__get_path_handler(path)._rm(path)
+        return megfile.smart_remove(path)
 
+    @deprecated_func("use megfile.smart_stat instead")
     @staticmethod
     def stat(path: str):
         """
@@ -478,8 +252,9 @@ class PathManager:
         Args:
             path (str): A URI supported by this PathHandler
         """
-        return PathManager.__get_path_handler(path)._stat(path)
+        return megfile.smart_stat(path)
 
+    @deprecated_func("use megfile.s3_upload instead")
     @staticmethod
     def upload(local: str, remote: str):
         """
@@ -489,32 +264,13 @@ class PathManager:
             local (str): path of the local file to be uploaded.
             remote (str): the remote s3uri.
         """
-        handler = PathManager.__get_path_handler(remote)
-        return handler._upload(local, remote)
+        try:
+            megfile.s3_upload(local, remote)
+        except Exception:
+            return False
+        return True
 
+    @deprecated_func("use megfile.smart_path_join instead")
     @staticmethod
-    def register_handler(handler: PathHandler) -> None:
-        """
-        Register a path handler associated with `handler._get_supported_prefixes`
-        URI prefixes.
-
-        Args:
-            handler (PathHandler)
-        """
-        assert isinstance(handler, PathHandler), handler
-        for prefix in handler._get_supported_prefixes():
-            assert prefix not in PathManager._PATH_HANDLERS
-            PathManager._PATH_HANDLERS[prefix] = handler
-
-        # Sort path handlers in reverse order so longer prefixes take priority,
-        # eg: http://foo/bar before http://foo
-        PathManager._PATH_HANDLERS = OrderedDict(
-            sorted(
-                PathManager._PATH_HANDLERS.items(),
-                key=lambda t: t[0],
-                reverse=True,
-            )
-        )
-
-
-PathManager.register_handler(HTTPURLHandler())
+    def join(*paths):
+        return megfile.smart_path_join(*paths)

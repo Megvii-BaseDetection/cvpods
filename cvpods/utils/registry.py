@@ -1,5 +1,4 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 from typing import Dict, Optional
 from tabulate import tabulate

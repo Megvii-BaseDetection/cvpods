@@ -1,14 +1,14 @@
 #!/usr/bin/python3
-# -*- coding:utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-import logging
 import re
 import time
 import warnings
 from ast import literal_eval
 from colorama import Back, Fore, Style
 from easydict import EasyDict
+from loguru import logger
 
 
 def highlight(keyword, target, color=Fore.BLACK + Back.YELLOW):
@@ -171,7 +171,6 @@ def version_update(config):
 
 
 def _assert_with_logging(cond, msg):
-    logger = logging.getLogger(__name__)
 
     if not cond:
         logger.error(msg)
@@ -182,7 +181,7 @@ def _decode_cfg_value(value):
     """
     Decodes a raw config value (e.g., from a yaml config files or command
     line argument) into a Python object.
-    If the value is a dict, it will be interpreted as a new config dict.
+    If the value is a dict, it will be interpreted as a new CfgNode.
     If the value is a str, it will be evaluated as literals.
     Otherwise it is returned as-is.
 
@@ -219,7 +218,7 @@ def _cast_cfg_value_type(replacement, original, full_key):
     the right type. The type is correct if it matches exactly or is one of a few
     cases in which the type can be easily coerced.
     """
-    logger = logging.getLogger(__name__)
+    # logger = logging.getLogger(__name__)
     ori_type = type(original)
     new_type = type(replacement)
 

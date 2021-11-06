@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# Copyright (c) Facebook, Inc. and its affiliates.
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-import logging
 import os
 import shutil
 from typing import Callable, Optional
 from urllib import request
+from loguru import logger
 
 
 def download(
@@ -30,7 +30,6 @@ def download(
         filename = url.split("/")[-1]
         assert len(filename), "Cannot obtain filename from url {}".format(url)
     fpath = os.path.join(dir, filename)
-    logger = logging.getLogger(__name__)
 
     if os.path.isfile(fpath):
         logger.info("File {} exists! Skipping download.".format(filename))

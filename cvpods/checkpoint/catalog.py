@@ -1,7 +1,13 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-import logging
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-from cvpods.utils import PathHandler, PathManager
+from typing import IO, AnyStr
+import megfile
+from loguru import logger
+from megfile import HttpsPath, SmartPath
 
 
 class ModelCatalog(object):
@@ -90,44 +96,30 @@ class ModelCatalog(object):
         return url
 
 
-class ModelCatalogHandler(PathHandler):
+@SmartPath.register
+class ModelCatalogHandler(HttpsPath):
     """
     Resolve URL like catalog://.
     """
 
-    PREFIX = "catalog://"
+    protocol = "catalog"
 
-    def _get_supported_prefixes(self):
-        return [self.PREFIX]
-
-    def _get_local_path(self, path):
-        logger = logging.getLogger(__name__)
-        catalog_path = ModelCatalog.get(path[len(self.PREFIX):])
-        logger.info("Catalog entry {} points to {}".format(path, catalog_path))
-        return PathManager.get_local_path(catalog_path)
-
-    def _open(self, path, mode="r", **kwargs):
-        return PathManager.open(self._get_local_path(path), mode, **kwargs)
+    def open(self, mode="r", **kwargs):
+        catalog_path = ModelCatalog.get(self.path_without_protocol)
+        logger.info("Catalog entry {} points to {}".format(self.path, catalog_path))
+        return megfile.smart_open(catalog_path, mode, **kwargs)
 
 
-class Detectron2Handler(PathHandler):
+@SmartPath.register
+class Detectron2Path(HttpsPath):
     """
     Resolve anything that's in Detectron2 model zoo.
     """
 
-    PREFIX = "detectron2://"
-    S3_DETECTRON2_PREFIX = "https://dl.fbaipublicfiles.com/detectron2/"
+    protocol = "detectron2"
+    DETECTRON2_PREFIX = "https://dl.fbaipublicfiles.com/detectron2/"
 
-    def _get_supported_prefixes(self):
-        return [self.PREFIX]
-
-    def _get_local_path(self, path):
-        name = path[len(self.PREFIX):]
-        return PathManager.get_local_path(self.S3_DETECTRON2_PREFIX + name)
-
-    def _open(self, path, mode="r", **kwargs):
-        return PathManager.open(self._get_local_path(path), mode, **kwargs)
-
-
-PathManager.register_handler(ModelCatalogHandler())
-PathManager.register_handler(Detectron2Handler())
+    def open(self, mode: str = 'r', **kwargs) -> IO[AnyStr]:
+        # TODO add cache logic
+        d2_path = self.DETECTRON2_PREFIX + self.path_without_protocol
+        return megfile.smart_open(d2_path, mode=mode, **kwargs)

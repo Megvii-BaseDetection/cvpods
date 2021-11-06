@@ -1,17 +1,28 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 import importlib
 import importlib.util
-import logging
 import os
 import random
+import socket
 import sys
 from datetime import datetime
+from loguru import logger
 
 import numpy as np
 
 import torch
 
-__all__ = ["seed_all_rng", "setup_environment", "setup_custom_environment", "TORCH_VERSION"]
+__all__ = [
+    "seed_all_rng",
+    "setup_environment",
+    "setup_custom_environment",
+    "get_host_ip",
+    "TORCH_VERSION",
+]
 
 TORCH_VERSION = tuple(int(x) for x in torch.__version__.split(".")[:2])
 
@@ -32,7 +43,6 @@ def seed_all_rng(seed=None):
             + int(datetime.now().strftime("%S%f"))
             + int.from_bytes(os.urandom(2), "big")
         )
-        logger = logging.getLogger(__name__)
         logger.info("Using a generated random seed {}".format(seed))
     np.random.seed(seed)
     torch.set_rng_state(torch.manual_seed(seed).get_state())
@@ -111,3 +121,50 @@ def setup_custom_environment(custom_module):
         "required callable attribute 'setup_environment'."
     ).format(custom_module)
     module.setup_environment()
+
+
+def get_host_ip():
+    """
+    Get host IP value. A dict contains IP information will be returned.
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # 10.255.255.255 is a local ip address, no need to be reachable
+        host, port = "10.255.255.255", 1
+        s.connect((host, port))
+        IP = s.getsockname()[0]
+    except Exception:
+        # try by netiface
+        ip_dict = get_hostip_by_netiface()
+        if not ip_dict:
+            IP = "127.0.0.1"
+        else:
+            return ip_dict
+    finally:
+        s.close()
+    return {"IP": IP}
+
+
+def get_hostip_by_netiface():
+    try:
+        import netifaces
+    except ImportError:
+        return {}
+
+    no_ip_string = "No IP addr"
+    no_addr = [{"addr": no_ip_string}]
+    ip_dict = {}
+
+    for interface in netifaces.interfaces():
+        # skip local
+        if interface == "lo":
+            continue
+        net_dict = netifaces.ifaddresses(interface).setdefault(netifaces.AF_INET, no_addr)
+        addr = [i["addr"] for i in net_dict]
+        if len(addr) == 1:
+            addr = addr[0]
+        if addr == no_ip_string:
+            continue
+        ip_dict["IP of " + interface] = addr
+
+    return ip_dict

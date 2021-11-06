@@ -1,19 +1,33 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 """
 This file contains primitives for multi-gpu communication.
 This is useful when doing distributed training.
 """
 
 import functools
-import logging
+import os
 import pickle
-import socket
+import resource
+import subprocess
+from loguru import logger
 
 import numpy as np
 
 import torch
 import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel
+
+try:
+    from apex.parallel import DistributedDataParallel as ApexDistributedDataParallel  # isort:skip
+    DDP_TYPES = (ApexDistributedDataParallel, DistributedDataParallel)
+except ImportError:
+    DDP_TYPES = (DistributedDataParallel,)
+DP_TYPES = DDP_TYPES + (torch.nn.DataParallel, )
+
 
 _LOCAL_PROCESS_GROUP = None
 """
@@ -22,15 +36,55 @@ This variable is set when processes are spawned by `launch()` in "engine/launch.
 """
 
 
-def get_host_ip():
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(('8.8.8.8', 80))
-        ip = s.getsockname()[0]
-    finally:
-        s.close()
+def set_os_env(key, value):
+    """Set environment variable, like `export NCCL_IB_DISABLE=0`
+    """
+    value_got = os.getenv(key)
+    if value_got is None:
+        os.environ[key] = value
+    else:
+        logger.warning("Get value of {}: {} in environment".format(key, value_got))
 
-    return ip
+
+def configure_nccl(enable_rdma=False):
+    """Configure multi-machine environment variables.
+
+    It is required for multi-machine training.
+
+    Args:
+        enable_rdma(bool): Whether use RDMA for training speedup, default: False
+        force_set(bool): Whether set OS environment by force, default: False
+    """
+    # os.environ["NCCL_SOCKET_IFNAME"] = "ib0"
+    # os.environ["GLOO_SOCKET_IFNAME"] = "ib0"
+    if enable_rdma:
+        env_dict = {
+            "NCCL_IB_DISABLE": "0",
+            "NCCL_P2P_DISABLE": "0",
+            "NCCL_P2P_LEVEL": "PXB",
+            "NCCL_IB_GID_INDEX": "3",
+            "NCCL_TREE_THRESHOLD": "0"
+        }
+    else:
+        env_dict = {
+            "NCCL_IB_DISABLE": "1",
+            "NCCL_LAUNCH_MODE": "PARALLEL",
+            "NCCL_IB_GID_INDEX": "3",
+            "NCCL_IB_TC": "106",
+        }
+
+    # shared configuration
+    env_dict["NCCL_IB_HCA"] = subprocess.getoutput(
+        "cd /sys/class/infiniband/ > /dev/null; for i in mlx5_*; "
+        "do cat $i/ports/1/gid_attrs/types/* 2>/dev/null "
+        "| grep v >/dev/null && echo $i ; done; > /dev/null"
+    )
+    env_dict["OMP_NUM_THREADS"] = "1"
+
+    for key, value in env_dict.items():
+        set_os_env(key, value)
+
+    resource.setrlimit(resource.RLIMIT_NOFILE, (65536, 65536))
 
 
 def get_world_size() -> int:
@@ -113,7 +167,6 @@ def _serialize_to_tensor(data, group):
 
     buffer = pickle.dumps(data)
     if len(buffer) > 1024 ** 3:
-        logger = logging.getLogger(__name__)
         logger.warning(
             "Rank {} trying to all-gather {:.2f} GB of data on device {}".format(
                 get_rank(), len(buffer) / (1024 ** 3), device
