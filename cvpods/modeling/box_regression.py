@@ -67,7 +67,7 @@ class Box2BoxTransform(object):
         assert (src_widths > 0).all().item(), "Input boxes to Box2BoxTransform are not valid!"
         return deltas
 
-    def apply_deltas(self, deltas, boxes):
+    def apply_deltas(self, deltas, boxes, strict=True):
         """
         Apply transformation `deltas` (dx, dy, dw, dh) to `boxes`.
 
@@ -75,9 +75,11 @@ class Box2BoxTransform(object):
             deltas (Tensor): transformation deltas of shape (N, k*4), where k >= 1.
                 deltas[i] represents k potentially different class-specific
                 box transformations for the single box boxes[i].
-            boxes (Tensor): boxes to transform, of shape (N, 4)
+            boxes (Tensor): boxes to transform, of shape (N, 4).
+            strict (bool): raise Exceptions when `deltas` become INF/NaN.
         """
-        assert torch.isfinite(deltas).all().item(), "Box regression deltas become infinite or NaN!"
+        assert not strict or torch.isfinite(deltas).all().item(), \
+            "Box regression deltas become infinite or NaN!"
         boxes = boxes.to(deltas.dtype)
 
         widths = boxes[..., 2] - boxes[..., 0]

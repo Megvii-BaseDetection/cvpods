@@ -1,5 +1,4 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-import logging
 from typing import Dict
 
 import numpy as np
@@ -16,7 +15,6 @@ from ..proposal_generator.proposal_utils import add_ground_truth_to_proposals
 from .fast_rcnn import FastRCNNOutputLayers, FastRCNNOutputs
 from .roi_heads import StandardROIHeads
 
-logger = logging.getLogger(__name__)
 
 """
 Shape shorthand in this module:

@@ -1,8 +1,9 @@
-# pylint: disable=W0613
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 # Routinng candidates for dynamic networks with calculated FLOPs,
 # modified Search Space in DARTS to have different input and output channels.
-# @author: yanwei.li
 import torch
 import torch.nn as nn
 

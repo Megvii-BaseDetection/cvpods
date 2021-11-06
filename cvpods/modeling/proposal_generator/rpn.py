@@ -30,8 +30,9 @@ class StandardRPNHead(nn.Module):
     each anchor into an object proposal.
     """
 
-    def __init__(self, cfg, input_shape: List[ShapeSpec]):
+    def __init__(self, cfg, anchor_generator, input_shape: List[ShapeSpec]):
         super().__init__()
+        self.cfg = cfg
 
         # Standard RPN is shared across levels:
         in_channels = [s.channels for s in input_shape]
@@ -40,7 +41,6 @@ class StandardRPNHead(nn.Module):
 
         # RPNHead should take the same input as anchor generator
         # NOTE: it assumes that creating an anchor generator does not have unwanted side effect.
-        anchor_generator = DefaultAnchorGenerator(cfg, input_shape)
         num_cell_anchors = anchor_generator.num_cell_anchors
         box_dim = anchor_generator.box_dim
         assert (
@@ -112,7 +112,8 @@ class RPN(nn.Module):
         self.anchor_matcher = Matcher(
             cfg.MODEL.RPN.IOU_THRESHOLDS, cfg.MODEL.RPN.IOU_LABELS, allow_low_quality_matches=True
         )
-        self.rpn_head = StandardRPNHead(cfg, [input_shape[f] for f in self.in_features])
+        self.rpn_head = StandardRPNHead(cfg, self.anchor_generator,
+                                        [input_shape[f] for f in self.in_features])
 
     def forward(self, images, features, gt_instances=None):
         """
@@ -170,7 +171,6 @@ class RPN(nn.Module):
                 self.pre_nms_topk[self.training],
                 self.post_nms_topk[self.training],
                 self.min_box_side_len,
-                self.training,
             )
             # For RPN-only models, the proposals are the final output and we return them in
             # high-to-low confidence order.

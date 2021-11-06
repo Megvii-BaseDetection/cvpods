@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-# -*- coding:utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates.
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import numpy as np
 
@@ -307,11 +307,12 @@ def build_shufflenetv2_backbone(cfg, input_shape):
     assert model_size in channel_mapper, "Model size {} not supported.".format(model_size)
     channels = channel_mapper[model_size]
 
+    use_dropout = model_size == "2.0x"
     model = ShuffleNetV2(
         input_shape.channels,
         channels,
         num_classes=num_classes,
-        dropout=model_size == "2.0",
+        dropout=use_dropout,
         out_features=output_feautres,
         norm=norm,
     )

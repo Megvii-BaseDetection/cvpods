@@ -1,4 +1,9 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 import torch
 
 from cvpods.layers import ShapeSpec
@@ -14,7 +19,7 @@ from .test_time_augmentation import DatasetMapperTTA, GeneralizedRCNNWithTTA, TT
 _EXCLUDE = {"torch", "ShapeSpec"}
 __all__ = [k for k in globals().keys() if k not in _EXCLUDE and not k.startswith("_")]
 
-assert (
-    torch.Tensor([1]) == torch.Tensor([2])
-).dtype == torch.bool, ("Your Pytorch is too old. "
-                        "Please update to contain https://github.com/pytorch/pytorch/pull/21113")
+assert (torch.Tensor([1]) == torch.Tensor([2])).dtype == torch.bool, (
+    "Your Pytorch is too old. "
+    "Please update to contain https://github.com/pytorch/pytorch/pull/21113"
+)

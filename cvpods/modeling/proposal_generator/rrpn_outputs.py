@@ -1,6 +1,5 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import itertools
-import logging
 
 import torch
 
@@ -9,7 +8,6 @@ from cvpods.structures import Instances, RotatedBoxes, pairwise_iou_rotated
 
 from .rpn_outputs import RPNOutputs
 
-logger = logging.getLogger(__name__)
 
 """
 Shape shorthand in this module:
@@ -47,7 +45,6 @@ def find_top_rrpn_proposals(
     pre_nms_topk,
     post_nms_topk,
     min_box_side_len,
-    training,  # pylint: disable=W0613
 ):
     """
     For each feature map, select the `pre_nms_topk` highest scoring proposals,
@@ -70,9 +67,6 @@ def find_top_rrpn_proposals(
             over all feature maps.
         min_box_side_len (float): minimum proposal box side length in pixels (absolute units
             wrt input images).
-        training (bool): True if proposals are to be used in training, otherwise False.
-            This arg exists only to support a legacy bug; look for the "NB: Legacy bug ..."
-            comment.
 
     Returns:
         proposals (list[Instances]): list of N Instances. The i-th Instances

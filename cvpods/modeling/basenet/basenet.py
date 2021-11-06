@@ -1,6 +1,6 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import os
 from collections import defaultdict

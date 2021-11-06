@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 import torch
 from torch import nn
 
@@ -41,9 +40,9 @@ class Classification(nn.Module):
 
         self.loss_evaluator = nn.CrossEntropyLoss()
 
-        pixel_mean = torch.Tensor(cfg.MODEL.PIXEL_MEAN).to(self.device).view(
+        pixel_mean = torch.Tensor(cfg.MODEL.PIXEL_MEAN).to(self.device).reshape(
             3, 1, 1)
-        pixel_std = torch.Tensor(cfg.MODEL.PIXEL_STD).to(self.device).view(
+        pixel_std = torch.Tensor(cfg.MODEL.PIXEL_STD).to(self.device).reshape(
             3, 1, 1)
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 

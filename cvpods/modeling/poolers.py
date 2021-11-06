@@ -1,14 +1,19 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-# Modified by BaseDetection, Inc. and its affiliates. All Rights Reserved.
 import math
 import sys
 
 import torch
 from torch import nn
-from torchvision.ops import PSRoIAlign, PSRoIPool, RoIPool
+from torchvision.ops import RoIPool
 
 from cvpods.layers import ROIAlign, ROIAlignRotated, cat
 from cvpods.utils.apex_wrapper import float_function
+
+try:
+    from torchvision.ops import PSRoIAlign, PSRoIPool
+except ImportError:
+    pass
+
 
 __all__ = ["ROIPooler"]
 

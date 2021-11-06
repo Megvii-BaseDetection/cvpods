@@ -1,4 +1,9 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 import copy
 from contextlib import contextmanager
 from itertools import count
@@ -7,18 +12,18 @@ import numpy as np
 
 import torch
 from torch import nn
-from torch.nn.parallel import DistributedDataParallel
 
 from cvpods.data.detection_utils import read_image
 from cvpods.data.transforms import ResizeShortestEdge
 from cvpods.layers import generalized_batched_nms
 from cvpods.structures import Boxes, Instances
+from cvpods.utils import comm
 
 from .meta_arch import GeneralizedRCNN
 from .postprocessing import detector_postprocess
 from .roi_heads.fast_rcnn import fast_rcnn_inference_single_image
 
-__all__ = ["DatasetMapperTTA", "GeneralizedRCNNWithTTA"]
+__all__ = ["DatasetMapperTTA", "GeneralizedRCNNWithTTA", "SimpleTTAWarper", "TTAWarper"]
 
 
 class DatasetMapperTTA:
@@ -85,7 +90,7 @@ class GeneralizedRCNNWithTTA(nn.Module):
     def __init__(self, cfg, model, tta_mapper=None, batch_size=3):
         """
         Args:
-            cfg (config dict):
+            cfg (CfgNode):
             model (GeneralizedRCNN): a GeneralizedRCNN to apply TTA on.
             tta_mapper (callable): takes a dataset dict and returns a list of
                 augmented versions of the dataset dict. Defaults to
@@ -93,7 +98,8 @@ class GeneralizedRCNNWithTTA(nn.Module):
             batch_size (int): batch the augmented images into this batch size for inference.
         """
         super().__init__()
-        if isinstance(model, DistributedDataParallel):
+
+        if isinstance(model, comm.DDP_TYPES):
             model = model.module
         assert isinstance(
             model, GeneralizedRCNN
@@ -263,7 +269,7 @@ class SimpleTTAWarper(nn.Module):
     def __init__(self, cfg, model, tta_mapper=None, batch_size=3):
         """
         Args:
-            cfg (config dict):
+            cfg (CfgNode):
             model (GeneralizedRCNN): a GeneralizedRCNN to apply TTA on.
             tta_mapper (callable): takes a dataset dict and returns a list of
                 augmented versions of the dataset dict. Defaults to
@@ -271,7 +277,8 @@ class SimpleTTAWarper(nn.Module):
             batch_size (int): batch the augmented images into this batch size for inference.
         """
         super().__init__()
-        if isinstance(model, DistributedDataParallel):
+
+        if isinstance(model, comm.DDP_TYPES):
             model = model.module
         self.cfg = cfg
         assert not self.cfg.MODEL.KEYPOINT_ON, "TTA for keypoint is not supported yet"
@@ -343,7 +350,7 @@ class TTAWarper(nn.Module):
     def __init__(self, cfg, model, tta_mapper=None, batch_size=3):
         """
         Args:
-            cfg (config dict):
+            cfg (CfgNode):
             model (GeneralizedRCNN): a GeneralizedRCNN to apply TTA on.
             tta_mapper (callable): takes a dataset dict and returns a list of
                 augmented versions of the dataset dict. Defaults to
@@ -351,7 +358,8 @@ class TTAWarper(nn.Module):
             batch_size (int): batch the augmented images into this batch size for inference.
         """
         super().__init__()
-        if isinstance(model, DistributedDataParallel):
+
+        if isinstance(model, comm.DDP_TYPES):
             model = model.module
         self.cfg = cfg
         assert not self.cfg.MODEL.KEYPOINT_ON, "TTA for keypoint is not supported yet"

@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates.
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-import logging
 import math
 from typing import List
 
@@ -132,7 +131,7 @@ class BorderDet(nn.Module):
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
         elif "targets" in batched_inputs[0]:
             log_first_n(
-                logging.WARN, "'targets' in the model inputs is now renamed to 'instances'!", n=10
+                "WARNING", "'targets' in the model inputs is now renamed to 'instances'!", n=10
             )
             gt_instances = [x["targets"].to(self.device) for x in batched_inputs]
         else:
@@ -742,11 +741,11 @@ class BorderHead(nn.Module):
                 align_boxes, wh = self.compute_border(pre_boxes, level, H, W)
                 pre_bbox.append(pre_boxes)
 
-            border_cls_conv = self.border_cls_subnet(cls_subnet, align_boxes, wh)
+            border_cls_conv = self.border_cls_subnet(cls_subnet, align_boxes)
             border_cls_logits = self.border_cls_score(border_cls_conv)
             border_logits.append(border_cls_logits)
 
-            border_reg_conv = self.border_bbox_subnet(bbox_subnet, align_boxes, wh)
+            border_reg_conv = self.border_bbox_subnet(bbox_subnet, align_boxes)
             border_bbox_pred = self.border_bbox_pred(border_reg_conv)
             border_bbox_reg.append(border_bbox_pred)
 

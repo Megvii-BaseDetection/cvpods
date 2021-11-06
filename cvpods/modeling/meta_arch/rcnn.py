@@ -1,7 +1,4 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-# Modified by BaseDetection, Inc. and its affiliates. All Rights Reserved
-import logging
-
 import numpy as np
 
 import torch
@@ -111,9 +108,10 @@ class GeneralizedRCNN(nn.Module):
             ]
         elif "targets" in batched_inputs[0]:
             log_first_n(
-                logging.WARN,
+                "WARNING",
                 "'targets' in the model inputs is now renamed to 'instances'!",
-                n=10)
+                n=10
+            )
             gt_instances = [
                 x["targets"].to(self.device) for x in batched_inputs
             ]
@@ -256,7 +254,7 @@ class ProposalNetwork(nn.Module):
             ]
         elif "targets" in batched_inputs[0]:
             log_first_n(
-                logging.WARN,
+                "WARNING",
                 "'targets' in the model inputs is now renamed to 'instances'!",
                 n=10)
             gt_instances = [

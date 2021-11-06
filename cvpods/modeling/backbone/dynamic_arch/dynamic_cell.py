@@ -1,6 +1,8 @@
-# encoding: utf-8
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 # network file -> build Cell for Dynamic Backbone
-# @author: yanwei.li
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

@@ -1,8 +1,9 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 from collections import OrderedDict
+import megfile
 
 import numpy as np
 
@@ -10,8 +11,6 @@ import torch
 from torch import nn
 from torch.nn import Module
 from torch.nn.modules.batchnorm import _BatchNorm
-
-from cvpods.utils import PathManager
 
 __all__ = ['Darknet', 'ResLayer']
 
@@ -223,13 +222,8 @@ def build_darknet_backbone(cfg, input_shape):
                     stem_channels, output_features)
     filename = cfg.MODEL.DARKNET.WEIGHTS
     if filename.startswith("s3://"):
-        with PathManager.open(filename, "rb") as f:
+        with megfile.smart_open(filename, "rb") as f:
             state_dict = torch.load(f, map_location='cpu')
     model.load_state_dict(state_dict)
 
     return model
-
-
-if __name__ == "__main__":
-    model = Darknet(53, 32)
-    print(model)

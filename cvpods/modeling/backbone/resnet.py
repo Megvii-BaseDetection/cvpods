@@ -1,5 +1,10 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-import logging
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
+from loguru import logger
 
 import numpy as np
 
@@ -286,7 +291,7 @@ class AVDBottleneckBlock(BottleneckBlock):
             )
 
         if self.radix > 1:
-            from .splat import SplAtConv2d
+            from cvpods.layers.splat import SplAtConv2d
             self.conv2 = SplAtConv2d(
                 group_width,
                 group_width,
@@ -389,8 +394,8 @@ class DeformBottleneckBlock(ResNetBlockBase):
         )
 
         if deform_modulated:
-            deform_conv_op = ModulatedDeformConv
             # offset channels are 2 or 3 (if with modulated) * kernel_size * kernel_size
+            deform_conv_op = ModulatedDeformConv
             offset_channels = 27
         else:
             deform_conv_op = DeformConv
@@ -481,8 +486,7 @@ def make_stage(block_class, num_blocks, first_stride, **kwargs):
 
 
 class BasicStem(nn.Module):
-    def __init__(self, in_channels=3, out_channels=64, norm="BN", activation=None,
-                 deep_stem=False, stem_width=32):
+    def __init__(self, in_channels=3, out_channels=64, norm="BN", activation=None):
         """
         Args:
             norm (str or callable): a callable that takes the number of
@@ -490,74 +494,89 @@ class BasicStem(nn.Module):
                 (one of {"FrozenBN", "BN", "GN"}).
         """
         super().__init__()
-        self.deep_stem = deep_stem
-
-        if self.deep_stem:
-            self.conv1_1 = Conv2d(
-                3,
-                stem_width,
-                kernel_size=3,
-                stride=2,
-                padding=1,
-                bias=False,
-                norm=get_norm(norm, stem_width),
-            )
-            self.conv1_2 = Conv2d(
-                stem_width,
-                stem_width,
-                kernel_size=3,
-                stride=1,
-                padding=1,
-                bias=False,
-                norm=get_norm(norm, stem_width),
-            )
-            self.conv1_3 = Conv2d(
-                stem_width,
-                stem_width * 2,
-                kernel_size=3,
-                stride=1,
-                padding=1,
-                bias=False,
-                norm=get_norm(norm, stem_width * 2),
-            )
-            for layer in [self.conv1_1, self.conv1_2, self.conv1_3]:
-                if layer is not None:
-                    weight_init.c2_msra_fill(layer)
-        else:
-            self.conv1 = Conv2d(
-                in_channels,
-                out_channels,
-                kernel_size=7,
-                stride=2,
-                padding=3,
-                bias=False,
-                norm=get_norm(norm, out_channels),
-            )
-            weight_init.c2_msra_fill(self.conv1)
+        self.conv1 = Conv2d(
+            in_channels,
+            out_channels,
+            kernel_size=7,
+            stride=2,
+            padding=3,
+            bias=False,
+            norm=get_norm(norm, out_channels),
+        )
+        weight_init.c2_msra_fill(self.conv1)
 
         self.activation = get_activation(activation)
         self.max_pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
     def forward(self, x):
-        if self.deep_stem:
-            x = self.conv1_1(x)
-            x = self.activation(x)
-            x = self.conv1_2(x)
-            x = self.activation(x)
-            x = self.conv1_3(x)
-            x = self.activation(x)
-        else:
-            x = self.conv1(x)
-            x = self.activation(x)
+        x = self.conv1(x)
+        x = self.activation(x)
         x = self.max_pool(x)
         return x
 
     @property
     def out_channels(self):
-        if self.deep_stem:
-            return self.conv1_3.out_channels
-        else:
-            return self.conv1.out_channels
+        return self.conv1.out_channels
+
+    @property
+    def stride(self):
+        return 4  # = stride 2 conv -> stride 2 max pool
+
+
+class DeepStem(nn.Module):
+
+    def __init__(
+        self, in_channels=3, out_channels=64, norm="BN",
+        activation=None, deep_stem=False, stem_width=32,
+    ):
+        super().__init__()
+        self.conv1_1 = Conv2d(
+            3,
+            stem_width,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            bias=False,
+            norm=get_norm(norm, stem_width),
+        )
+        self.conv1_2 = Conv2d(
+            stem_width,
+            stem_width,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias=False,
+            norm=get_norm(norm, stem_width),
+        )
+        self.conv1_3 = Conv2d(
+            stem_width,
+            stem_width * 2,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias=False,
+            norm=get_norm(norm, stem_width * 2),
+        )
+        for layer in [self.conv1_1, self.conv1_2, self.conv1_3]:
+            if layer is not None:
+                weight_init.c2_msra_fill(layer)
+
+        self.activation = get_activation(activation)
+        self.max_pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+    def forward(self, x):
+        x = self.conv1_1(x)
+        x = self.activation(x)
+        x = self.conv1_2(x)
+        x = self.activation(x)
+        x = self.conv1_3(x)
+        x = self.activation(x)
+        x = self.max_pool(x)
+        return x
+
+    @property
+    def out_channels(self):
+        return self.conv1_3.out_channels
 
     @property
     def stride(self):
@@ -576,7 +595,7 @@ class ResNet(Backbone):
                 be returned in forward. Can be anything in "stem", "linear", or "res2" ...
                 If None, will return the output of the last layer.
         """
-        super(ResNet, self).__init__()
+        super().__init__()
         self.stem = stem
         self.num_classes = num_classes
 
@@ -657,26 +676,23 @@ def build_resnet_backbone(cfg, input_shape):
         ResNet: a :class:`ResNet` instance.
     """
     depth = cfg.MODEL.RESNETS.DEPTH
-    stem_width = {18: 32, 34: 32, 50: 32, 101: 64, 152: 64, 200: 64, 269: 64}[depth]
-    deep_stem = cfg.MODEL.RESNETS.DEEP_STEM
 
-    if not deep_stem:
+    deep_stem = cfg.MODEL.RESNETS.DEEP_STEM
+    in_channels = input_shape.channels
+    out_channels = cfg.MODEL.RESNETS.STEM_OUT_CHANNELS
+    activation = cfg.MODEL.RESNETS.ACTIVATION
+    norm = cfg.MODEL.RESNETS.NORM
+    if deep_stem:
+        stem_width = {18: 32, 34: 32, 50: 32, 101: 64, 152: 64, 200: 64, 269: 64}[depth]
+        stem = DeepStem(
+            in_channels, out_channels, norm, activation, deep_stem=deep_stem, stem_width=stem_width,
+        )
+    else:
         assert getattr(cfg.MODEL.RESNETS, "RADIX", 1) <= 1, \
             "cfg.MODEL.RESNETS.RADIX: {} > 1".format(cfg.MODEL.RESNETS.RADIX)
+        stem = BasicStem(in_channels, out_channels, norm=norm, activation=activation)
 
-    # need registration of new blocks/stems?
-    norm = cfg.MODEL.RESNETS.NORM
-    activation = cfg.MODEL.RESNETS.ACTIVATION
-    stem = BasicStem(
-        in_channels=input_shape.channels,
-        out_channels=cfg.MODEL.RESNETS.STEM_OUT_CHANNELS,
-        norm=norm,
-        activation=activation,
-        deep_stem=deep_stem,
-        stem_width=stem_width,
-    )
     freeze_at = cfg.MODEL.BACKBONE.FREEZE_AT
-
     if freeze_at >= 1:
         for p in stem.parameters():
             p.requires_grad = False
@@ -713,9 +729,8 @@ def build_resnet_backbone(cfg, input_shape):
     max_stage_idx = max(out_stage_idx)
     # Apply Deformable Convolution in stages
     # Specify if apply deform_conv on Res2, Res3, Res4, Res5
-    deform_on_per_stage = getattr(cfg.MODEL.RESNETS,
-                                  "DEFORM_ON_PER_STAGE",
-                                  [False] * (max_stage_idx - 1))
+    deform_on_per_stage = getattr(
+        cfg.MODEL.RESNETS, "DEFORM_ON_PER_STAGE", [False] * (max_stage_idx - 1))
 
     if depth in [18, 34]:
         assert out_channels == 64, "Must set MODEL.RESNETS.RES2_OUT_CHANNELS = 64 for R18/R34"
@@ -727,7 +742,6 @@ def build_resnet_backbone(cfg, input_shape):
 
     stages = []
 
-    logger = logging.getLogger(__name__)
     # See cvpods/configs/base_detection_config.py for details
     if not stride_in_1x1 and "torchvision" not in cfg.MODEL.WEIGHTS:
         logger.warning(
