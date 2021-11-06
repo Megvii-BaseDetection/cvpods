@@ -1,5 +1,8 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import torch
 from torchvision.ops import boxes as box_ops
@@ -68,7 +71,7 @@ def batched_softnms_rotated(boxes, scores, idxs, iou_threshold,
 
 
 def generalized_batched_nms(boxes, scores, idxs, iou_threshold,
-                            score_threshold=0.001, nms_type="normal"):
+                            score_threshold=0.001, nms_type="normal", **kwargs):
     assert boxes.shape[-1] == 4
 
     if nms_type == "normal":
@@ -79,6 +82,9 @@ def generalized_batched_nms(boxes, scores, idxs, iou_threshold,
                                soft_mode=nms_type.lstrip("softnms-"))
     elif nms_type == "cluster":
         keep = batched_clusternms(boxes, scores, idxs, iou_threshold)
+    elif nms_type == "set":
+        proposal_idxs = kwargs["proposal_idxs"]
+        keep = batched_set_nms(boxes, scores, idxs, proposal_idxs, iou_threshold)
     else:
         raise NotImplementedError("NMS type not implemented: \"{}\"".format(nms_type))
 
@@ -174,6 +180,7 @@ def cluster_nms(boxes, scores, iou_threshold):
             return idx[keep.nonzero(as_tuple=False)]
 
         last_keep = keep
+    return last_keep
 
 
 # Note: this function (nms_rotated) might be moved into
@@ -351,3 +358,34 @@ def matrix_nms(seg_masks, cate_labels, cate_scores, kernel="gaussian", sigma=2.0
     # update the score.
     cate_scores_update = cate_scores * decay_coefficient
     return cate_scores_update
+
+
+def batched_set_nms(boxes, scores, idxs, proposal_idxs, iou_threshold):
+    """
+    Same as torchvision.ops.boxes.batched_nms, but safer.
+    """
+    assert boxes.shape[-1] == 4
+
+    result_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
+    for id in torch.unique(idxs).cpu().tolist():
+        mask = (idxs == id).nonzero(as_tuple=False).view(-1)
+        keep = set_nms(boxes[mask], scores[mask], proposal_idxs[mask], iou_threshold)
+        result_mask[mask[keep]] = True
+    keep = result_mask.nonzero(as_tuple=False).view(-1)
+    keep = keep[scores[keep].argsort(descending=True)]
+    return keep
+
+
+def set_nms(boxes, scores, proposal_idxs, iou_threshold):
+    keep = torch.zeros_like(scores).bool()
+    _, order = scores.sort(0, descending=True)
+    while order.shape[0] > 0:
+        idx = order[0]
+        keep[idx] = True
+        order = order[1:]
+        top_box = boxes[idx]
+        _boxes = boxes[order]
+
+        ious = iou(_boxes, top_box)
+        order = order[(ious <= iou_threshold) | (proposal_idxs[order] == proposal_idxs[idx])]
+    return keep

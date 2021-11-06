@@ -1,4 +1,8 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 """
 Various positional encodings for the transformer.
 """
@@ -49,6 +53,13 @@ class PositionEmbeddingSine(nn.Module):
         pos = torch.cat((pos_y, pos_x), dim=3).permute(0, 3, 1, 2)
         return pos
 
+    def extra_repr(self):
+        tmpstr = "num_pos_feats=" + str(self.num_pos_feats)
+        tmpstr += ", temperature=" + str(self.temperature)
+        tmpstr += ", normalize=" + str(self.normalize)
+        tmpstr += ", scale=" + str(self.scale)
+        return tmpstr
+
 
 class PositionEmbeddingLearned(nn.Module):
     """
@@ -83,4 +94,5 @@ class PositionEmbeddingLearned(nn.Module):
         return pos
 
 
+# TODO: use register instead
 position_encoding_dict = {"sine": PositionEmbeddingSine, "learned": PositionEmbeddingLearned}

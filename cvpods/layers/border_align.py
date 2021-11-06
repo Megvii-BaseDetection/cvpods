@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 from torch import nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
@@ -42,6 +41,5 @@ class BorderAlign(nn.Module):
         output = border_align(feature, boxes, wh, self.pool_size)
         return output
 
-    def __repr__(self):
-        tmpstr = self.__class__.__name__
-        return tmpstr
+    def extra_repr(self):
+        return "pool_size={}".format(self.pool_size)

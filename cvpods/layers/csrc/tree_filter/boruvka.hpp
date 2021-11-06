@@ -1,16 +1,17 @@
+/* Copyright (C) 2019-2021 Megvii Inc. All rights reserved. */
 #pragma once
 
-// a structure to represent a weighted edge in graph 
-struct Edge 
-{ 
+// a structure to represent a weighted edge in graph
+struct Edge
+{
     int src, dest;
-    float weight; 
-}; 
+    float weight;
+};
 
-// a structure to represent a connected, undirected 
-// and weighted graph as a collection of edges. 
-struct Graph 
-{ 
+// a structure to represent a connected, undirected
+// and weighted graph as a collection of edges.
+struct Graph
+{
     // V-> Number of vertices, E-> Number of edges
     int V, E;
 
@@ -19,8 +20,7 @@ struct Graph
     // from src to dest is also edge from dest
     // to src. Both are counted as 1 edge here.
     Edge* edge;
-}; 
+};
 
-extern struct Graph* createGraph(int V, int E); 
+extern struct Graph* createGraph(int V, int E);
 extern void boruvkaMST(struct Graph* graph, int * edge_out);
-

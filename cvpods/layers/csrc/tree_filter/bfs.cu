@@ -1,3 +1,4 @@
+/* Copyright (C) 2019-2021 Megvii Inc. All rights reserved. */
 #include <math.h>
 #include <thread>
 #include <vector>
@@ -17,8 +18,8 @@
 #define GET_CUDA_BLOCKS(N) ceil((float)N / CUDA_NUM_THREADS)
 
 __global__ void adj_vec_kernel(
-        int batch_size, 
-        int * edge_index, 
+        int batch_size,
+        int * edge_index,
         int vertex_count,
         int * adj_vec,
         int * adj_vec_len,
@@ -120,8 +121,8 @@ bfs_forward(
     int * adj_vec         = adj_vec_tensor.contiguous().data_ptr<int>();
     int * adj_vec_len     = adj_vec_len_tensor.contiguous().data_ptr<int>();
     int * parent_index    = parent_index_tensor.contiguous().data_ptr<int>();
-    
-    cudaStream_t stream = at::cuda::getCurrentCUDAStream();        
+
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
     dim3 block_dims(CUDA_NUM_THREADS, 1, 1), grid_dims(batch_size, 1, 1);
     adj_vec_kernel <<< grid_dims, block_dims, 0, stream >>>(

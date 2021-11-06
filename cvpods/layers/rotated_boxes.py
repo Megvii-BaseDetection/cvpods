@@ -1,7 +1,9 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-from __future__ import absolute_import, division, print_function, unicode_literals
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-# import torch
 from cvpods import _C
 
 
