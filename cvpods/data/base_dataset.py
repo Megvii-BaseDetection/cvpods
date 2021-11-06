@@ -1,12 +1,13 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import itertools
-import logging
 import os.path as osp
 import pickle
 from copy import deepcopy
+import megfile
+from loguru import logger
 from tabulate import tabulate
 from termcolor import colored
 
@@ -17,7 +18,7 @@ from torch.utils.data import Dataset
 import cvpods
 from cvpods.data.detection_utils import check_metadata_consistency, read_image
 from cvpods.structures import BoxMode
-from cvpods.utils import PathManager, log_first_n
+from cvpods.utils import log_first_n
 
 from .registry import DATASETS
 
@@ -54,7 +55,7 @@ class BaseDataset(Dataset):
     ]
     """
 
-    def __init__(self, cfg, dataset_name, transforms=[], is_train=True):
+    def __init__(self, cfg, dataset_name, transforms=None, is_train=True):
         """
         BaseDataset should have the following properties:
             * data_root (contains data and annotations)
@@ -112,6 +113,8 @@ class BaseDataset(Dataset):
             ndarray: the transformed image
             TransformList: contain the transforms that's used.
         """
+        if self.transforms is None:
+            return image, annotations
 
         if isinstance(self.transforms, dict):
             dataset_dict = {}
@@ -213,7 +216,6 @@ def filter_images_with_only_crowd_annotations(dataset_dicts):
 
     dataset_dicts = [x for x in dataset_dicts if valid(x["annotations"])]
     num_after = len(dataset_dicts)
-    logger = logging.getLogger(__name__)
     logger.info(
         "Removed {} images with no usable annotations. {} images left.".format(
             num_before - num_after, num_after
@@ -247,7 +249,6 @@ def filter_images_with_few_keypoints(dataset_dicts, min_keypoints_per_image):
         if visible_keypoints_in_image(x) >= min_keypoints_per_image
     ]
     num_after = len(dataset_dicts)
-    logger = logging.getLogger(__name__)
     logger.info("Removed {} images with fewer than {} keypoints.".format(
         num_before - num_after, min_keypoints_per_image))
     return dataset_dicts
@@ -272,10 +273,9 @@ def load_proposals_into_dataset(dataset_dicts, proposal_file):
     Returns:
         list[dict]: the same format as dataset_dicts, but added proposal field.
     """
-    logger = logging.getLogger(__name__)
     logger.info("Loading proposals from: {}".format(proposal_file))
 
-    with PathManager.open(proposal_file, "rb") as f:
+    with megfile.smart_open(proposal_file, "rb") as f:
         proposals = pickle.load(f, encoding="latin1")
 
     # Rename the key names in D1 proposal files
@@ -349,7 +349,7 @@ def print_instances_class_histogram(dataset_dicts, class_names):
         stralign="center",
     )
     log_first_n(
-        logging.INFO,
+        "INFO",
         "Distribution of instances among all {} categories:\n".format(
             num_classes) + colored(table, "cyan"),
         key="message",

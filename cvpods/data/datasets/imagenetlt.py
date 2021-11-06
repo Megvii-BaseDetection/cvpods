@@ -6,6 +6,7 @@ import logging
 import os
 import os.path as osp
 from copy import deepcopy
+from loguru import logger
 
 import numpy as np
 
@@ -21,8 +22,6 @@ from .imagenet_categories import IMAGENET_CATEGORIES
 """
 This file contains functions to parse ImageNet-format annotations into dicts in "cvpods format".
 """
-
-logger = logging.getLogger(__name__)
 
 
 @DATASETS.register()

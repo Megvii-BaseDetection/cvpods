@@ -1,9 +1,10 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 # Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
-
-import logging
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+import megfile
+from loguru import logger
 
 import cv2
 import numpy as np
@@ -22,7 +23,6 @@ from cvpods.structures import (
     RotatedBoxes,
     polygons_to_bitmask
 )
-from cvpods.utils import PathManager
 
 from . import transforms as T
 
@@ -44,6 +44,7 @@ _EXIF_ORIENT = 274  # exif 'Orientation' tag
 def convert_PIL_to_numpy(image, format):
     """
     Convert PIL image to numpy array of target format.
+
     Args:
         image (PIL.Image): a PIL image
         format (str): the format of output image
@@ -75,9 +76,11 @@ def convert_PIL_to_numpy(image, format):
 def convert_image_to_rgb(image, format):
     """
     Convert an image from given format to RGB.
+
     Args:
         image (np.ndarray or Tensor): an HWC image
         format (str): the format of input image, also see `read_image`
+
     Returns:
         (np.ndarray): (H,W,3) RGB image in 0-255 range, can be either float or uint8
     """
@@ -106,8 +109,10 @@ def _apply_exif_orientation(image):
     Function based on:
       https://github.com/wkentaro/labelme/blob/v4.5.4/labelme/utils/image.py#L59
       https://github.com/python-pillow/Pillow/blob/7.1.2/src/PIL/ImageOps.py#L527
+
     Args:
         image (PIL.Image): a PIL image
+
     Returns:
         (PIL.Image): the PIL image with exif orientation applied, if applicable
     """
@@ -143,18 +148,19 @@ def read_image(file_name, format=None):
     """
     Read an image into the given format.
     Will apply rotation and flipping if the image has such exif information.
+
     Args:
         file_name (str): image file path
         format (str): one of the supported image modes in PIL, or "BGR" or "YUV-BT.601".
+
     Returns:
         image (np.ndarray): an HWC image in the given format, which is 0-255, uint8 for
             supported image modes in PIL or "BGR"; float (0-1 for Y) for YUV-BT.601.
     """
-
-    with PathManager.open(file_name, "rb") as f:
+    with megfile.smart_open(file_name, "rb") as f:
         image = Image.open(f)
-        if format == ("RGB"):
-            image = image.convert("RGB")
+        if format == "RGB":
+            image = image.convert(format)  # avoid warnings caused by _apply_exif_orientation
             return np.array(image)
         else:
             # work around this bug: https://github.com/python-pillow/Pillow/issues/3973
@@ -425,7 +431,6 @@ def check_metadata_consistency(key, dataset_names, meta):
     """
     if len(dataset_names) == 0:
         return
-    logger = logging.getLogger(__name__)
     entries_per_dataset = [meta.get(key) for d in dataset_names]
     for idx, entry in enumerate(entries_per_dataset):
         if entry != entries_per_dataset[0]:
@@ -447,13 +452,27 @@ def check_sample_valid(args):
 
 def imdecode(data, *, require_chl3=True, require_alpha=False):
     """decode images in common formats (jpg, png, etc.)
-    :param data: encoded image data
-    :type data: :class:`bytes`
-    :param require_chl3: whether to convert gray image to 3-channel BGR image
-    :param require_alpha: whether to add alpha channel to BGR image
-    :rtype: :class:`numpy.ndarray`
+
+    Args:
+        data(bytes) : encoded image data
+        require_chl3(bool) : whether to convert gray image to 3-channel BGR image
+        require_alpha(bool) : whether to add alpha channel to BGR image
+
+    Returns:
+        decoded images of :class:`numpy.ndarray`.
     """
-    img = cv2.imdecode(np.fromstring(data, np.uint8), cv2.IMREAD_UNCHANGED)
+
+    def _gif_decode(data):
+        try:
+            import io
+            im = Image.open(io.BytesIO(data))
+            im = im.convert('RGB')
+            return cv2.cvtColor(np.array(im), cv2.COLOR_RGB2BGR)
+        except Exception:
+            return
+
+    # frombuffer could make your process faster than fromstring
+    img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_UNCHANGED)
 
     if img is None and len(data) >= 3 and data[:3] == b'GIF':
         # cv2 doesn't support GIF, try PIL
@@ -468,15 +487,3 @@ def imdecode(data, *, require_chl3=True, require_alpha=False):
         assert img.dtype == np.uint8
         img = np.concatenate([img, np.ones_like(img[:, :, :1]) * 255], axis=2)
     return img
-
-
-def _gif_decode(data):
-    try:
-        import io
-        from PIL import Image
-
-        im = Image.open(io.BytesIO(data))
-        im = im.convert('RGB')
-        return cv2.cvtColor(np.array(im), cv2.COLOR_RGB2BGR)
-    except Exception:
-        return

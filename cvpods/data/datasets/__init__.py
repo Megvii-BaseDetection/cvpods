@@ -1,4 +1,6 @@
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 from .citypersons import CityPersonsDataset
 from .cityscapes import CityScapesDataset
@@ -12,17 +14,4 @@ from .torchvision_datasets import CIFAR10Dataset, STL10Datasets
 from .voc import VOCDataset
 from .widerface import WiderFaceDataset
 
-__all__ = [
-    "COCODataset",
-    "VOCDataset",
-    "CityScapesDataset",
-    "ImageNetDataset",
-    "ImageNetLTDataset",
-    "WiderFaceDataset",
-    "LVISDataset",
-    "CityPersonsDataset",
-    "Objects365Dataset",
-    "CrowdHumanDataset",
-    "CIFAR10Dataset",
-    "STL10Datasets",
-]
+__all__ = [k for k in globals().keys() if not k.startswith("_")]

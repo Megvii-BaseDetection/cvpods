@@ -1,20 +1,20 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import copy
-import logging
 import os
 import os.path as osp
 import xml.etree.ElementTree as ET
+import megfile
 
 import numpy as np
 
 import torch
 
 from cvpods.structures import BoxMode
-from cvpods.utils import PathManager
 
 from ..base_dataset import BaseDataset
 from ..detection_utils import (
@@ -27,11 +27,10 @@ from ..detection_utils import (
 from ..registry import DATASETS
 from .paths_route import _PREDEFINED_SPLITS_VOC
 
+
 """
 This file contains functions to parse ImageNet-format annotations into dicts in "cvpods format".
 """
-
-logger = logging.getLogger(__name__)
 
 
 @DATASETS.register()
@@ -149,7 +148,9 @@ class VOCDataset(BaseDataset):
         dirname = self.image_root
         split = self.split
 
-        with PathManager.open(os.path.join(dirname, "ImageSets", "Main", split + ".txt")) as f:
+        with megfile.smart_open(
+            megfile.smart_path_join(dirname, "ImageSets", "Main", split + ".txt")
+        ) as f:
             fileids = np.loadtxt(f, dtype=np.str)
 
         dicts = []

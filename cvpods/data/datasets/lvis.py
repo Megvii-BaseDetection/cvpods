@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import copy
-import logging
 import os
 import os.path as osp
+from loguru import logger
 
 import numpy as np
 
 import torch
 
 from cvpods.structures import BoxMode
-from cvpods.utils import PathManager, Timer
+from cvpods.utils import Timer
 
 from ..base_dataset import BaseDataset
 from ..detection_utils import (
@@ -31,8 +32,6 @@ from .paths_route import _PREDEFINED_SPLITS_LVIS
 """
 This file contains functions to parse LVIS-format annotations into dicts in "cvpods format".
 """
-
-logger = logging.getLogger(__name__)
 
 
 @DATASETS.register()
@@ -148,8 +147,7 @@ class LVISDataset(BaseDataset):
             The results do not have the "image" field.
         """
         from lvis import LVIS
-
-        json_file = PathManager.get_local_path(json_file)
+        # json_file = PathManager.get_local_path(json_file)
 
         timer = Timer()
         lvis_api = LVIS(json_file)
