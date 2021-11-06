@@ -1,5 +1,8 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 import math
 
 import torch.nn.functional as F
@@ -7,19 +10,27 @@ from torch import nn
 
 from cvpods.layers import Conv2d, ShapeSpec, get_norm
 from cvpods.modeling.nn_utils import weight_init
+from cvpods.utils.compat_wrapper import deprecated
 
 from .backbone import Backbone
 from .mobilenet import build_mobilenetv2_backbone
 from .resnet import build_resnet_backbone
 from .shufflenet import build_shufflenetv2_backbone
+from .timm_backbone import build_timm_backbone
 
 __all__ = [
     "_assert_strides_are_log2_contiguous",
+    "build_fpn_backbone",
+    "build_retinanet_fpn_backbone",
+    "build_resnet_fpn_backbone",
+    "build_shufflenetv2_fpn_backbone",
+    "build_mobilenetv2_fpn_backbone",
+    "build_timm_fpn_backbone",
+    "build_retinanet_resnet_fpn_backbone",
+    "build_retinanet_mobilenetv2_fpn_backbone",
+    "build_retinanet_timm_fpn_backbone",
     "build_mobilenetv2_fpn_backbone",
     "build_retinanet_mobilenetv2_fpn_backbone",
-    "build_retinanet_mobilenetv2_fpn_p5_backbone",
-    "build_resnet_fpn_backbone",
-    "build_retinanet_resnet_fpn_backbone",
     "FPN",
     "LastLevelP6P7"
 ]
@@ -216,17 +227,29 @@ class LastLevelP6P7(nn.Module):
         return [p6, p7]
 
 
-def build_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
+# TODO refine backbone name into cfg
+def build_fpn_backbone(cfg, input_shape: ShapeSpec, backbone_name="resnet"):
     """
     Args:
-        cfg: a cvpods config dict
+        cfg: a cvpods CfgNode
 
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
     """
-    bottom_up = build_resnet_backbone(cfg, input_shape)
+    if backbone_name == "resnet":
+        bottom_up = build_resnet_backbone(cfg, input_shape)
+    elif backbone_name == "shufflev2":
+        bottom_up = build_shufflenetv2_backbone(cfg, input_shape)
+    elif backbone_name == "mobilev2":
+        bottom_up = build_mobilenetv2_backbone(cfg, input_shape)
+    elif backbone_name == "timm":
+        bottom_up = build_timm_backbone(cfg, input_shape)
+    else:
+        raise ValueError("No such backbone: {}".format(backbone_name))
+
     in_features = cfg.MODEL.FPN.IN_FEATURES
     out_channels = cfg.MODEL.FPN.OUT_CHANNELS
+
     backbone = FPN(
         bottom_up=bottom_up,
         in_features=in_features,
@@ -238,48 +261,34 @@ def build_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
     return backbone
 
 
-def build_mobilenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
+def build_retinanet_fpn_backbone(cfg, input_shape: ShapeSpec, backbone_name="resnet"):
     """
     Args:
-        cfg: a cvpods config dict
-        input_shape: cvpods.layers.ShapeSpec
+        cfg: a cvpods CfgNode
 
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
     """
-    bottom_up = build_mobilenetv2_backbone(cfg, input_shape)
-    in_features = cfg.MODEL.FPN.IN_FEATURES
-    out_channels = cfg.MODEL.FPN.OUT_CHANNELS
-    backbone = FPN(
-        bottom_up=bottom_up,
-        in_features=in_features,
-        out_channels=out_channels,
-        norm=cfg.MODEL.FPN.NORM,
-        top_block=LastLevelMaxPool(),
-        fuse_type=cfg.MODEL.FPN.FUSE_TYPE,
-    )
-    return backbone
+    if backbone_name == "resnet":
+        bottom_up = build_resnet_backbone(cfg, input_shape)
+    elif backbone_name == "shufflev2":
+        bottom_up = build_shufflenetv2_backbone(cfg, input_shape)
+    elif backbone_name == "mobilev2":
+        bottom_up = build_mobilenetv2_backbone(cfg, input_shape)
+    elif backbone_name == "timm":
+        bottom_up = build_timm_backbone(cfg, input_shape)
+    else:
+        raise ValueError("No such backbone: {}".format(backbone_name))
 
-
-def build_retinanet_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
-    """
-    Args:
-        cfg: a cvpods config dict
-
-    Returns:
-        backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
-    """
-    bottom_up = build_resnet_backbone(cfg, input_shape)
     in_features = cfg.MODEL.FPN.IN_FEATURES
     out_channels = cfg.MODEL.FPN.OUT_CHANNELS
 
     block_in_feature = cfg.MODEL.FPN.BLOCK_IN_FEATURES
     if block_in_feature == "p5":
         in_channels_p6p7 = out_channels
-    elif block_in_feature == "res5":
-        in_channels_p6p7 = bottom_up.output_shape()[block_in_feature].channels
     else:
-        raise ValueError(block_in_feature)
+        assert block_in_feature in bottom_up.output_shape()
+        in_channels_p6p7 = bottom_up.output_shape()[block_in_feature].channels
 
     backbone = FPN(
         bottom_up=bottom_up,
@@ -290,82 +299,36 @@ def build_retinanet_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
         fuse_type=cfg.MODEL.FPN.FUSE_TYPE,
     )
     return backbone
+
+
+def build_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
+    return build_fpn_backbone(cfg, input_shape)
 
 
 def build_shufflenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
-    """
-    Args:
-        cfg: a cvpods config dict
-
-    Returns:
-        backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
-    """
-    bottom_up = build_shufflenetv2_backbone(cfg, input_shape)
-    in_features = cfg.MODEL.FPN.IN_FEATURES
-    out_channels = cfg.MODEL.FPN.OUT_CHANNELS
-    backbone = FPN(
-        bottom_up=bottom_up,
-        in_features=in_features,
-        out_channels=out_channels,
-        norm=cfg.MODEL.FPN.NORM,
-        top_block=LastLevelMaxPool(),
-        fuse_type=cfg.MODEL.FPN.FUSE_TYPE,
-    )
-    return backbone
+    return build_fpn_backbone(cfg, input_shape, "shufflev2")
 
 
-def build_retinanet_resnet_fpn_p5_backbone(cfg, input_shape: ShapeSpec):
-    """
-    Will be deprecated in the future.
+def build_mobilenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
+    return build_fpn_backbone(cfg, input_shape, "mobilev2")
 
-    Args:
-        cfg: a cvpods config dict
 
-    Returns:
-        backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
-    """
-    return build_retinanet_resnet_fpn_backbone(cfg, input_shape)
+def build_timm_fpn_backbone(cfg, input_shape: ShapeSpec):
+    return build_fpn_backbone(cfg, input_shape, "timm")
+
+
+def build_retinanet_resnet_fpn_backbone(cfg, input_shape: ShapeSpec):
+    return build_retinanet_fpn_backbone(cfg, input_shape)
 
 
 def build_retinanet_mobilenetv2_fpn_backbone(cfg, input_shape: ShapeSpec):
-    """
-    Args:
-        cfg: a cvpods config dict
-
-    Returns:
-        backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
-    """
-    bottom_up = build_mobilenetv2_backbone(cfg, input_shape)
-    in_features = cfg.MODEL.FPN.IN_FEATURES
-    out_channels = cfg.MODEL.FPN.OUT_CHANNELS
-
-    block_in_feature = cfg.MODEL.FPN.BLOCK_IN_FEATURES
-    if block_in_feature == "p5":
-        in_channels_p6p7 = out_channels
-    elif block_in_feature == "mobile5-last" or block_in_feature == "mobile5":
-        in_channels_p6p7 = bottom_up.output_shape()[block_in_feature].channels
-    else:
-        raise ValueError(block_in_feature)
-
-    backbone = FPN(
-        bottom_up=bottom_up,
-        in_features=in_features,
-        out_channels=out_channels,
-        norm=cfg.MODEL.FPN.NORM,
-        top_block=LastLevelP6P7(in_channels_p6p7, out_channels, in_feature=block_in_feature),
-        fuse_type=cfg.MODEL.FPN.FUSE_TYPE,
-    )
-    return backbone
+    return build_retinanet_fpn_backbone(cfg, input_shape, "mobilev2")
 
 
-def build_retinanet_mobilenetv2_fpn_p5_backbone(cfg, input_shape: ShapeSpec):
-    """
-    Will be deprecated in the future.
+def build_retinanet_timm_fpn_backbone(cfg, input_shape: ShapeSpec):
+    return build_retinanet_fpn_backbone(cfg, input_shape, "timm")
 
-    Args:
-        cfg: a cvpods config dict
 
-    Returns:
-        backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
-    """
-    return build_retinanet_mobilenetv2_fpn_backbone(cfg, input_shape)
+@deprecated("Use build_retinanet_resnet_fpn_backbone instead.")
+def build_retinanet_resnet_fpn_p5_backbone(cfg, input_shape: ShapeSpec):
+    return build_retinanet_resnet_fpn_backbone(cfg, input_shape)

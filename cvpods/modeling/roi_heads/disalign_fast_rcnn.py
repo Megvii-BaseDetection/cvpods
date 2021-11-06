@@ -1,5 +1,7 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-# Copyright (c) Megvii@BaseDetection and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 import numpy as np
 
 import torch

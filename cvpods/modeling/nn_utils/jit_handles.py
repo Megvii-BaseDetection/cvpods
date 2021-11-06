@@ -8,55 +8,70 @@ from numpy import prod
 import torch
 import torch.nn as nn
 
+from cvpods.utils import comm
+
 # A list that contains ignored operations.
-_IGNORED_OPS: typing.List[str] = [
+_IGNORED_OPS: typing.Set[str] = {
     "aten::Int",
+    "aten::ScalarImplicit",
     "aten::__and__",
     "aten::arange",
     "aten::cat",
+    "aten::chunk",
     "aten::clamp",
     "aten::clamp_",
+    "aten::constant_pad_nd",
     "aten::contiguous",
     "aten::copy_",
     "aten::detach",
+    "aten::dropout",
     "aten::empty",
     "aten::eq",
     "aten::expand",
     "aten::flatten",
     "aten::floor",
+    "aten::floor_divide",
     "aten::full",
+    "aten::ge",
     "aten::gt",
     "aten::index",
     "aten::index_put_",
     "aten::max",
     "aten::nonzero",
     "aten::permute",
+    "aten::relu",
+    "aten::relu_",
     "aten::remainder",
     "aten::reshape",
     "aten::select",
     "aten::size",
     "aten::slice",
+    "aten::split",
     "aten::split_with_sizes",
     "aten::squeeze",
+    "aten::stack",
     "aten::t",
     "aten::to",
     "aten::transpose",
     "aten::unsqueeze",
+    "aten::unsqueeze_",
     "aten::view",
     "aten::zeros",
     "aten::zeros_like",
     "prim::Constant",
+    "prim::ImplicitTensorToNum",
     "prim::Int",
     "prim::ListConstruct",
     "prim::ListUnpack",
     "prim::NumToTensor",
     "prim::TupleConstruct",
-]
+}
 
 
 def get_jit_model_analysis(
     model: nn.Module,
     inputs: typing.Tuple[object, ...],
+    # pyre-fixme[24]: Generic type `typing.Callable` expects 2 type parameters.
     ops_handles: typing.Dict[str, typing.Callable],
 ) -> typing.Tuple[typing.Counter[str], typing.Counter[str]]:
     """
@@ -76,10 +91,9 @@ def get_jit_model_analysis(
             Counter of ignored operations.
     """
     # Torch script does not support parallel torch models.
-    if isinstance(
-        model, (nn.parallel.distributed.DistributedDataParallel, nn.DataParallel)
-    ):
-        model = model.module  # pyre-ignore
+
+    if isinstance(model, comm.DP_TYPES):
+        model = model.module
 
     # Compatibility with torch.jit.
     if hasattr(torch.jit, "get_trace_graph"):
@@ -111,7 +125,7 @@ def get_jit_model_analysis(
 
 
 def generic_activation_jit(
-    op_name: str
+    op_name: str,
 ) -> typing.Callable[[typing.List[object], typing.List[object]], typing.Counter[str]]:
     """
     This method return a handle that counts the number of activation from the
@@ -180,12 +194,39 @@ def addmm_flop_jit(
     input_shapes = [get_shape(v) for v in inputs[1:3]]
     # input_shapes[0]: [batch size, input feature dimension]
     # input_shapes[1]: [batch size, output feature dimension]
-    assert len(input_shapes[0]) == 2
-    assert len(input_shapes[1]) == 2
+    assert len(input_shapes[0]) == 2, input_shapes[0]
+    assert len(input_shapes[1]) == 2, input_shapes[1]
     batch_size, input_dim = input_shapes[0]
     output_dim = input_shapes[1][1]
     flop = batch_size * input_dim * output_dim
     flop_counter = Counter({"addmm": flop})
+    return flop_counter
+
+
+def bmm_flop_jit(
+    inputs: typing.List[object], outputs: typing.List[object]
+) -> typing.Counter[str]:
+    """
+    This method counts the flops for the bmm operation.
+
+    Args:
+        inputs (list(torch._C.Value)): The input shape in the form of a list of
+            jit object before bmm.
+        outputs (list(torch._C.Value)): The output shape in the form of a list
+            of jit object after bmm.
+
+    Returns:
+        Counter: A Counter dictionary that records the number of flops for each
+            operation.
+    """
+    # Inputs should be a list of length 2.
+    # Inputs contains the shapes of two tensor.
+    assert len(inputs) == 2, len(inputs)
+    input_shapes = [get_shape(v) for v in inputs]
+    n, c, t = input_shapes[0]
+    d = input_shapes[-1][-1]
+    flop = n * c * t * d
+    flop_counter = Counter({"bmm": flop})
     return flop_counter
 
 
@@ -229,11 +270,12 @@ def conv_flop_jit(
         Counter: A Counter dictionary that records the number of flops for each
             operation.
     """
-    # Inputs of Convolution should be a list of length 12. They represent:
+    # Inputs of Convolution should be a list of length 12 or 13. They represent:
     # 0) input tensor, 1) convolution filter, 2) bias, 3) stride, 4) padding,
     # 5) dilation, 6) transposed, 7) out_pad, 8) groups, 9) benchmark_cudnn,
     # 10) deterministic_cudnn and 11) user_enabled_cudnn.
-    assert len(inputs) == 12
+    # starting with #40737 it will be 12) user_enabled_tf32
+    assert len(inputs) == 12 or len(inputs) == 13, len(inputs)
     x, w = inputs[:2]
     x_shape, w_shape, out_shape = (get_shape(x), get_shape(w), get_shape(outputs[0]))
     return conv_flop_count(x_shape, w_shape, out_shape)
@@ -259,7 +301,7 @@ def einsum_flop_jit(
     # Inputs of einsum should be a list of length 2.
     # Inputs[0] stores the equation used for einsum.
     # Inputs[1] stores the list of input shapes.
-    assert len(inputs) == 2
+    assert len(inputs) == 2, len(inputs)
     equation = inputs[0].toIValue()  # pyre-ignore
     # Get rid of white space in the equation string.
     equation = equation.replace(" ", "")
@@ -308,9 +350,9 @@ def matmul_flop_jit(
     # Inputs should be a list of length 2.
     # Inputs contains the shapes of two matrices.
     input_shapes = [get_shape(v) for v in inputs]
-    assert len(input_shapes) == 2
-    assert len(input_shapes[1]) == 2
-    assert input_shapes[0][-1] == input_shapes[1][0]
+    assert len(input_shapes) == 2, input_shapes
+    assert len(input_shapes[1]) == 2, input_shapes
+    assert input_shapes[0][-1] == input_shapes[1][0], input_shapes
     batch_dim = input_shapes[0][0]
     m1_dim, m2_dim = input_shapes[1]
     flop = m1_dim * m2_dim * batch_dim
@@ -336,7 +378,7 @@ def batchnorm_flop_jit(
     """
     # Inputs[0] contains the shape of the input.
     input_shape = get_shape(inputs[0])
-    assert 2 <= len(input_shape) <= 5
+    assert 2 <= len(input_shape) <= 5, input_shape
     flop = prod(input_shape) * 4
     flop_counter = Counter({"batchnorm": flop})
     return flop_counter

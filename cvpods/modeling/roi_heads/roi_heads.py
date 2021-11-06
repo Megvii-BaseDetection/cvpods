@@ -1,5 +1,4 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-import logging
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -20,8 +19,6 @@ from ..sampling import subsample_labels
 from .fast_rcnn import FastRCNNOutputLayers, FastRCNNOutputs
 from .keypoint_head import keypoint_rcnn_inference, keypoint_rcnn_loss
 from .mask_head import mask_rcnn_inference, mask_rcnn_loss
-
-logger = logging.getLogger(__name__)
 
 
 def select_foreground_proposals(proposals, bg_label):

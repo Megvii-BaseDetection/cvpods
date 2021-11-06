@@ -1,16 +1,14 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-import logging
 from typing import Dict
 
 import torch
 
 from cvpods.layers import ShapeSpec
 
+from ..anchor_generator import RotatedAnchorGenerator
 from ..box_regression import Box2BoxTransformRotated
-from .rpn import RPN
+from .rpn import RPN, StandardRPNHead
 from .rrpn_outputs import RRPNOutputs, find_top_rrpn_proposals
-
-logger = logging.getLogger(__name__)
 
 
 class RRPN(RPN):
@@ -25,6 +23,11 @@ class RRPN(RPN):
     def __init__(self, cfg, input_shape: Dict[str, ShapeSpec]):
         super().__init__(cfg, input_shape)
         self.box2box_transform = Box2BoxTransformRotated(weights=cfg.MODEL.RPN.BBOX_REG_WEIGHTS)
+        self.anchor_generator = RotatedAnchorGenerator(
+            cfg, [input_shape[f] for f in self.in_features]
+        )
+        self.rpn_head = StandardRPNHead(cfg, self.anchor_generator,
+                                        [input_shape[f] for f in self.in_features])
 
     def forward(self, images, features, gt_instances=None):
         # same signature as RPN.forward
@@ -47,7 +50,6 @@ class RRPN(RPN):
             gt_boxes,
             self.smooth_l1_beta,
         )
-
         if self.training:
             losses = outputs.losses()
         else:
@@ -67,7 +69,6 @@ class RRPN(RPN):
                 self.pre_nms_topk[self.training],
                 self.post_nms_topk[self.training],
                 self.min_box_side_len,
-                self.training,
             )
 
         return proposals, losses

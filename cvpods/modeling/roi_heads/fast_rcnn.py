@@ -1,6 +1,4 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-import logging
-
 import numpy as np
 
 import torch
@@ -12,7 +10,6 @@ from cvpods.modeling.losses import smooth_l1_loss
 from cvpods.structures import Boxes, Instances
 from cvpods.utils import get_event_storage
 
-logger = logging.getLogger(__name__)
 
 """
 Shape shorthand in this module:
@@ -41,7 +38,7 @@ Naming convention:
 
 
 def fast_rcnn_inference(boxes, scores, image_shapes, score_thresh, nms_thresh, nms_type,
-                        topk_per_image):
+                        topk_per_image, proposal_idxs=None):
     """
     Call `fast_rcnn_inference_single_image` for all images.
 
@@ -60,6 +57,7 @@ def fast_rcnn_inference(boxes, scores, image_shapes, score_thresh, nms_thresh, n
         nms_thresh (float):  The threshold to use for box non-maximum suppression. Value in [0, 1].
         topk_per_image (int): The number of top scoring detections to return. Set < 0 to return
             all detections.
+        proposal_idxs (None): proposal indexes for each boxes.
 
     Returns:
         instances: (list[Instances]): A list of N instances, one for each image in the batch,
@@ -67,18 +65,24 @@ def fast_rcnn_inference(boxes, scores, image_shapes, score_thresh, nms_thresh, n
         kept_indices: (list[Tensor]): A list of 1D tensor of length of N, each element indicates
             the corresponding boxes/scores index in [0, Ri) from the input, for image i.
     """
+    if proposal_idxs is None:
+        proposal_idxs = [None] * len(scores)
+
     result_per_image = [
         fast_rcnn_inference_single_image(
-            boxes_per_image, scores_per_image, image_shape, score_thresh, nms_thresh, nms_type,
-            topk_per_image
+            boxes_per_image, scores_per_image, image_shape, score_thresh,
+            nms_thresh, nms_type, topk_per_image, proposal_idx
         )
-        for scores_per_image, boxes_per_image, image_shape in zip(scores, boxes, image_shapes)
+        for scores_per_image, boxes_per_image, image_shape, proposal_idx in zip(
+            scores, boxes, image_shapes, proposal_idxs
+        )
     ]
     return tuple(list(x) for x in zip(*result_per_image))
 
 
 def fast_rcnn_inference_single_image(
-    boxes, scores, image_shape, score_thresh, nms_thresh, nms_type, topk_per_image
+    boxes, scores, image_shape, score_thresh,
+    nms_thresh, nms_type, topk_per_image, proposal_idxs=None
 ):
     """
     Single-image inference. Return bounding-box detection results by thresholding
@@ -91,6 +95,11 @@ def fast_rcnn_inference_single_image(
     Returns:
         Same as `fast_rcnn_inference`, but for only one image.
     """
+    valid_mask = torch.isfinite(boxes).all(dim=1) & torch.isfinite(scores).all(dim=1)
+    if not valid_mask.all():
+        boxes = boxes[valid_mask]
+        scores = scores[valid_mask]
+
     scores = scores[:, :-1]
     num_bbox_reg_classes = boxes.shape[1] // 4
     # Convert to Boxes to use the `clip` function ...
@@ -109,10 +118,12 @@ def fast_rcnn_inference_single_image(
         boxes = boxes[filter_mask]
     scores = scores[filter_mask]
 
-    # Apply per-class NMS
-    keep = generalized_batched_nms(boxes, scores, filter_inds[:, 1],
-                                   nms_thresh, nms_type=nms_type)
+    if proposal_idxs is not None:
+        proposal_idxs = proposal_idxs.reshape(-1, num_bbox_reg_classes)[filter_mask]
 
+    # Apply per-class NMS
+    keep = generalized_batched_nms(boxes, scores, filter_inds[:, 1], nms_thresh,
+                                   nms_type=nms_type, proposal_idxs=proposal_idxs)
     if topk_per_image >= 0:
         keep = keep[:topk_per_image]
     boxes, scores, filter_inds = boxes[keep], scores[keep], filter_inds[keep]
@@ -297,6 +308,7 @@ class FastRCNNOutputs(object):
         boxes = self.box2box_transform.apply_deltas(
             self.pred_proposal_deltas.view(num_pred * K, B),
             self.proposals.tensor.unsqueeze(1).expand(num_pred, K, B).reshape(-1, B),
+            strict=False
         )
         return boxes.view(num_pred, K * B)
 
@@ -340,12 +352,13 @@ class FastRCNNOutputs(object):
         probs = F.softmax(self.pred_class_logits, dim=-1)
         return probs.split(self.num_preds_per_image, dim=0)
 
-    def inference(self, score_thresh, nms_thresh, nms_type, topk_per_image):
+    def inference(self, score_thresh, nms_thresh, nms_type, topk_per_image, proposal_idxs=None):
         """
         Args:
             score_thresh (float): same as fast_rcnn_inference.
             nms_thresh (float): same as fast_rcnn_inference.
             topk_per_image (int): same as fast_rcnn_inference.
+            proposal_idxs (None): same as fast_rcnn_inference.
         Returns:
             list[Instances]: same as fast_rcnn_inference.
             list[Tensor]: same as fast_rcnn_inference.
@@ -355,7 +368,8 @@ class FastRCNNOutputs(object):
         image_shapes = self.image_shapes
 
         return fast_rcnn_inference(
-            boxes, scores, image_shapes, score_thresh, nms_thresh, nms_type, topk_per_image
+            boxes, scores, image_shapes, score_thresh,
+            nms_thresh, nms_type, topk_per_image, proposal_idxs
         )
 
 

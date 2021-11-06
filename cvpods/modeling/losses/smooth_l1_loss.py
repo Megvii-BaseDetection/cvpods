@@ -2,11 +2,9 @@
 import torch
 
 
-def smooth_l1_loss(input,
-                   target,
-                   beta: float,
-                   reduction: str = "none",
-                   size_average=False):
+def smooth_l1_loss(
+    input, target, beta: float, reduction: str = "none", size_average=False
+):
     """
     Smooth L1 loss defined in the Fast R-CNN paper as:
 

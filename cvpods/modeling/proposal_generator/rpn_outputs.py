@@ -1,6 +1,5 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import itertools
-import logging
 
 import numpy as np
 
@@ -13,8 +12,6 @@ from cvpods.structures import Boxes, Instances, pairwise_iou
 from cvpods.utils import get_event_storage, retry_if_cuda_oom
 
 from ..sampling import subsample_labels
-
-logger = logging.getLogger(__name__)
 
 # TODO: comments for future refactoring of this module
 #
@@ -59,7 +56,6 @@ def find_top_rpn_proposals(
     pre_nms_topk,
     post_nms_topk,
     min_box_side_len,
-    training,  # pylint: disable=W0613
 ):
     """
     For each feature map, select the `pre_nms_topk` highest scoring proposals,
@@ -82,9 +78,6 @@ def find_top_rpn_proposals(
             over all feature maps.
         min_box_side_len (float): minimum proposal box side length in pixels (absolute units
             wrt input images).
-        training (bool): True if proposals are to be used in training, otherwise False.
-            This arg exists only to support a legacy bug; look for the "NB: Legacy bug ..."
-            comment.
 
     Returns:
         proposals (list[Instances]): list of N Instances. The i-th Instances

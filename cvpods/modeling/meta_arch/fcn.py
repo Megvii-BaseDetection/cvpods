@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates.
-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 from typing import Dict
 
 import numpy as np

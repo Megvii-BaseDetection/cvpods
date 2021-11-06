@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates.
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-import logging
 import random
 from collections import OrderedDict
 
@@ -149,7 +148,7 @@ class YOLOv3(nn.Module):
                 ]
             elif "targets" in batched_inputs[0]:
                 log_first_n(
-                    logging.WARN,
+                    "WARNING",
                     "'targets' in the model inputs is now renamed to 'instances'!",
                     n=10)
                 gt_instances = [

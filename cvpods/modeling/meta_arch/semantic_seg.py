@@ -1,5 +1,4 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-# Modified by BaseDetection, Inc. and its affiliates. All Rights Reserved
 from typing import Dict
 
 import numpy as np
@@ -74,10 +73,12 @@ class SemanticSegmentor(nn.Module):
             ).tensor
         else:
             targets = None
-        results, losses = self.sem_seg_head(features, targets)
 
         if self.training:
+            _, losses = self.sem_seg_head(features, targets)
             return losses
+        else:
+            results, _ = self.sem_seg_head(features, images.tensor)
 
         processed_results = []
         for result, input_per_image, image_size in zip(results, batched_inputs, images.image_sizes):

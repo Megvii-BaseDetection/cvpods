@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 from scipy.optimize import linear_sum_assignment
 
 import torch
@@ -157,13 +155,15 @@ class MatcherIgnore(Matcher):
     (b) a vector of length N containing the labels for each prediction.
     """
 
-    def __call__(self, match_quality_matrix, match_quality_ignore=None):
+    def __call__(self, match_quality_matrix, match_quality_ignore=None, topk=None):
         """
         Args:
             match_quality_matrix (Tensor[float]): an MxN tensor, containing the
                 pairwise quality between M ground-truth elements and N predicted
                 elements. All elements must be >= 0 (due to the us of `torch.nonzero`
                 for selecting indices in :meth:`set_low_quality_matches_`).
+            topk (int): assign `topk` ground-truth elements to every predicted elements.
+                        Perform max operation instead of topk when set to None.
 
         Returns:
             matches (Tensor[int64]): a vector of length N, where matches[i] is a matched
@@ -186,10 +186,17 @@ class MatcherIgnore(Matcher):
 
         assert torch.all(match_quality_matrix >= 0)
 
-        # match_quality_matrix is M (gt) x N (predicted)
-        # Max over gt elements (dim 0) to find best gt candidate for each prediction
-        matched_vals, matches = match_quality_matrix.max(dim=0)
-        matched_vals_ign, matches_ign = match_quality_ignore.max(dim=0)
+        if topk is None:
+            # match_quality_matrix is M (gt) x N (predicted)
+            # Max over gt elements (dim 0) to find best gt candidate for each prediction
+            # matched_vals, matches, matched_vals_ign, matches_ign: shape of (N,)
+            matched_vals, matches = match_quality_matrix.max(dim=0)
+            matched_vals_ign, matches_ign = match_quality_ignore.max(dim=0)
+        else:
+            # best `topk` candidate for each prediction
+            # matched_vals, matches, matched_vals_ign, matches_ign: shape of (`topk`, N)
+            matched_vals, matches = match_quality_matrix.topk(topk, dim=0)
+            matched_vals_ign, matches_ign = match_quality_ignore.topk(topk, dim=0)
 
         assert len(self.thresholds) == 3
         high = self.thresholds[1]
@@ -203,6 +210,8 @@ class MatcherIgnore(Matcher):
             low_high = (matched_vals >= low) & (matched_vals < high)
             match_labels[low_high] = l
 
+        assert topk is None or not self.allow_low_quality_matches, \
+            "Low quality matching is only available when `topk` is None"
         if self.allow_low_quality_matches:
             self.set_low_quality_matches_(match_labels, match_quality_matrix)
 

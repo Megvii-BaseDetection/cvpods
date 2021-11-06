@@ -1,6 +1,8 @@
-# encoding: utf-8
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 # network file -> build backbone for Dynamic Network
-# @author: yanwei.li
 import numpy as np
 
 import torch
@@ -152,7 +154,7 @@ class DynamicNetwork(Backbone):
     """
     def __init__(
         self, init_channel, input_shape, cell_num_list, layer_num,
-        ext_layer=None, norm="", cal_flops=True, cell_type='',  # pylint: disable=W0613
+        ext_layer=None, norm="", cal_flops=True, cell_type='',
         max_stride=32, sep_stem=True, using_gate=False,
         small_gate=False, gate_bias=1.5, drop_prob=0.0,
     ):
@@ -347,8 +349,10 @@ class DynamicNetwork(Backbone):
 def build_dynamic_backbone(cfg, input_shape: ShapeSpec):
     """
     Create a Dynamic Backbone from config.
+
     Args:
         cfg: a config dict
+
     Returns:
         backbone (Backbone): backbone module, must be a subclass of :class:`Backbone`.
     """

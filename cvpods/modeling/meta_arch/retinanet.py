@@ -1,7 +1,4 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
-
-import logging
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import math
 from typing import List
 
@@ -102,6 +99,15 @@ class RetinaNet(nn.Module):
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
         self.to(self.device)
 
+        """
+        In Detectron1, loss is normalized by number of foreground samples in the batch.
+        When batch size is 1 per GPU, #foreground has a large variance and
+        using it lead to lower performance. Here we maintain an EMA of #foreground to
+        stabilize the normalizer.
+        """
+        self.loss_normalizer = 100  # initialize with any reasonable #fg that's not too small
+        self.loss_normalizer_momentum = 0.9
+
     def forward(self, batched_inputs):
         """
         Args:
@@ -127,9 +133,10 @@ class RetinaNet(nn.Module):
             ]
         elif "targets" in batched_inputs[0]:
             log_first_n(
-                logging.WARN,
+                "WARNING",
                 "'targets' in the model inputs is now renamed to 'instances'!",
-                n=10)
+                n=10
+            )
             gt_instances = [
                 x["targets"].to(self.device) for x in batched_inputs
             ]
@@ -188,6 +195,10 @@ class RetinaNet(nn.Module):
         gt_classes_target = torch.zeros_like(pred_class_logits)
         gt_classes_target[foreground_idxs, gt_classes[foreground_idxs]] = 1
 
+        self.loss_normalizer = self.loss_normalizer_momentum * self.loss_normalizer + (
+            1 - self.loss_normalizer_momentum
+        ) * max(num_foreground.item(), 1)
+
         # logits loss
         loss_cls = sigmoid_focal_loss_jit(
             pred_class_logits[valid_idxs],
@@ -195,7 +206,7 @@ class RetinaNet(nn.Module):
             alpha=self.focal_loss_alpha,
             gamma=self.focal_loss_gamma,
             reduction="sum",
-        ) / max(1, num_foreground)
+        ) / self.loss_normalizer
 
         # regression loss
         loss_box_reg = smooth_l1_loss(
@@ -203,7 +214,7 @@ class RetinaNet(nn.Module):
             gt_anchors_deltas[foreground_idxs],
             beta=self.smooth_l1_loss_beta,
             reduction="sum",
-        ) / max(1, num_foreground)
+        ) / self.loss_normalizer
 
         return {"loss_cls": loss_cls, "loss_box_reg": loss_box_reg}
 

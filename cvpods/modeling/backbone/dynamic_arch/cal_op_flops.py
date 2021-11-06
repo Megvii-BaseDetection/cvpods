@@ -1,6 +1,8 @@
-# Count Operation MFLOPs when fix batch to 1
-# @author: yanwei.li
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
+# Count Operation MFLOPs when fix batch to 1
 
 def count_Conv_flop(
     in_h, in_w, in_channel, out_channel,

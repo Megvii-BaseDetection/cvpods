@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-import logging
 import math
 from typing import List
 
@@ -119,9 +118,11 @@ class EfficientDet(nn.Module):
                 x["instances"].to(self.device) for x in batched_inputs
             ]
         elif "targets" in batched_inputs[0]:
-            log_first_n(logging.WARN,
-                        "'targets' in the model inputs is now renamed to 'instances'!",
-                        n=10)
+            log_first_n(
+                "WARNING",
+                "'targets' in the model inputs is now renamed to 'instances'!",
+                n=10
+            )
             gt_instances = [
                 x["targets"].to(self.device) for x in batched_inputs
             ]
