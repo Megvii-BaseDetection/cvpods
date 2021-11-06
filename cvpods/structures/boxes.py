@@ -339,15 +339,17 @@ def pairwise_iou(boxes1: Boxes, boxes2: Boxes) -> torch.Tensor:
 def pairwise_ioa(gt: Boxes, boxes: Boxes, labels, ignore_label=-1) -> torch.Tensor:
     """
     Given two lists of boxes of size N and M,
-    compute the IoU (intersection over union)
+    compute the IoA (intersection over area)
     between __all__ N x M pairs of boxes.
     The box order must be (xmin, ymin, xmax, ymax).
 
     Args:
-        boxes1,boxes2 (Boxes): two `Boxes`. Contains N & M boxes, respectively.
-
+        gt, boxes (Boxes): two `Boxes`. Contains N & M boxes, respectively.
+        labels (Tensor): sized [N,].
+        ignore_label (int): ioa with gt box whose corresponding label doesn't equal
+        to `ignore_label` will be set to 0.
     Returns:
-        Tensor: IoU, sized [N,M].
+        Tensor: IoA, sized [N,M].
     """
     area_boxes = boxes.area()
 
