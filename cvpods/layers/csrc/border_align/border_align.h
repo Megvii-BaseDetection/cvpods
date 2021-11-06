@@ -1,3 +1,4 @@
+/* Copyright (C) 2019-2021 Megvii Inc. All rights reserved. */
 #pragma once
 #include <torch/types.h>
 #include <torch/extension.h>

@@ -1,3 +1,4 @@
+/* Copyright (C) 2019-2021 Megvii Inc. All rights reserved. */
 #include <thread>
 #include <iostream>
 #include <stdlib.h>
@@ -20,11 +21,11 @@
     #include <boost/graph/adjacency_list.hpp>
     #include <boost/graph/prim_minimum_spanning_tree.hpp>
 #endif
-#ifdef MST_KRUSKAL 
+#ifdef MST_KRUSKAL
     #include <boost/graph/adjacency_list.hpp>
     #include <boost/graph/kruskal_min_spanning_tree.hpp>
 #endif
-#ifdef MST_BORUVKA 
+#ifdef MST_BORUVKA
     #include "boruvka.hpp"
 #endif
 
@@ -63,7 +64,7 @@ static void forward_kernel(int * edge_index, float * edge_weight, int * edge_out
             *(edge_out_ptr++) = p[i];
         }
 #endif
-    
+
 #ifdef MST_KRUSKAL
     std::vector < Edge > spanning_tree;
     kruskal_minimum_spanning_tree(g, std::back_inserter(spanning_tree));
@@ -82,21 +83,21 @@ static void forward_kernel(int * edge_index, float * edge_weight, int * edge_out
 #endif
 
 }
-    
+
 at::Tensor mst_forward(
             const at::Tensor & edge_index_tensor,
             const at::Tensor & edge_weight_tensor,
             int vertex_count){
     unsigned batch_size = edge_index_tensor.size(0);
     unsigned edge_count = edge_index_tensor.size(1);
-    
+
     auto edge_index_cpu   = edge_index_tensor.cpu();
-    auto edge_weight_cpu  = edge_weight_tensor.cpu(); 
+    auto edge_weight_cpu  = edge_weight_tensor.cpu();
     auto edge_out_cpu     = at::empty({batch_size, vertex_count - 1, 2}, edge_index_cpu.options());
-    
+
     int * edge_out      = edge_out_cpu.contiguous().data_ptr<int>();
     int * edge_index    = edge_index_cpu.contiguous().data_ptr<int>();
-    float * edge_weight = edge_weight_cpu.contiguous().data_ptr<float>(); 
+    float * edge_weight = edge_weight_cpu.contiguous().data_ptr<float>();
 
     // Loop for batch
     std::thread pids[batch_size];
@@ -106,13 +107,12 @@ at::Tensor mst_forward(
         auto edge_out_iter    = edge_out + i * (vertex_count - 1) * 2;
         pids[i] = std::thread(forward_kernel, edge_index_iter, edge_weight_iter, edge_out_iter, vertex_count, edge_count);
     }
-    
+
     for (unsigned i = 0; i < batch_size; i++){
         pids[i].join();
     }
-    
+
     auto edge_out_tensor = edge_out_cpu.to(edge_index_tensor.device());
-    
+
     return edge_out_tensor;
 }
-

@@ -1,3 +1,5 @@
+/* Copyright (C) 2019-2021 Megvii Inc. All rights reserved. */
+
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 
@@ -33,7 +35,7 @@ __device__ T bilinear_interpolate(
 
     if (x_low >= width - 1) {
         x_high = x_low = width - 1;
-        x = (T) x_low;            
+        x = (T) x_low;
     } else {
         x_high = x_low + 1;
     }
@@ -305,7 +307,7 @@ at::Tensor border_align_cuda_backward(
         scalar_t *feature_data = feature.contiguous().data_ptr<scalar_t>();
         scalar_t *boxes_data = boxes.contiguous().data_ptr<scalar_t>();
         scalar_t *wh_data = wh.contiguous().data_ptr<scalar_t>();
-        
+
         BorderAlign_Backward<scalar_t><<<grid, block, 0, stream>>>(
             output_size,
             gradInput_data,

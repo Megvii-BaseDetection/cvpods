@@ -1,27 +1,28 @@
-// Boruvka's algorithm to find Minimum Spanning 
-// Tree of a given connected, undirected and 
-// weighted graph 
-#include <stdio.h> 
+// Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+// Boruvka's algorithm to find Minimum Spanning
+// Tree of a given connected, undirected and
+// weighted graph
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include "boruvka_rst.hpp"
 
-// A structure to represent a subset for union-find 
-struct subset 
-{ 
+// A structure to represent a subset for union-find
+struct subset
+{
     int parent;
     int rank;
-}; 
+};
 
-// Function prototypes for union-find (These functions are defined 
-// after boruvka_rst() ) 
+// Function prototypes for union-find (These functions are defined
+// after boruvka_rst() )
 static bool random_lt(float a, float b);
-static int find(struct subset subsets[], int i); 
-static void Union(struct subset subsets[], int x, int y); 
+static int find(struct subset subsets[], int i);
+static void Union(struct subset subsets[], int x, int y);
 
-// The main function for MST using Boruvka's algorithm 
-void boruvka_rst(struct Graph* graph, int * edge_out) 
-{ 
+// The main function for MST using Boruvka's algorithm
+void boruvka_rst(struct Graph* graph, int * edge_out)
+{
     // Get data of given graph
     int V = graph->V, E = graph->E;
     Edge *edge = graph->edge;
@@ -116,15 +117,15 @@ void boruvka_rst(struct Graph* graph, int * edge_out)
     delete[] cheapest;
 }
 
-// Creates a graph with V vertices and E edges 
-struct Graph* create_graph(int V, int E) 
-{ 
+// Creates a graph with V vertices and E edges
+struct Graph* create_graph(int V, int E)
+{
     Graph* graph = new Graph;
     graph->V = V;
     graph->E = E;
     graph->edge = new Edge[E];
     return graph;
-} 
+}
 
 static bool random_lt(float a, float b)
 {
@@ -136,10 +137,10 @@ static bool random_lt(float a, float b)
         return false;
 }
 
-// A utility function to find set of an element i 
-// (uses path compression technique) 
-static int find(struct subset subsets[], int i) 
-{ 
+// A utility function to find set of an element i
+// (uses path compression technique)
+static int find(struct subset subsets[], int i)
+{
     // find root and make root as parent of i
     // (path compression)
     if (subsets[i].parent != i)
@@ -147,12 +148,12 @@ static int find(struct subset subsets[], int i)
             find(subsets, subsets[i].parent);
 
     return subsets[i].parent;
-} 
+}
 
-// A function that does union of two sets of x and y 
-// (uses union by rank) 
-static void Union(struct subset subsets[], int x, int y) 
-{ 
+// A function that does union of two sets of x and y
+// (uses union by rank)
+static void Union(struct subset subsets[], int x, int y)
+{
     int xroot = find(subsets, x);
     int yroot = find(subsets, y);
 
@@ -170,5 +171,4 @@ static void Union(struct subset subsets[], int x, int y)
         subsets[yroot].parent = xroot;
         subsets[xroot].rank++;
     }
-} 
-
+}

@@ -1,5 +1,9 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-import logging
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+from loguru import logger
 
 import torch
 import torch.distributed as dist
@@ -91,7 +95,6 @@ class FrozenBatchNorm2d(nn.Module):
                     state_dict[prefix + "running_var"] = torch.ones_like(self.running_var)
 
             if version < 3:
-                logger = logging.getLogger(__name__)
                 logger.info(
                     "FrozenBatchNorm {} is upgraded to version 3.".format(prefix.rstrip("."))
                 )
@@ -165,10 +168,10 @@ def get_norm(norm, out_channels):
 def get_activation(activation):
     """
     Args:
-        norm (str or callable):
+        activation (EasyDict or str):
 
     Returns:
-        nn.Module or None: the normalization layer
+        nn.Module or None: the activation layer
     """
     if activation is None:
         return None

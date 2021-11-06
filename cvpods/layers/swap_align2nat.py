@@ -1,3 +1,4 @@
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 from torch import nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
@@ -52,9 +53,7 @@ class SwapAlign2Nat(nn.Module):
     def forward(self, X):
         return swap_align2nat(X, self.lambda_val, self.pad_val)
 
-    def __repr__(self):
-        tmpstr = self.__class__.__name__ + "("
-        tmpstr += "lambda_val=" + str(self.lambda_val)
+    def extra_repr(self):
+        tmpstr = "lambda_val=" + str(self.lambda_val)
         tmpstr += ", pad_val=" + str(self.pad_val)
-        tmpstr += ")"
         return tmpstr
