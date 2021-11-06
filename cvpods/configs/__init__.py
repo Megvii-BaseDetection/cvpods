@@ -1,10 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 from .base_classification_config import BaseClassificationConfig
 from .base_config import BaseConfig
 from .base_detection_config import BaseDetectionConfig
+from .boxinst_config import BoxInstConfig
+from .condinst_config import CondInstConfig
 from .dynamic_routing_config import SemanticSegmentationConfig
 from .efficientdet_config import EfficientDetConfig
 from .fcos_config import FCOSConfig

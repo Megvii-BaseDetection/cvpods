@@ -1,5 +1,8 @@
-#!/usr/bin/env python3
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import collections
 from collections import defaultdict
@@ -10,8 +13,10 @@ def get_missing_parameters_message(keys: list):
     """
     Get a logging-friendly message to report parameter names (keys) that are in
     the model but not found in a checkpoint.
+
     Args:
         keys (list[str]): List of keys that were not found in the checkpoint.
+
     Returns:
         str: message.
     """
@@ -27,8 +32,10 @@ def get_unexpected_parameters_message(keys: list):
     """
     Get a logging-friendly message to report parameter names (keys) that are in
     the checkpoint but not found in the model.
+
     Args:
         keys (list[str]): List of keys that were not found in the model.
+
     Returns:
         str: message.
     """
@@ -44,6 +51,7 @@ def get_unexpected_parameters_message(keys: list):
 def _strip_prefix_if_present(state_dict: collections.OrderedDict, prefix: str):
     """
     Strip the prefix in metadata, if any.
+
     Args:
         state_dict (OrderedDict): a state-dict to be loaded to the model.
         prefix (str): prefix.
@@ -78,9 +86,11 @@ def _group_checkpoint_keys(keys: list):
     """
     Group keys based on common prefixes. A prefix is the string up to the final
     "." in each key.
+
     Args:
         keys (list[str]): list of parameter names, i.e. keys in the model
             checkpoint dict.
+
     Returns:
         dict[list]: keys with common prefixes are grouped into lists.
     """
@@ -98,8 +108,10 @@ def _group_checkpoint_keys(keys: list):
 def _group_to_str(group: list):
     """
     Format a group of parameter name suffixes into a loggable string.
+
     Args:
         group (list[str]): list of parameter name suffixes.
+
     Returns:
         str: formated string.
     """

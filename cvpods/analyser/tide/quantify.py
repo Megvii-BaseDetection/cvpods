@@ -1,5 +1,3 @@
-# pylint: disable=W0613
-
 import os
 from collections import OrderedDict, defaultdict
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) Facebook, Inc. and its affiliates.
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import sys
 import time
@@ -20,7 +20,6 @@ def timeit(num_iters: int = -1, warmup_iters: int = 0):
         warmup_iters (int): number of iterations used to warm up the function.
             This is useful for functions that exhibit poor performance during
             the first few times they run (due to caches, autotuning, etc).
-
     Returns:
         Dict[str, float]: dictionary of the aggregated timing estimates.
             "iterations": number of iterations used to compute the estimated

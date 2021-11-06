@@ -1,6 +1,5 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import colorsys
-import logging
 import math
 from enum import Enum, unique
 
@@ -17,8 +16,6 @@ import torch
 from cvpods.structures import BitMasks, Boxes, BoxMode, Keypoints, PolygonMasks, RotatedBoxes
 
 from .colormap import random_color
-
-logger = logging.getLogger(__name__)
 
 __all__ = ["ColorMode", "VisImage", "Visualizer"]
 

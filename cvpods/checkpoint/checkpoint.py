@@ -1,20 +1,23 @@
-#!/usr/bin/env python3
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import copy
-import logging
 import os
 import pickle
 from typing import Any, Optional
+import megfile
+from loguru import logger
 
 import numpy as np
 
 import torch
 import torch.nn as nn
-from torch.nn.parallel import DataParallel, DistributedDataParallel
 
-from cvpods.utils import PathManager
-from cvpods.utils.distributed import comm
+from cvpods.utils import comm
+from cvpods.utils.compat_wrapper import deprecated
 
 from .c2_model_loading import align_and_update_state_dicts
 from .utils import (
@@ -50,12 +53,11 @@ class Checkpointer(object):
                 example, it can be used like
                 `Checkpointer(model, "dir", optimizer=optimizer)`.
         """
-        if isinstance(model, (DistributedDataParallel, DataParallel)):
+        if isinstance(model, comm.DP_TYPES):
             model = model.module
         self.model = model
         self.checkpointables = copy.copy(checkpointables)
         self.resume = resume
-        self.logger = logging.getLogger(__name__)
         self.save_dir = save_dir
         self.save_to_disk = save_to_disk
 
@@ -79,8 +81,8 @@ class Checkpointer(object):
         basename = "{}.pth".format(name)
         save_file = os.path.join(self.save_dir, basename)
         assert os.path.basename(save_file) == basename, basename
-        self.logger.info("Saving checkpoint to {}".format(save_file))
-        with PathManager.open(save_file, "wb") as f:
+        logger.info("Saving checkpoint to {}".format(save_file))
+        with megfile.smart_open(save_file, "wb") as f:
             torch.save(data, f)
 
         if tag_checkpoint:
@@ -102,21 +104,19 @@ class Checkpointer(object):
         """
         if not path:
             # no checkpoint provided
-            self.logger.info(
+            logger.info(
                 "No checkpoint found. Initializing model from scratch"
             )
             return {}
-        self.logger.info("Loading checkpoint from {}".format(path))
-        if not os.path.isfile(path):
-            path = PathManager.get_local_path(path)
-            assert PathManager.isfile(path), "Checkpoint {} not found!".format(path)
+        logger.info("Loading checkpoint from {}".format(path))
+        assert megfile.smart_isfile(path), "Checkpoint {} not found!".format(path)
 
         checkpoint = self._load_file(path)
         self._load_model(checkpoint)
         if self.resume:
             for key, obj in self.checkpointables.items():
                 if key in checkpoint:
-                    self.logger.info("Loading {} from {}".format(key, path))
+                    logger.info("Loading {} from {}".format(key, path))
                     obj.load_state_dict(checkpoint.pop(key))
             # return any further checkpoint data
             return checkpoint
@@ -129,7 +129,7 @@ class Checkpointer(object):
             bool: whether a checkpoint exists in the target directory.
         """
         save_file = os.path.join(self.save_dir, "last_checkpoint")
-        return PathManager.exists(save_file)
+        return megfile.smart_exists(save_file)
 
     def get_checkpoint_file(self):
         """
@@ -138,7 +138,7 @@ class Checkpointer(object):
         """
         save_file = os.path.join(self.save_dir, "last_checkpoint")
         try:
-            with PathManager.open(save_file, "r") as f:
+            with megfile.smart_open(save_file, "r") as f:
                 last_saved = f.read().strip()
         except IOError:
             # if file doesn't exist, maybe because it has just been
@@ -154,8 +154,8 @@ class Checkpointer(object):
         """
         all_model_checkpoints = [
             os.path.join(self.save_dir, file)
-            for file in PathManager.ls(self.save_dir)
-            if PathManager.isfile(os.path.join(self.save_dir, file)) and file.endswith(".pth")
+            for file in megfile.smart_listdir(self.save_dir)
+            if megfile.smart_isfile(os.path.join(self.save_dir, file)) and file.endswith(".pth")
         ]
         return all_model_checkpoints
 
@@ -184,7 +184,7 @@ class Checkpointer(object):
             last_filename_basename (str): the basename of the last filename.
         """
         save_file = os.path.join(self.save_dir, "last_checkpoint")
-        with PathManager.open(save_file, "w") as f:
+        with megfile.smart_open(save_file, "w") as f:
             f.write(last_filename_basename)
 
     def _load_file(self, f: str):
@@ -223,7 +223,7 @@ class Checkpointer(object):
                 shape_model = tuple(model_state_dict[k].shape)
                 shape_checkpoint = tuple(checkpoint_state_dict[k].shape)
                 if shape_model != shape_checkpoint:
-                    self.logger.warning(
+                    logger.warning(
                         "'{}' has shape {} in the checkpoint but {} in the "
                         "model! Skipped.".format(
                             k, shape_checkpoint, shape_model
@@ -235,11 +235,11 @@ class Checkpointer(object):
             checkpoint_state_dict, strict=False
         )
         if incompatible.missing_keys:
-            self.logger.info(
+            logger.info(
                 get_missing_parameters_message(incompatible.missing_keys)
             )
         if incompatible.unexpected_keys:
-            self.logger.info(
+            logger.info(
                 get_unexpected_parameters_message(incompatible.unexpected_keys)
             )
 
@@ -287,6 +287,8 @@ class PeriodicCheckpointer:
             period (int): the period to save checkpoint.
             max_iter (int): maximum number of iterations. When it is reached,
                 a checkpoint named "model_final" will be saved.
+            max_epoch: (Optional[int]): maximum number of epochs. `PeriodicCheckpointer` will
+                operate in EPOCH mode instead of ITERATION mode when not set to None.
         """
         self.checkpointer = checkpointer
         self.period = int(period)
@@ -305,7 +307,9 @@ class PeriodicCheckpointer:
         iteration = int(iteration)
         additional_state = {"iteration": iteration}
         additional_state.update(kwargs)
-        if (iteration + 1) % self.period == 0:
+        if self.period < 0:
+            return
+        if self.period > 0 and (iteration + 1) % self.period == 0:
             if self.max_epoch is not None:
                 epoch_iters = self.max_iter // self.max_epoch
                 curr_epoch = (iteration + 1) // epoch_iters
@@ -364,11 +368,11 @@ class DefaultCheckpointer(Checkpointer):
                 pkl, pth
         """
         if filename.endswith(".pkl"):
-            with PathManager.open(filename, "rb") as f:
+            with megfile.smart_open(filename, "rb") as f:
                 data = pickle.load(f, encoding="latin1")
             if "model" in data and "__author__" in data:
                 # file is in cvpods model zoo format
-                self.logger.info("Reading a file from '{}'".format(data["__author__"]))
+                logger.info("Reading a file from '{}'".format(data["__author__"]))
                 return data
             else:
                 # assume file is from Caffe2 / Detectron1 model zoo
@@ -379,7 +383,7 @@ class DefaultCheckpointer(Checkpointer):
                 return {"model": data, "__author__": "Caffe2", "matching_heuristics": True}
         elif filename.endswith(".pth"):
             if filename.startswith("s3://"):
-                with PathManager.open(filename, "rb") as f:
+                with megfile.smart_open(filename, "rb") as f:
                     loaded = torch.load(f, map_location=torch.device("cpu"))
             else:
                 loaded = super()._load_file(filename)  # load native pth checkpoint
@@ -404,3 +408,8 @@ class DefaultCheckpointer(Checkpointer):
             checkpoint["model"] = model_state_dict
         # for non-caffe2 models, use standard ways to load it
         super()._load_model(checkpoint)
+
+
+@deprecated("Use DefaultCheckpointer instead.")
+class DetectionCheckpointer(DefaultCheckpointer):
+    pass

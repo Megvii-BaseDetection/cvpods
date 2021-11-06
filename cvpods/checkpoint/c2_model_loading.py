@@ -1,7 +1,11 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 import copy
-import logging
 import re
+from loguru import logger
 
 import torch
 
@@ -78,7 +82,6 @@ def convert_c2_detectron_names(weights):
         dict: cvpods names -> tensor
         dict: cvpods names -> C2 names
     """
-    logger = logging.getLogger(__name__)
     logger.info("Remapping C2 weights ......")
     original_keys = sorted(weights.keys())
     layer_keys = copy.deepcopy(original_keys)
@@ -257,7 +260,6 @@ def align_and_update_state_dicts(model_state_dict, ckpt_state_dict, c2_conversio
     max_len_model = max(len(key) for key in model_keys) if model_keys else 1
     max_len_ckpt = max(len(key) for key in ckpt_keys) if ckpt_keys else 1
     log_str_template = "{: <{}} loaded from {: <{}} of shape {}"
-    logger = logging.getLogger(__name__)
     # matched_pairs (matched checkpoint key --> matched model key)
     matched_keys = {}
     for idx_model, idx_ckpt in enumerate(idxs.tolist()):

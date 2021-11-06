@@ -1,19 +1,14 @@
-# Copyright (c) Facebook, Inc. and its affiliates
-# Modified by BaseDetection, Inc. and its affiliates.
-
-# pylint: disable=W0613
-
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import datetime
 import json
-import logging
 import os
 import time
 from collections import defaultdict
 from contextlib import contextmanager
+import megfile
+from loguru import logger
 
 import torch
-
-from cvpods.utils.file import PathManager
 
 from .history_buffer import HistoryBuffer
 
@@ -97,14 +92,25 @@ class JSONWriter(EventWriter):
             window_size (int): the window size of median smoothing for the scalars whose
                 `smoothing_hint` are True.
         """
-        self._file_handle = PathManager.open(json_file, "a")
+        self._file_handle = megfile.smart_open(json_file, "a")
         self._window_size = window_size
+        self._last_write = -1
 
     def write(self):
         storage = get_event_storage()
-        to_save = {"iteration": storage.iter}
-        to_save.update(storage.latest_with_smoothing_hint())
-        self._file_handle.write(json.dumps(to_save, sort_keys=True) + "\n")
+        to_save = defaultdict(dict)
+
+        for k, (v, iter) in storage.latest_with_smoothing_hint().items():
+            # keep scalars that have not been written
+            if iter <= self._last_write:
+                continue
+            to_save[iter][k] = v
+        all_iters = sorted(to_save.keys())
+        self._last_write = max(all_iters)
+
+        for itr, scalars_per_iter in to_save.items():
+            scalars_per_iter["iteration"] = itr
+            self._file_handle.write(json.dumps(scalars_per_iter, sort_keys=True) + "\n")
         self._file_handle.flush()
         try:
             os.fsync(self._file_handle.fileno())
@@ -131,11 +137,16 @@ class TensorboardXWriter(EventWriter):
         from torch.utils.tensorboard import SummaryWriter
 
         self._writer = SummaryWriter(log_dir, **kwargs)
+        self._last_write = -1
 
     def write(self):
         storage = get_event_storage()
-        for k, v in storage.latest_with_smoothing_hint().items():
-            self._writer.add_scalar(k, v, storage.iter)
+        new_last_write = self._last_write
+        for k, (v, iter) in storage.latest_with_smoothing_hint().items():
+            if iter > self._last_write:
+                self._writer.add_scalar(k, v, iter)
+                new_last_write = max(new_last_write, iter)
+        self._last_write = new_last_write
 
         if len(storage.vis_data) >= 1:
             for img_name, img, step_num in storage.vis_data:
@@ -161,7 +172,7 @@ class CommonMetricPrinter(EventWriter):
             max_iter (int): the maximum number of iterations to train.
                 Used to compute ETA.
         """
-        self.logger = logging.getLogger(__name__)
+        self.logger = logger
         self._max_iter = max_iter
         if "epoch" in kwargs:
             self._epoch = kwargs["epoch"]
@@ -174,7 +185,6 @@ class CommonMetricPrinter(EventWriter):
         self._last_write = None
 
     def write(self):
-
         storage = get_event_storage()
         iteration = storage.iter
 
@@ -182,7 +192,7 @@ class CommonMetricPrinter(EventWriter):
             data_time = storage.history("data_time").avg(self._window_size)
         except KeyError:
             # they may not exist in the first few iterations (due to warmup)
-            # or when SimpleTrainer is not used
+            # or when SimpleRunner is not used
             data_time = None
 
         eta_string = "N/A"
@@ -314,7 +324,7 @@ class EventStorage:
         history = self._history[name]
         value = float(value)
         history.update(value, self._iter)
-        self._latest_scalars[name] = value
+        self._latest_scalars[name] = (value, self._iter)
 
         existing_hint = self._smoothing_hints.get(name)
         if existing_hint is not None:
@@ -355,7 +365,8 @@ class EventStorage:
     def latest(self):
         """
         Returns:
-            dict[name -> number]: the scalars that's added in the current iteration.
+            dict[str -> (float, int)]: mapping from the name of each scalar to the most
+                recent value and the iteration number its added.
         """
         return self._latest_scalars
 
@@ -369,9 +380,10 @@ class EventStorage:
         This provides a default behavior that other writers can use.
         """
         result = {}
-        for k, v in self._latest_scalars.items():
+        for k, (v, itr) in self._latest_scalars.items():
             result[k] = (
-                self._history[k].median(self._window_size) if self._smoothing_hints[k] else v
+                self._history[k].median(self._window_size) if self._smoothing_hints[k] else v,
+                itr,
             )
         return result
 
@@ -391,7 +403,6 @@ class EventStorage:
         correct iteration number.
         """
         self._iter += 1
-        self._latest_scalars = {}
 
     @property
     def vis_data(self):

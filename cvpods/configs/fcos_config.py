@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 from .base_detection_config import BaseDetectionConfig
 
@@ -8,7 +8,7 @@ _config_dict = dict(
     MODEL=dict(
         # META_ARCHITECTURE="RetinaNet",
         RESNETS=dict(OUT_FEATURES=["res3", "res4", "res5"]),
-        FPN=dict(IN_FEATURES=["res3", "res4", "res5"]),
+        FPN=dict(IN_FEATURES=["res3", "res4", "res5"],),
         SHIFT_GENERATOR=dict(
             NUM_SHIFTS=1,
             # Relative offset between the center of the first shift and the top-left corner of img

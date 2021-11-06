@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 # -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 from time import perf_counter
 from typing import Optional

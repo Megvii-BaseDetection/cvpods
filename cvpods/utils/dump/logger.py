@@ -1,42 +1,28 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-import atexit
-import functools
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+import datetime
 import itertools
-import logging
 import os
 import sys
 import time
 from collections import Counter
+from loguru import logger
 from tabulate import tabulate
-from termcolor import colored
 
-from cvpods.utils.file import PathManager
-
-
-class _ColorfulFormatter(logging.Formatter):
-    def __init__(self, *args, **kwargs):
-        self._root_name = kwargs.pop("root_name") + "."
-        self._abbrev_name = kwargs.pop("abbrev_name", "")
-        if len(self._abbrev_name):
-            self._abbrev_name = self._abbrev_name + "."
-        super(_ColorfulFormatter, self).__init__(*args, **kwargs)
-
-    def formatMessage(self, record):
-        record.name = record.name.replace(self._root_name, self._abbrev_name)
-        log = super(_ColorfulFormatter, self).formatMessage(record)
-        if record.levelno == logging.WARNING:
-            prefix = colored("WARNING", "red", attrs=["blink"])
-        elif record.levelno == logging.ERROR or record.levelno == logging.CRITICAL:
-            prefix = colored("ERROR", "red", attrs=["blink", "underline"])
-        else:
-            return log
-        return prefix + " " + log
+from cvpods.utils import ensure_dir
 
 
-@functools.lru_cache()  # so that calling setup_logger multiple times won't add many handlers
-def setup_logger(
-    output=None, distributed_rank=0, *, color=True, name="cvpods", abbrev_name=None
-):
+def str_timestamp(time_value=None):
+    """format given timestamp, if no timestamp is given, return a call time string"""
+    if time_value is None:
+        time_value = datetime.datetime.now()
+    return time_value.strftime("%Y-%m-%d_%H-%M-%S")
+
+
+def setup_logger(output=None, distributed_rank=0):
     """
     Initialize the cvpods logger and set its verbosity level to "INFO".
 
@@ -44,40 +30,20 @@ def setup_logger(
         output (str): a file name or a directory to save log. If None, will not save log file.
             If ends with ".txt" or ".log", assumed to be a file name.
             Otherwise, logs will be saved to `output/log.txt`.
-        name (str): the root module name of this logger
-        abbrev_name (str): an abbreviation of the module, to avoid long names in logs.
-            Set to "" to not log the root module in logs.
-            By default, will abbreviate "cvpods" to "c2" and leave other
-            modules unchanged.
 
     Returns:
         logging.Logger: a logger
     """
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
-    logger.propagate = False
-
-    if abbrev_name is None:
-        abbrev_name = "c2" if name == "cvpods" else name
-
-    plain_formatter = logging.Formatter(
-        "[%(asctime)s] %(name)s %(levelname)s: %(message)s", datefmt="%m/%d %H:%M:%S"
+    logger.remove()
+    loguru_format = (
+        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+        "<level>{level: <8}</level> | "
+        "<cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
     )
+
     # stdout logging: master only
     if distributed_rank == 0:
-        ch = logging.StreamHandler(stream=sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        if color:
-            formatter = _ColorfulFormatter(
-                colored("[%(asctime)s %(name)s]: ", "green") + "%(message)s",
-                datefmt="%m/%d %H:%M:%S",
-                root_name=name,
-                abbrev_name=str(abbrev_name),
-            )
-        else:
-            formatter = plain_formatter
-        ch.setFormatter(formatter)
-        logger.addHandler(ch)
+        logger.add(sys.stderr, format=loguru_format)
 
     # file logging: all workers
     if output is not None:
@@ -87,23 +53,8 @@ def setup_logger(
             filename = os.path.join(output, "log.txt")
         if distributed_rank > 0:
             filename = filename + ".rank{}".format(distributed_rank)
-        PathManager.mkdirs(os.path.dirname(filename))
-
-        fh = logging.StreamHandler(_cached_log_stream(filename))
-        fh.setLevel(logging.DEBUG)
-        fh.setFormatter(plain_formatter)
-        logger.addHandler(fh)
-
-    return logger
-
-
-# cache the opened file object, so that different calls to `setup_logger`
-# with the same file name can safely write to the same file.
-@functools.lru_cache(maxsize=None)
-def _cached_log_stream(filename):
-    io = PathManager.open(filename, "a")
-    atexit.register(io.close)
-    return io
+        ensure_dir(os.path.dirname(filename))
+        logger.add(filename)
 
 
 """
@@ -134,7 +85,7 @@ _LOG_COUNTER = Counter()
 _LOG_TIMER = {}
 
 
-def log_first_n(lvl, msg, n=1, *, name=None, key="caller"):
+def log_first_n(lvl, msg, n=1, *, key="caller"):
     """
     Log only for the first n times.
 
@@ -142,7 +93,6 @@ def log_first_n(lvl, msg, n=1, *, name=None, key="caller"):
         lvl (int): the logging level
         msg (str):
         n (int):
-        name (str): name of the logger to use. Will use the caller's module by default.
         key (str or tuple[str]): the string(s) can be one of "caller" or
             "message", which defines how to identify duplicated logs.
             For example, if called with `n=1, key="caller"`, this function
@@ -166,10 +116,10 @@ def log_first_n(lvl, msg, n=1, *, name=None, key="caller"):
 
     _LOG_COUNTER[hash_key] += 1
     if _LOG_COUNTER[hash_key] <= n:
-        logging.getLogger(name or caller_module).log(lvl, msg)
+        logger.opt(depth=1).log(lvl, msg)
 
 
-def log_every_n(lvl, msg, n=1, *, name=None):
+def log_every_n(lvl, msg, n=1):
     """
     Log once per n times.
 
@@ -177,28 +127,26 @@ def log_every_n(lvl, msg, n=1, *, name=None):
         lvl (int): the logging level
         msg (str):
         n (int):
-        name (str): name of the logger to use. Will use the caller's module by default.
     """
     caller_module, key = _find_caller()
     _LOG_COUNTER[key] += 1
     if n == 1 or _LOG_COUNTER[key] % n == 1:
-        logging.getLogger(name or caller_module).log(lvl, msg)
+        logger.opt(depth=1).log(lvl, msg)
 
 
-def log_every_n_seconds(lvl, msg, n=1, *, name=None):
+def log_every_n_seconds(lvl, msg, n=1):
     """
     Log no more than once per n seconds.
     Args:
         lvl (int): the logging level
         msg (str):
         n (int):
-        name (str): name of the logger to use. Will use the caller's module by default.
     """
     caller_module, key = _find_caller()
     last_logged = _LOG_TIMER.get(key, None)
     current_time = time.time()
     if last_logged is None or current_time - last_logged >= n:
-        logging.getLogger(name or caller_module).log(lvl, msg)
+        logger.opt(depth=1).log(lvl, msg)
         _LOG_TIMER[key] = current_time
 
 

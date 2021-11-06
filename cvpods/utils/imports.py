@@ -1,7 +1,9 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-import imp
+import importlib
+import os.path as osp
 
 
 def dynamic_import(config_name, config_path):
@@ -18,6 +20,9 @@ def dynamic_import(config_name, config_path):
         >>> cfg = dynamic_import("config", project).config
         >>> net = dynamic_import("net", project)
     """
-    fp, pth, desc = imp.find_module(config_name, [config_path])
+    spec = importlib.util.spec_from_file_location("", osp.join(config_path, config_name + ".py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
-    return imp.load_module(config_name, fp, pth, desc)
+    # return importlib.import_module(config_name, config_path)
