@@ -1,13 +1,14 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import copy
 import itertools
 import json
-import logging
 import os
 from collections import OrderedDict
+import megfile
+from loguru import logger
 
 import numpy as np
 import pycocotools.mask as mask_util
@@ -16,10 +17,11 @@ import torch
 
 from cvpods.data.datasets.coco import convert_to_coco_json
 from cvpods.structures import BoxMode
-from cvpods.utils import PathManager, comm, create_small_table
+from cvpods.utils import comm, create_small_table, ensure_dir
 
 from .crowdhumantools import Database
 from .evaluator import DatasetEvaluator
+from .pascal_voc_evaluation import _dump_to_markdown
 from .registry import EVALUATOR
 
 
@@ -42,27 +44,24 @@ class CrowdHumanEvaluator(DatasetEvaluator):
         Args:
             dataset_name (str): name of the dataset to be evaluated.
                 It must have either the following corresponding metadata:
+
                     "json_file": the path to the COCO format annotation
                 Or it must be in cvpods's standard dataset format
                 so it can be converted to COCO format automatically.
-            meta (dict): dataset meta.
-            cfg (dict): config instance
+            cfg (CfgNode): config instance
             distributed (True): if True, will collect results from all ranks for evaluation.
                 Otherwise, will evaluate the results in the current process.
             output_dir (str): optional, an output directory to dump results.
-            dump (boolean): optional, whether dump predictions to disk.
         """
         self._dump = dump
         self._tasks = self._tasks_from_config(cfg)
         self._distributed = distributed
         self._output_dir = output_dir
-
         self._cpu_device = torch.device("cpu")
-        self._logger = logging.getLogger(__name__)
 
         self._metadata = meta
         if not hasattr(self._metadata, "json_file"):
-            self._logger.warning(
+            logger.warning(
                 f"json_file was not found in MetaDataCatalog for '{dataset_name}'")
 
             cache_path = convert_to_coco_json(dataset_name, output_dir)
@@ -81,7 +80,7 @@ class CrowdHumanEvaluator(DatasetEvaluator):
         Returns:
             tuple[str]: tasks that can be evaluated under the given configuration.
         """
-        # TODO@wangfeng02: next 4 line to a func
+        # @wangfeng02@megvii.com: next 4 line to a func
         if self._dump:
             with open("README.md", "w") as f:
                 name = cfg.OUTPUT_DIR.split("/")[-1]
@@ -162,19 +161,26 @@ class CrowdHumanEvaluator(DatasetEvaluator):
                 return {}
 
         if len(self._predictions) == 0:
-            self._logger.warning(
-                "[COCOEvaluator] Did not receive valid predictions.")
+            logger.warning("[COCOEvaluator] Did not receive valid predictions.")
             return {}
 
         if self._output_dir:
-            PathManager.mkdirs(self._output_dir)
+            ensure_dir(self._output_dir)
             file_path = os.path.join(
                 self._output_dir, "instances_predictions.pth")
-            with PathManager.open(file_path, "wb") as f:
+            with megfile.smart_open(file_path, "wb") as f:
                 torch.save(self._predictions, f)
 
         self._results = OrderedDict()
-        self._eval_predictions(set(self._tasks))
+        small_table = self._eval_predictions(set(self._tasks))
+
+        if self._dump:
+            dump_info_one_task = {
+                "task": "bbox",
+                "tables": [small_table],
+            }
+            _dump_to_markdown([dump_info_one_task])
+
         # Copy so the caller can do whatever with results
         return copy.deepcopy(self._results)
 
@@ -183,20 +189,20 @@ class CrowdHumanEvaluator(DatasetEvaluator):
         Evaluate self._predictions on the given tasks.
         Fill self._results with the metrics of the tasks.
         """
-        self._logger.info("Preparing results for CrowdHuman format ...")
+        logger.info("Preparing results for CrowdHuman format ...")
         self._coco_results = self._predictions
 
         if self._output_dir:
             file_path = os.path.join(
                 self._output_dir, "coco_instances_results.json")
-            self._logger.info("Saving results to {}".format(file_path))
+            logger.info("Saving results to {}".format(file_path))
 
-            with PathManager.open(file_path, "w") as f:
+            with megfile.smart_open(file_path, "w") as f:
                 for db in self._coco_results:
                     line = json.dumps(db) + '\n'
                     f.write(line)
 
-        self._logger.info("Evaluating predictions ...")
+        logger.info("Evaluating predictions ...")
         for task in sorted(tasks):
             coco_eval = (
                 _evaluate_predictions_on_crowdhuman(
@@ -204,8 +210,10 @@ class CrowdHumanEvaluator(DatasetEvaluator):
                 if len(self._coco_results) > 0
                 else None  # cocoapi does not handle empty results very well
             )
-            res = self._derive_coco_results(coco_eval, task)
+            res, small_table = self._derive_coco_results(coco_eval, task)
             self._results[task] = res
+
+            return small_table
 
     def _derive_coco_results(self, coco_eval, iou_type):
         """
@@ -224,20 +232,19 @@ class CrowdHumanEvaluator(DatasetEvaluator):
         metrics = ["AP", "mMR", "Recall"]
 
         if coco_eval is None:
-            self._logger.warn(
-                "No predictions from the model! Set scores to -1")
+            logger.warn("No predictions from the model! Set scores to -1")
             return {metric: -1 for metric in metrics}
 
         # the standard metrics
         results = {metric: coco_eval[idx]
                    for idx, metric in enumerate(metrics)}
         small_table = create_small_table(results)
-        self._logger.info(
+        logger.info(
             "Evaluation results for {}: \n".format(iou_type) + small_table
         )
 
         # if class_names is None or len(class_names) <= 1:
-        return results
+        return results, small_table
 
 
 def instances_to_coco_json(instances, img_id):

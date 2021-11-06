@@ -1,10 +1,13 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 # Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-import logging
 import time
 import weakref
 from typing import Dict
+from loguru import logger
 
 import numpy as np
 
@@ -17,7 +20,6 @@ from cvpods.utils.registry import Registry
 from .hooks import HookBase
 
 RUNNERS = Registry("runners")
-logger = logging.getLogger(__name__)
 
 
 @RUNNERS.register()
@@ -78,6 +80,7 @@ class RunnerBase:
             try:
                 self.before_train()
                 for self.iter in range(start_iter, max_iter):
+                    self.inner_iter = 0
                     self.before_step()
                     # by default, a step contains data_loading and model forward,
                     # loss backward is executed in after_step for better expansibility
@@ -193,6 +196,8 @@ class SimpleRunner(RunnerBase):
         self.step_outputs = {
             "loss_for_backward": losses,
         }
+
+        self.inner_iter += 1
 
     def _detect_anomaly(self, losses, loss_dict):
         if not torch.isfinite(losses).all():

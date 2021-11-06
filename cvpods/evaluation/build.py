@@ -1,6 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 import os
 
 import torch
@@ -73,7 +74,8 @@ def build_evaluator(cfg, dataset_name, dataset, output_folder=None, dump=False):
 
     if evaluator_type == "longtailclassification":
         return EVALUATOR.get("LongTailClassificationEvaluator")(
-            dataset_name, meta, cfg, True, output_folder, dump)
+            dataset_name, meta, cfg, True, output_folder, dump
+        )
 
     if hasattr(cfg, "EVALUATORS"):
         for evaluator in cfg.EVALUATORS:

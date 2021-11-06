@@ -1,6 +1,9 @@
 #!/usr/bin/python3
-# -*- coding:utf-8 -*-
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 from copy import deepcopy
 
 import torch
@@ -25,10 +28,6 @@ class DefaultPredictor:
     If you'd like to do anything more fancy, please refer to its source code
     as examples to build and use the model manually.
 
-    Attributes:
-        metadata (Metadata): the metadata of the underlying dataset, obtained from
-            cfg.DATASETS.TEST.
-
     Examples:
     .. code-block:: python
 
@@ -36,14 +35,13 @@ class DefaultPredictor:
         inputs = cv2.imread("input.jpg")
         outputs = pred(inputs)
     """
-    def __init__(self, cfg, meta):
+    def __init__(self, cfg):
         self.cfg = deepcopy(cfg)
         if self.cfg.MODEL.DEVICE.startswith("cuda:"):
             torch.cuda.set_device(self.cfg.MODEL.DEVICE)
             self.cfg.MODEL.DEVICE = "cuda"
         self.model = cfg.build_model(self.cfg)
         self.model.eval()
-        self.metadata = meta
 
         checkpointer = DefaultCheckpointer(self.model)
         checkpointer.load(cfg.MODEL.WEIGHTS)

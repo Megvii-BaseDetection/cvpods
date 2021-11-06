@@ -1,9 +1,14 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 import datetime
-import logging
 import time
 from collections import OrderedDict
 from contextlib import contextmanager
+from loguru import logger
 
 import torch
 
@@ -104,7 +109,6 @@ def inference_on_dataset(model, data_loader, evaluator):
         The return value of `evaluator.evaluate()`
     """
     num_devices = torch.distributed.get_world_size() if torch.distributed.is_initialized() else 1
-    logger = logging.getLogger(__name__)
     logger.info("Start inference on {} data samples".format(len(data_loader)))
 
     total = len(data_loader)  # inference data loader must have a fixed length
@@ -136,7 +140,7 @@ def inference_on_dataset(model, data_loader, evaluator):
                 total_seconds_per_img = (time.perf_counter() - start_time) / iters_after_start
                 eta = datetime.timedelta(seconds=int(total_seconds_per_img * (total - idx - 1)))
                 log_every_n_seconds(
-                    logging.INFO,
+                    "INFO",
                     "Inference done {}/{}. {:.4f} s / sample. ETA={}".format(
                         idx + 1, total, seconds_per_img, str(eta)
                     ),
@@ -171,14 +175,15 @@ def inference_on_dataset(model, data_loader, evaluator):
 def inference_on_files(evaluator):
     """
     Evaluate the metrics with evaluator on the predicted files
+
     Args:
         evaluator (DatasetEvaluator): the evaluator to run. Use `None` if you only want
             to benchmark, but don't want to do any evaluation.
+
     Returns:
         The return value of `evaluator.evaluate()`
     """
     # num_devices = torch.distributed.get_world_size() if torch.distributed.is_initialized() else 1
-    logger = logging.getLogger(__name__)
     logger.info("Start evaluate on dumped prediction")
 
     if evaluator is None:

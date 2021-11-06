@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Megvii, Inc. and its affiliates. All Rights Reserved
 
 import copy
 import itertools

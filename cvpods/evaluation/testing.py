@@ -1,8 +1,12 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-import logging
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 import pprint
 import sys
 from collections import Mapping, OrderedDict
+from loguru import logger
 
 import numpy as np
 
@@ -16,7 +20,6 @@ def print_csv_format(results):
         results (OrderedDict[dict]): task_name -> {metric -> score}
     """
     assert isinstance(results, OrderedDict), results  # unordered results cannot be properly printed
-    logger = logging.getLogger(__name__)
     for task, res in results.items():
         # Don't print "AP-category" metrics since they are usually not tracked.
         important_res = [(k, v) for k, v in res.items() if "-" not in k]
@@ -46,7 +49,6 @@ def verify_results(cfg, results):
         if diff > tolerance:
             ok = False
 
-    logger = logging.getLogger(__name__)
     if not ok:
         logger.error("Result verification failed!")
         logger.error("Expected Results: " + str(expected_results))
