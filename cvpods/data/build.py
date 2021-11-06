@@ -1,9 +1,12 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 # Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
-
-import logging
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+"""
+This file contains the default logic to build a dataloader for training or testing.
+"""
+from loguru import logger
 
 import numpy as np
 
@@ -13,10 +16,7 @@ from cvpods.utils import comm, seed_all_rng
 
 from .detection_utils import check_sample_valid
 from .registry import DATASETS, PATH_ROUTES, SAMPLERS, TRANSFORMS
-
-"""
-This file contains the default logic to build a dataloader for training or testing.
-"""
+from .samplers import Infinite
 
 __all__ = [
     "build_dataset",
@@ -24,8 +24,6 @@ __all__ = [
     "build_test_loader",
     "build_transform_gens",
 ]
-
-logger = logging.getLogger(__name__)
 
 
 def build_transform_gens(pipelines):
@@ -113,7 +111,7 @@ def build_train_loader(cfg):
     The batched ``list[mapped_dict]`` is what this dataloader will return.
 
     Args:
-        cfg (config dict): the config
+        cfg (CfgNode): the config
 
     Returns:
         an infinite iterator of training data
@@ -125,8 +123,6 @@ def build_train_loader(cfg):
     # use subdivision batchsize
     images_per_minibatch = cfg.SOLVER.IMS_PER_DEVICE // cfg.SOLVER.BATCH_SUBDIVISIONS
 
-    logger = logging.getLogger(__name__)
-
     transform_gens = build_transform_gens(cfg.INPUT.AUG.TRAIN_PIPELINES)
     logger.info(f"TransformGens used: {transform_gens} in training")
     dataset = build_dataset(
@@ -137,12 +133,18 @@ def build_train_loader(cfg):
     logger.info("Using training sampler {}".format(sampler_name))
 
     assert sampler_name in SAMPLERS, "{} not found in SAMPLERS".format(sampler_name)
-    if sampler_name == "DistributedGroupSampler":
-        sampler = SAMPLERS.get(sampler_name)(
-            dataset, images_per_minibatch, num_devices, rank)
+    if sampler_name == "TrainingSampler":
+        sampler = SAMPLERS.get(sampler_name)(len(dataset))
     elif sampler_name == "RepeatFactorTrainingSampler":
         sampler = SAMPLERS.get(sampler_name)(
             dataset, cfg.DATALOADER.REPEAT_THRESHOLD)
+    elif sampler_name == "DistributedGroupSampler":
+        sampler = SAMPLERS.get(sampler_name)(
+            dataset, images_per_minibatch, num_devices, rank)
+
+    if cfg.DATALOADER.ENABLE_INF_SAMPLER:
+        sampler = Infinite(sampler)
+        logger.info("Wrap sampler with infinite warpper...")
 
     data_loader = torch.utils.data.DataLoader(
         dataset,
@@ -163,14 +165,13 @@ def build_test_loader(cfg):
     and uses batch size 1.
 
     Args:
-        cfg: a cvpods config dict
+        cfg: a cvpods CfgNode
 
     Returns:
         DataLoader: a torch DataLoader, that loads the given detection
         dataset, with test-time transformation and batching.
     """
     transform_gens = build_transform_gens(cfg.INPUT.AUG.TEST_PIPELINES)
-    logger = logging.getLogger(__name__)
     logger.info(f"TransformGens used: {transform_gens} in testing")
     dataset = build_dataset(cfg,
                             cfg.DATASETS.TEST,

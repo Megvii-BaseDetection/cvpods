@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 IMAGENET_CATEGORIES = {
     'n01440764': (449, 'tench'),
@@ -999,4 +1002,5 @@ IMAGENET_CATEGORIES = {
     'n13052670': (812, 'hen-of-the-woods'),
     'n13054560': (981, 'bolete'),
     'n13133613': (329, 'ear'),
-    'n15075141': (889, 'toilet_tissue')}
+    'n15075141': (889, 'toilet_tissue')
+}

@@ -1,19 +1,19 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import copy
 import json
-import logging
 import os
 import os.path as osp
+from loguru import logger
 
 import numpy as np
 
 import torch
 
 from cvpods.structures import BoxMode
-from cvpods.utils import PathManager, Timer
+from cvpods.utils import Timer
 
 from ..base_dataset import BaseDataset
 from ..detection_utils import (
@@ -26,11 +26,10 @@ from ..detection_utils import (
 from ..registry import DATASETS
 from .paths_route import _PREDEFINED_SPLITS_CROWDHUMAN
 
+
 """
 This file contains functions to parse COCO-format annotations into dicts in "cvpods format".
 """
-
-logger = logging.getLogger(__name__)
 
 
 @DATASETS.register()
@@ -146,7 +145,7 @@ class CrowdHumanDataset(BaseDataset):
                The results do not have the "image" field.
         """
         timer = Timer()
-        json_file = PathManager.get_local_path(json_file)
+        # json_file = PathManager.get_local_path(json_file)
         with open(json_file, 'r') as file:
             gt_records = file.readlines()
         if timer.seconds() > 1:
@@ -164,6 +163,8 @@ class CrowdHumanDataset(BaseDataset):
 
             record = {}
             record["file_name"] = os.path.join(image_root, "{}.jpg".format(anno_dict["ID"]))
+            record["height"] = anno_dict["height"]
+            record["width"] = anno_dict["width"]
             record["image_id"] = anno_dict["ID"]
 
             objs = []

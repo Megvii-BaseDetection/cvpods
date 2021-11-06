@@ -1,17 +1,17 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import copy
 import functools
 import glob
 import json
-import logging
 import multiprocessing as mp
 import os
 import os.path as osp
 from itertools import chain
+import megfile
+from loguru import logger
 
 import numpy as np
 from PIL import Image
@@ -20,7 +20,7 @@ import pycocotools.mask as mask_util
 import torch
 
 from cvpods.structures import BoxMode
-from cvpods.utils import PathManager, comm
+from cvpods.utils import comm
 
 from ..base_dataset import BaseDataset
 from ..detection_utils import (
@@ -43,8 +43,6 @@ except ImportError:
 """
 This file contains functions to parse COCO-format annotations into dicts in "cvpods format".
 """
-
-logger = logging.getLogger(__name__)
 
 
 @DATASETS.register()
@@ -116,7 +114,7 @@ class CityScapesDataset(BaseDataset):
         if "sem_seg_file_name" in dataset_dict:
             assert annotations is None
             annotations = []
-            with PathManager.open(dataset_dict.get("sem_seg_file_name"), "rb") as f:
+            with megfile.smart_open(dataset_dict.get("sem_seg_file_name"), "rb") as f:
                 sem_seg_gt = Image.open(f)
                 sem_seg_gt = np.asarray(sem_seg_gt, dtype="uint8")
             annotations.append({"sem_seg": sem_seg_gt})
@@ -201,7 +199,6 @@ class CityScapesDataset(BaseDataset):
             files.append((image_file, instance_file, label_file, json_file))
         assert len(files), "No images found in {}".format(image_dir)
 
-        logger = logging.getLogger(__name__)
         logger.info("Preprocessing cityscapes annotations ...")
         # This is still not fast: all workers will execute duplicate works and will
         # take up to 10m on a 8GPU server.
@@ -251,7 +248,7 @@ class CityScapesDataset(BaseDataset):
 
             json_file = gt_dir + image_file[len(prefix): -len(suffix)] + "gtFine_polygons.json"
 
-            with PathManager.open(json_file, "r") as f:
+            with megfile.smart_open(json_file, "r") as f:
                 jsonobj = json.load(f)
             ret.append(
                 {
@@ -302,7 +299,7 @@ def cityscapes_files_to_dict(files, from_json, to_polygons):
     if from_json:
         from shapely.geometry import MultiPolygon, Polygon
 
-        with PathManager.open(json_file, "r") as f:
+        with megfile.smart_open(json_file, "r") as f:
             jsonobj = json.load(f)
         ret = {
             "file_name": image_file,
@@ -382,7 +379,7 @@ def cityscapes_files_to_dict(files, from_json, to_polygons):
     else:
         # See also the official annotation parsing scripts at
         # https://github.com/mcordts/cityscapesScripts/blob/master/cityscapesscripts/evaluation/instances2dict.py  # noqa
-        with PathManager.open(instance_id_file, "rb") as f:
+        with megfile.smart_open(instance_id_file, "rb") as f:
             inst_image = np.asarray(Image.open(f), order="F")
         # ids < 24 are stuff labels (filtering them first is about 5% faster)
         flattened_ids = np.unique(inst_image[inst_image >= 24])

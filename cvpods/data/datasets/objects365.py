@@ -1,20 +1,21 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import contextlib
 import copy
 import io
-import logging
 import os
 import os.path as osp
+import megfile
+from loguru import logger
 
 import numpy as np
 
 import torch
 
 from cvpods.structures import BoxMode
-from cvpods.utils import PathManager, Timer
+from cvpods.utils import Timer
 
 from ..base_dataset import BaseDataset
 from ..detection_utils import (
@@ -28,11 +29,10 @@ from ..registry import DATASETS
 from .objects365_categories import OBJECTS365_CATEGORIES
 from .paths_route import _PREDEFINED_SPLITS_OBJECTS365
 
+
 """
 This file contains functions to parse COCO-format annotations into dicts in "cvpods format".
 """
-
-logger = logging.getLogger(__name__)
 
 
 @DATASETS.register()
@@ -150,7 +150,7 @@ class Objects365Dataset(BaseDataset):
         from pycocotools.coco import COCO
 
         timer = Timer()
-        json_file = PathManager.get_local_path(json_file)
+        # json_file = PathManager.get_local_path(json_file)
         with contextlib.redirect_stdout(io.StringIO()):
             coco_api = COCO(json_file)
         if timer.seconds() > 1:
@@ -195,12 +195,7 @@ class Objects365Dataset(BaseDataset):
         # anns is a list[list[dict]], where each dict is an annotation
         # record for an object. The inner list enumerates the objects in an image
         # and the outer list enumerates over images. Example of anns[0]:
-        # [{'segmentation': [[192.81,
-        #     247.09,
-        #     ...
-        #     219.03,
-        #     249.06]],
-        #   'area': 1035.749,
+        # [{'area': 1035.749,
         #   'iscrowd': 0,
         #   'image_id': 1268,
         #   'bbox': [192.81, 224.8, 74.73, 33.43],
@@ -280,7 +275,7 @@ class Objects365Dataset(BaseDataset):
             dataset_dicts.append(record)
 
         if num_instances_without_valid_segmentation > 0:
-            logger.warn(
+            logger.warning(
                 "Filtered out {} instances without valid segmentation. "
                 "There might be issues in your dataset generation process.".format(
                     num_instances_without_valid_segmentation
@@ -348,12 +343,12 @@ def load_sem_seg(gt_root, image_root, gt_ext="png", image_ext="jpg"):
 
     input_files = sorted(
         (os.path.join(image_root, f)
-         for f in PathManager.ls(image_root) if f.endswith(image_ext)),
+         for f in megfile.smart_listdir(image_root) if f.endswith(image_ext)),
         key=lambda file_path: file2id(image_root, file_path),
     )
     gt_files = sorted(
         (os.path.join(gt_root, f)
-         for f in PathManager.ls(gt_root) if f.endswith(gt_ext)),
+         for f in megfile.smart_listdir(gt_root) if f.endswith(gt_ext)),
         key=lambda file_path: file2id(gt_root, file_path),
     )
 
@@ -361,7 +356,7 @@ def load_sem_seg(gt_root, image_root, gt_ext="png", image_ext="jpg"):
 
     # Use the intersection, so that val2017_100 annotations can run smoothly with val2017 images
     if len(input_files) != len(gt_files):
-        logger.warn(
+        logger.warning(
             "Directory {} and {} has {} and {} files, respectively.".format(
                 image_root, gt_root, len(input_files), len(gt_files)))
         input_basenames = [
@@ -371,7 +366,7 @@ def load_sem_seg(gt_root, image_root, gt_ext="png", image_ext="jpg"):
         intersect = list(set(input_basenames) & set(gt_basenames))
         # sort, otherwise each worker may obtain a list[dict] in different order
         intersect = sorted(intersect)
-        logger.warn("Will use their intersection of {} files.".format(
+        logger.warning("Will use their intersection of {} files.".format(
             len(intersect)))
         input_files = [
             os.path.join(image_root, f + image_ext) for f in intersect

@@ -1,20 +1,20 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import contextlib
 import copy
 import io
-import logging
 import os
 import os.path as osp
+from loguru import logger
 
 import numpy as np
 
 import torch
 
 from cvpods.structures import BoxMode
-from cvpods.utils import PathManager, Timer
+from cvpods.utils import Timer
 
 from ..base_dataset import BaseDataset
 from ..detection_utils import (
@@ -27,11 +27,10 @@ from ..detection_utils import (
 from ..registry import DATASETS
 from .paths_route import _PREDEFINED_SPLITS_WIDERFACE
 
+
 """
 This file contains functions to parse COCO-format annotations into dicts in "cvpods format".
 """
-
-logger = logging.getLogger(__name__)
 
 
 @DATASETS.register()
@@ -161,7 +160,7 @@ class WiderFaceDataset(BaseDataset):
         from pycocotools.coco import COCO
 
         timer = Timer()
-        json_file = PathManager.get_local_path(json_file)
+        # json_file = PathManager.get_local_path(json_file)
         with contextlib.redirect_stdout(io.StringIO()):
             coco_api = COCO(json_file)
         if timer.seconds() > 1:

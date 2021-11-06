@@ -1,6 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import inspect
 import random
@@ -38,13 +40,18 @@ __all__ = [
     "TransformList",
     "ExtentTransform",
     "ResizeTransform",
+    "TorchTransform",
+    "PILColorTransform",
     # Transform used in ssl
+    "LightningTransform",
     "GaussianBlurTransform",
     "GaussianBlurConvTransform",
     "SolarizationTransform",
     "ComposeTransform",
+    "JigsawCropTransform",
     "LabSpaceTransform",
     "PadTransform",
+    "FiveCropTransform",
 ]
 
 # NOTE: to document methods in subclasses, it's sufficient to only document those whose
@@ -85,7 +92,6 @@ class Transform(metaclass=ABCMeta):
             img (ndarray): of shape NxHxWxC, or HxWxC or HxW. The array can be
                 of type uint8 in range [0, 255], or floating point in range
                 [0, 1] or [0, 255].
-
         Returns:
             ndarray: image after apply the transformation.
         """
@@ -179,11 +185,20 @@ class Transform(metaclass=ABCMeta):
         if annotations is not None:
             for annotation in annotations:
                 if "bbox" in annotation:
+                    if len(annotation["bbox"]) == 4:
+                        box_mode = BoxMode.XYXY_ABS
+                        func = self.apply_box
+                    elif len(annotation["bbox"]) == 5:
+                        box_mode = BoxMode.XYWHA_ABS
+                        func = self.apply_rotated_box
+                    else:
+                        raise ValueError("bbox length must be 4 or 5")
+
                     bbox = BoxMode.convert(
-                        annotation["bbox"], annotation["bbox_mode"], BoxMode.XYXY_ABS)
+                        annotation["bbox"], annotation["bbox_mode"], box_mode)
                     # Note that bbox is 1d (per-instance bounding box)
-                    annotation["bbox"] = self.apply_box([bbox])[0]
-                    annotation["bbox_mode"] = BoxMode.XYXY_ABS
+                    annotation["bbox"] = func([bbox])[0]
+                    annotation["bbox_mode"] = box_mode
 
                 if "segmentation" in annotation:
                     # each instance contains 1 or more polygons
@@ -320,6 +335,51 @@ class ComposeTransform(object):
 
     def __repr__(self):
         return "".join([tfm for tfm in self.transforms])
+
+
+class TorchTransform(Transform):
+    """
+    Convert a transform from torchvision into cvpods-fashion.
+    """
+    def __init__(self, tfm):
+        super().__init__()
+        self.tfm = tfm
+
+    def apply_image(self, img: np.ndarray) -> np.ndarray:
+        pil_image = Image.fromarray(img)
+        return np.array(self.tfm(pil_image))
+
+    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
+        return coords
+
+
+class PILColorTransform(Transform):
+    """
+    Generic wrapper for PIL Photometric image transforms,
+        which affect the color space and not the coordinate
+        space of the image
+    """
+
+    def __init__(self, trm):
+        """
+        Args:
+            trm (Callable): operation to be applied to the image,
+                which takes in a PIL Image and returns a transformed
+                PIL Image.
+                For reference on possible operations see:
+                - https://pillow.readthedocs.io/en/stable/
+        """
+        if not callable(trm):
+            raise ValueError("trm parameter should be callable")
+        super().__init__()
+        self._set_attributes(locals())
+
+    def apply_image(self, img):
+        img = Image.fromarray(img)
+        return np.asarray(self.trm(img))
+
+    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
+        return coords
 
 
 # TODO: Deprecated
@@ -900,7 +960,6 @@ class PadTransform(Transform):
     def apply_segmentation(self, segmentation: np.ndarray) -> np.ndarray:
         """
         Apply pad transform on the full-image segmentation.
-
         Args:
             segmentation (ndarray): of shape HxW. The array should have integer
                 or bool dtype.
@@ -909,6 +968,128 @@ class PadTransform(Transform):
         """
         segmentation = self.apply_image(segmentation, pad_value=self.seg_value)
         return segmentation
+
+
+class FiveCropTransform(Transform):
+    """
+    Generate five crops from a given image.
+    The order of the crops are:
+        0: ceneter
+        1: top left
+        2: top right
+        3: bottom left
+        4: bottom right
+    """
+    def __init__(self, size, rand_in=[0, 1, 2, 3, 4]):
+        """
+        Args:
+            size (int): crop size.
+            rand_in (List[int]): indexes to be random select.
+        """
+        super().__init__()
+        self._set_attributes(locals())
+        self.center_crop = transforms.CenterCrop(self.size)
+
+    def apply_image(self, image: np.ndarray) -> np.ndarray:
+        height = image.shape[0]
+        width = image.shape[1]
+
+        idx = np.random.choice(self.rand_in)
+
+        if idx == 0:
+            # given an image, crop the 4 corners and center of given size
+            return np.array(self.center_crop(Image.fromarray(image)))
+        elif idx == 1:
+            # crop the top left corner:
+            return image[0:self.size, 0:self.size, :]
+        elif idx == 2:
+            # crop the top right corner
+            return image[0:self.size, width - self.size:width, :]
+        elif idx == 3:
+            # crop bottom left corner
+            return image[height - self.size:height, 0:self.size, :]
+        elif idx == 4 or idx == -4:
+            # crop bottom right corner
+            return image[height - self.size:height, width - self.size:width, :]
+        else:
+            raise NotImplementedError
+
+    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
+        return coords
+
+
+class JigsawCropTransform(Transform):
+    """
+    Typical JigsawCrop Transform.
+    First resize image into img_size, then crop out n_grid x n_grid patches.
+    """
+    def __init__(self, n_grid=3, img_size=255, crop_size=64):
+        """
+        Args:
+            n_grid (int): crop image into n_grid x n_grid crops.
+            img_size (int): image scale size.
+            crop_size (int): crop size.
+        """
+        super().__init__()
+        self._set_attributes(locals())
+        self.grid_size = int(img_size / 3)
+        self.side = self.grid_size - self.crop_size
+
+        yy, xx = np.meshgrid(np.arange(n_grid), np.arange(n_grid))
+        self.yy = np.reshape(yy * self.grid_size, (n_grid * n_grid,))
+        self.xx = np.reshape(xx * self.grid_size, (n_grid * n_grid,))
+
+    def apply_image(self, img: np.ndarray) -> np.ndarray:
+        r_x = np.random.randint(0, self.side + 1, self.n_grid * self.n_grid)
+        r_y = np.random.randint(0, self.side + 1, self.n_grid * self.n_grid)
+        img = np.asarray(img, np.uint8)
+        crops = []
+        for i in range(self.n_grid * self.n_grid):
+            crops.append(img[self.xx[i] + r_x[i]: self.xx[i] + r_x[i] + self.crop_size,
+                         self.yy[i] + r_y[i]: self.yy[i] + r_y[i] + self.crop_size, :])
+        crops = [Image.fromarray(crop) for crop in crops]
+        return crops
+
+    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
+        return coords
+
+
+class LightningTransform(Transform):
+    """
+    Lightning Transform, usually used in imagenet classification.
+
+    .. code-block:: python
+        tfm = LightningTransform(
+            alpha_std=0.1,
+            eig_val=np.array([[0.2175, 0.0188, 0.0045]]),
+            eig_vec=np.array([
+                [-0.5675, 0.7192, 0.4009],
+                [-0.5808, -0.0045, -0.8140],
+                [-0.5836, -0.6948, 0.4203]
+            ]),
+        )
+    """
+    def __init__(self, alpha_std, eig_val, eig_vec):
+        super().__init__()
+        self._set_attributes(locals())
+
+    def apply_image(self, img: np.ndarray) -> np.ndarray:
+        """Performs AlexNet-style PCA jitter (CHW format)."""
+        if self.alpha_std == 0:
+            return img
+        alpha = np.random.normal(0, self.alpha_std, size=(1, 3))
+        rgb = np.sum(
+            self.eig_vec * np.repeat(alpha, 3, axis=0)
+            * np.repeat(self.eig_val, 3, axis=0), axis=1
+        )
+        img = img.transpose((2, 0, 1))    # HWC -> CHW
+        for i in range(img.shape[0]):
+            img[i] = img[i] + rgb[2 - i]
+
+        return img.transpose((1, 2, 0))
+
+    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
+        return coords
 
 
 class ScaleTransform(Transform):
@@ -1304,12 +1485,10 @@ class CropPadTransform(Transform):
     def apply_image(self, img: np.ndarray) -> np.ndarray:
         """
         Crop and Pad the image(s).
-
         Args:
             img (ndarray): of shape NxHxWxC, or HxWxC or HxW. The array can be
                 of type uint8 in range [0, 255], or floating point in range
                 [0, 1] or [0, 255].
-
         Returns:
             ndarray: cropped and padded image(s).
         """
@@ -1320,11 +1499,9 @@ class CropPadTransform(Transform):
     def apply_coords(self, coords: np.ndarray) -> np.ndarray:
         """
         Apply crop and pad transform on coordinates.
-
         Args:
             coords (ndarray): floating point array of shape Nx2. Each row is
                 (x, y).
-
         Returns:
             ndarray: cropped and padded coordinates.
         """
@@ -1335,11 +1512,9 @@ class CropPadTransform(Transform):
     def apply_polygons(self, polygons: list) -> list:
         """
         Apply crop and pad transform on a list of polygons, each represented by a Nx2 array.
-
         Args:
             polygon (list[ndarray]): each is a Nx2 floating point array of
                 (x, y) format in absolute coordinates.
-
         Returns:
             ndarray: cropped and padded polygons.
         """
@@ -1350,11 +1525,9 @@ class CropPadTransform(Transform):
     def apply_segmentation(self, segmentation: np.ndarray) -> np.ndarray:
         """
         Apply crop and pad transform on the full-image segmentation.
-
         Args:
             segmentation (ndarray): of shape HxW. The array should have integer
                 or bool dtype.
-
         Returns:
             ndarray: cropped and padded segmentation.
         """
@@ -1392,7 +1565,6 @@ class BlendTransform(Transform):
                 [0, 1] or [0, 255].
             interp (str): keep this option for consistency, perform blend would not
                 require interpolation.
-
         Returns:
             ndarray: blended image(s).
         """
@@ -1474,7 +1646,6 @@ class ExpandTransform(Transform):
         Args:
             coords (ndarray): floating point array of shape Nx2. Each row is
                 (x, y).
-
         Returns:
             ndarray: expand coordinates.
         """
@@ -1575,6 +1746,7 @@ def HFlip_rotated_box(transform, rotated_boxes):
             (x_center, y_center, width, height, angle_degrees) format
             in absolute coordinates.
     """
+    rotated_boxes = np.asarray(rotated_boxes)
     # Transform x_center
     rotated_boxes[:, 0] = transform.width - rotated_boxes[:, 0]
     # Transform angle
@@ -1592,6 +1764,7 @@ def Resize_rotated_box(transform, rotated_boxes):
             (x_center, y_center, width, height, angle_degrees) format
             in absolute coordinates.
     """
+    rotated_boxes = np.asarray(rotated_boxes)
     scale_factor_x = transform.new_w * 1.0 / transform.w
     scale_factor_y = transform.new_h * 1.0 / transform.h
     rotated_boxes[:, 0] *= scale_factor_x

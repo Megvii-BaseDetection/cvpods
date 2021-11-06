@@ -1,16 +1,16 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import contextlib
 import copy
 import datetime
 import io
 import json
-import logging
 import os
 import os.path as osp
+import megfile
+from loguru import logger
 
 import numpy as np
 from PIL import Image
@@ -18,7 +18,7 @@ from PIL import Image
 import torch
 
 from cvpods.structures import Boxes, BoxMode, PolygonMasks
-from cvpods.utils import PathManager, Timer, file_lock
+from cvpods.utils import Timer, ensure_dir, file_lock
 
 from ..base_dataset import BaseDataset
 from ..detection_utils import (
@@ -32,16 +32,15 @@ from ..registry import DATASETS
 from .builtin_meta import _get_builtin_metadata
 from .paths_route import _PREDEFINED_SPLITS_COCO
 
+
 """
 This file contains functions to parse COCO-format annotations into dicts in "cvpods format".
 """
 
-logger = logging.getLogger(__name__)
-
 
 @DATASETS.register()
 class COCODataset(BaseDataset):
-    def __init__(self, cfg, dataset_name, transforms=[], is_train=True):
+    def __init__(self, cfg, dataset_name, transforms=None, is_train=True):
         super(COCODataset, self).__init__(cfg, dataset_name, transforms, is_train)
 
         if "panoptic" in dataset_name:
@@ -147,7 +146,7 @@ class COCODataset(BaseDataset):
         if "sem_seg_file_name" in dataset_dict:
             if annotations is None:
                 annotations = []
-            with PathManager.open(dataset_dict.get("sem_seg_file_name"), "rb") as f:
+            with megfile.smart_open(dataset_dict.get("sem_seg_file_name"), "rb") as f:
                 sem_seg_gt = Image.open(f)
                 sem_seg_gt = np.asarray(sem_seg_gt, dtype="uint8")
 
@@ -228,7 +227,7 @@ class COCODataset(BaseDataset):
         from pycocotools.coco import COCO
 
         timer = Timer()
-        json_file = PathManager.get_local_path(json_file)
+        # json_file = PathManager.get_local_path(json_file)
         with contextlib.redirect_stdout(io.StringIO()):
             coco_api = COCO(json_file)
         if timer.seconds() > 1:
@@ -452,13 +451,14 @@ def load_sem_seg(gt_root, image_root, gt_ext="png", image_ext="jpg"):
         return image_id
 
     input_files = sorted(
-        (os.path.join(image_root, f)
-         for f in PathManager.ls(image_root) if f.endswith(image_ext)),
+        (
+            os.path.join(image_root, f)
+            for f in megfile.smart_listdir(image_root) if f.endswith(image_ext)
+        ),
         key=lambda file_path: file2id(image_root, file_path),
     )
     gt_files = sorted(
-        (os.path.join(gt_root, f)
-         for f in PathManager.ls(gt_root) if f.endswith(gt_ext)),
+        (os.path.join(gt_root, f) for f in megfile.smart_listdir(gt_root) if f.endswith(gt_ext)),
         key=lambda file_path: file2id(gt_root, file_path),
     )
 
@@ -466,7 +466,7 @@ def load_sem_seg(gt_root, image_root, gt_ext="png", image_ext="jpg"):
 
     # Use the intersection, so that val2017_100 annotations can run smoothly with val2017 images
     if len(input_files) != len(gt_files):
-        logger.warn(
+        logger.warning(
             "Directory {} and {} has {} and {} files, respectively.".format(
                 image_root, gt_root, len(input_files), len(gt_files)))
         input_basenames = [
@@ -476,7 +476,7 @@ def load_sem_seg(gt_root, image_root, gt_ext="png", image_ext="jpg"):
         intersect = list(set(input_basenames) & set(gt_basenames))
         # sort, otherwise each worker may obtain a list[dict] in different order
         intersect = sorted(intersect)
-        logger.warn("Will use their intersection of {} files.".format(
+        logger.warning("Will use their intersection of {} files.".format(
             len(intersect)))
         input_files = [
             os.path.join(image_root, f + image_ext) for f in intersect
@@ -501,6 +501,7 @@ def convert_to_coco_dict(dataset_name, dataset_dicts, metadata):
     Convert a dataset in cvpods's standard format into COCO json format
     COCO data format description can be found here:
     http://cocodataset.org/#format-data
+
     Args:
         dataset_name:
             name of the source dataset
@@ -642,9 +643,9 @@ def convert_to_coco_json(dataset_name, output_file, allow_cached=True):
     # TODO: The dataset or the conversion script *may* change,
     # a checksum would be useful for validating the cached data
 
-    PathManager.mkdirs(os.path.dirname(output_file))
+    ensure_dir(os.path.dirname(output_file))
     with file_lock(output_file):
-        if PathManager.exists(output_file) and allow_cached:
+        if megfile.smart_exists(output_file) and allow_cached:
             logger.info(
                 f"Cached annotations in COCO format already exist: {output_file}"
             )
@@ -654,7 +655,7 @@ def convert_to_coco_json(dataset_name, output_file, allow_cached=True):
             )
             coco_dict = convert_to_coco_dict(dataset_name)
 
-            with PathManager.open(output_file, "w") as json_file:
+            with megfile.smart_open(output_file, "w") as json_file:
                 logger.info(
                     f"Caching annotations in COCO format: {output_file}")
                 json.dump(coco_dict, json_file)

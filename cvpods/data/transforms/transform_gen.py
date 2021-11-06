@@ -1,9 +1,13 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import inspect
+import math
 import pprint
+import random
 import sys
 from abc import ABCMeta, abstractmethod
 
@@ -11,11 +15,14 @@ import numpy as np
 from PIL import Image
 
 import torch
+import torchvision
+from torchvision.transforms import functional as F
 
 from cvpods.structures import Boxes, BoxMode, pairwise_iou
 
 from ..registry import TRANSFORMS
 from .auto_aug import AutoAugmentTransform
+from .transform_util import bb_intersection_over_union, get_image_size
 
 from .transform import (  # isort:skip
     ScaleTransform,
@@ -32,17 +39,23 @@ from .transform import (  # isort:skip
     ExpandTransform,
     ExtentTransform,
     ResizeTransform,
+    PILColorTransform,
     # Transforms used in ssl
     GaussianBlurTransform,
     GaussianBlurConvTransform,
     SolarizationTransform,
+    LightningTransform,
     ComposeTransform,
+    TorchTransform,
     # LabSpaceTransform,
     PadTransform,
+    FiveCropTransform,
+    JigsawCropTransform,
 )
 
 __all__ = [
     "Pad",
+    "PILColorTransformGen",
     "RandomScale",
     "Expand",
     "MinIoURandomCrop",
@@ -65,13 +78,18 @@ __all__ = [
     "ShuffleList",
     "RandomList",
     "RepeatList",
+    "RepeatListv2",
+    "OrderList",
     "TransformGen",
     "TorchTransformGen",
     # transforms used in ssl
     "GaussianBlur",
     "GaussianBlurConv",
     "Solarization",
+    "Lightning",
+    "RandomFiveCrop",
     "AutoAugment",
+    "JigsawCrop",
 ]
 
 
@@ -166,6 +184,15 @@ class TransformGen(metaclass=ABCMeta):
 
 
 @TRANSFORMS.register()
+class OrderList(TransformGen):
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def get_transform(self, img, annotations=None):
+        return ComposeTransform(self.transforms)
+
+
+@TRANSFORMS.register()
 class RandomFlip(TransformGen):
     """
     Flip the image horizontally or vertically with the given probability.
@@ -201,17 +228,51 @@ class RandomFlip(TransformGen):
 
 
 @TRANSFORMS.register()
-class TorchTransformGen:
+class TorchTransformGen(TransformGen):
     """
     Wrapper transfrom of transforms in torchvision.
     It convert img (np.ndarray) to PIL image, and convert back to np.ndarray after transform.
     """
     def __init__(self, tfm):
+        super().__init__()
         self.tfm = tfm
 
-    def __call__(self, img: np.ndarray, annotations: None, **kwargs):
-        pil_image = Image.fromarray(img)
-        return np.array(self.tfm(pil_image)), annotations
+    def get_transform(self, img, annotations=None):
+        return TorchTransform(self.tfm)
+
+
+@TRANSFORMS.register()
+class PILColorTransformGen(TransformGen):
+    """
+    Wrapper transfrom of transforms in torchvision.
+    It convert img (np.ndarray) to PIL image, and convert back to np.ndarray after transform.
+    """
+    def __init__(self, tfm):
+        super().__init__()
+        self.tfm = tfm
+
+    def get_transform(self, img, annotations=None):
+        return PILColorTransform(self.tfm)
+
+
+@TRANSFORMS.register()
+class RandomFiveCrop(TransformGen):
+    """
+    Random select rand_in crops from the fixed 5 crops: center, left-top, right-top,
+        left-bottom, and right-bottom.
+    """
+    def __init__(self, size, rand_in=[0, -1]):
+        """
+        Args:
+            size (int): desired crop size.
+            rand_in (List[int]): select crops according to indexes in rand_in, then random select
+                from those crops.
+        """
+        super().__init__()
+        self._init(locals())
+
+    def get_transform(self, img, annotations=None):
+        return FiveCropTransform(self.size, self.rand_in)
 
 
 @TRANSFORMS.register()
@@ -233,7 +294,8 @@ class RandomDistortion(TransformGen):
         self._init(locals())
 
     def get_transform(self, img, annotations=None):
-        return DistortTransform(self.hue, self.saturation, self.exposure, self.image_format)
+        return DistortTransform(
+            self.hue, self.saturation, self.exposure, self.image_format)
 
 
 @TRANSFORMS.register()
@@ -931,6 +993,30 @@ class Expand(TransformGen):
 
 
 @TRANSFORMS.register()
+class Lightning(TransformGen):
+    """
+    Lightning augmentation, used in classification.
+
+    .. code-block:: python
+        tfm = LightningTransform(
+            alpha_std=0.1,
+            eig_val=np.array([[0.2175, 0.0188, 0.0045]]),
+            eig_vec=np.array([
+                [-0.5675, 0.7192, 0.4009],
+                [-0.5808, -0.0045, -0.8140],
+                [-0.5836, -0.6948, 0.4203]
+            ]),
+        )
+    """
+    def __init__(self, alpha_std, eig_val, eig_vec):
+        super().__init__()
+        self._init(locals())
+
+    def get_transform(self, img, annotations=None):
+        return LightningTransform(self.alpha_std, self.eig_val, self.eig_vec)
+
+
+@TRANSFORMS.register()
 class RandomScale(TransformGen):
     """
     Randomly scale the image according to the specified output size and scale ratio range.
@@ -1079,6 +1165,97 @@ class ShuffleList(TransformGen):
 
 
 @TRANSFORMS.register()
+class RepeatListv2(TransformGen):
+    def __init__(self, transforms, repeat_times, ranges=[(0, 1)]):
+        super().__init__()
+        self.transforms = transforms
+        self.times = repeat_times
+        self.iou_ranges = ranges
+
+    def get_transform(self, img, annotations=None):
+        return ComposeTransform(self.transforms).transforms
+
+    def __call__(self, img, annotations=None):
+        repeat_imgs = []
+        repeat_annotations = []
+
+        for idx, tfm in enumerate(self.transforms):
+            if isinstance(tfm.tfm, torchvision.transforms.RandomResizedCrop):
+                size = tfm.tfm.size
+                scale = tfm.tfm.scale
+                ratio = tfm.tfm.ratio
+                interp = tfm.tfm.interpolation
+
+                width, height = get_image_size(img)
+                area = height * width
+
+                satisfied = False
+                cnt = 0
+                while not satisfied and cnt < 50:
+                    cnt += 1
+                    crop_params = []
+                    for t in range(self.times):
+                        params = None
+                        for _ in range(10):
+                            target_area = random.uniform(*scale) * area
+                            log_ratio = (math.log(ratio[0]), math.log(ratio[1]))
+                            aspect_ratio = math.exp(random.uniform(*log_ratio))
+
+                            w = int(round(math.sqrt(target_area * aspect_ratio)))
+                            h = int(round(math.sqrt(target_area / aspect_ratio)))
+
+                            if 0 < w <= width and 0 < h <= height:
+                                i = random.randint(0, height - h)
+                                j = random.randint(0, width - w)
+                                params = [i, j, h, w, size, interp]
+                                break
+                        if not params:
+                            # Fallback to central crop
+                            in_ratio = float(width) / float(height)
+                            if (in_ratio < min(ratio)):
+                                w = width
+                                h = int(round(w / min(ratio)))
+                            elif (in_ratio > max(ratio)):
+                                h = height
+                                w = int(round(h * max(ratio)))
+                            else:  # whole image
+                                w = width
+                                h = height
+                            i = (height - h) // 2
+                            j = (width - w) // 2
+                            params = [i, j, h, w, size, interp]
+                        crop_params.append(params)
+
+                    if self.times == 2:
+                        boxes = [
+                            [param[0], param[1], param[0] + param[2], param[1] + param[3]]
+                            for param in crop_params]
+                        iou = bb_intersection_over_union(boxes[0], boxes[1])
+                        for rg in self.iou_ranges:
+                            if iou >= rg[0] and iou <= rg[1]:
+                                satisfied = True
+                                break
+                    else:
+                        satisfied = True
+                break
+        else:
+            img, annotations = tfm(img, annotations)
+
+        for crop_param in crop_params:
+            tmp_img = np.array(F.resized_crop(Image.fromarray(img), *crop_param))
+            tmp_annotations = annotations
+            for tfm in self.transforms[idx + 1:]:
+                tmp_img, tmp_annotations = tfm(tmp_img, tmp_annotations)
+
+            repeat_imgs.append(tmp_img)
+            repeat_annotations.append(tmp_annotations)
+
+        repeat_imgs = np.stack(repeat_imgs, axis=0)
+
+        return repeat_imgs, repeat_annotations
+
+
+@TRANSFORMS.register()
 class RepeatList(TransformGen):
     """
     Forward several times of provided transforms for a given image.
@@ -1105,3 +1282,26 @@ class RepeatList(TransformGen):
             repeat_annotations.append(tmp_anno)
         repeat_imgs = np.stack(repeat_imgs, axis=0)
         return repeat_imgs, repeat_annotations
+
+
+@TRANSFORMS.register()
+class JigsawCrop(TransformGen):
+    """
+    Crop an image into n_grid times n_grid crops, no overlaps.
+    """
+    def __init__(self, n_grid=3, img_size=255, crop_size=64):
+        """
+        Args:
+            n_grid (int): crop image into n_grid x n_grid crops.
+            img_size (int): image scale size.
+            crop_size (int): crop size.
+        """
+        super().__init__()
+        self._init(locals())
+
+    def get_transform(self, img, annotations=None):
+        return JigsawCropTransform(self.n_grid, self.img_size, self.crop_size)
+
+    def __call__(self, img, annotations=None, **kwargs):
+        crops, annos = self.get_transform(img)(img, annotations, **kwargs)
+        return np.stack(crops, axis=0), annos
