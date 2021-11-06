@@ -1,12 +1,15 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-import logging
 import os
 import tempfile
 import xml.etree.ElementTree as ET
 from collections import OrderedDict, defaultdict
 from functools import lru_cache
+from loguru import logger
 
 import numpy as np
 
@@ -46,7 +49,6 @@ class PascalVOCDetectionEvaluator(DatasetEvaluator):
         assert meta.year in [2007, 2012], meta.year
         self._is_2007 = meta.year == 2007
         self._cpu_device = torch.device("cpu")
-        self._logger = logging.getLogger(__name__)
 
     def reset(self):
         self._predictions = defaultdict(list)  # class name -> list of prediction strings
@@ -81,7 +83,7 @@ class PascalVOCDetectionEvaluator(DatasetEvaluator):
                 predictions[clsid].extend(lines)
         del all_predictions
 
-        self._logger.info(
+        logger.info(
             "Evaluating {} using {} metric. "
             "Note that results do not use the official Matlab API.".format(
                 self._dataset_name, 2007 if self._is_2007 else 2012
@@ -114,7 +116,7 @@ class PascalVOCDetectionEvaluator(DatasetEvaluator):
         ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
 
         small_table = create_small_table(ret["bbox"])
-        self._logger.info("Evaluation results for bbox: \n" + small_table)
+        logger.info("Evaluation results for bbox: \n" + small_table)
 
         if self._dump:
             dump_info_one_task = {

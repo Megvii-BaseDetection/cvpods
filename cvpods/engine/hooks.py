@@ -1,20 +1,25 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Facebook, Inc. and its affiliates.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import datetime
 import itertools
-import logging
 import os
+import re
 import tempfile
 import time
 from collections import Counter
+import megfile
+from loguru import logger
 
 import torch
 
 from cvpods.checkpoint import PeriodicCheckpointer as _PeriodicCheckpointer
 from cvpods.evaluation.testing import flatten_results_dict
 from cvpods.modeling.nn_utils.precise_bn import get_bn_modules, update_bn_stats
-from cvpods.utils import EventStorage, EventWriter, PathManager, Timer, comm
+from cvpods.utils import EventStorage, EventWriter, Timer, comm, ensure_dir
 
 __all__ = [
     "HookBase",
@@ -150,7 +155,7 @@ class OptimizationHook(HookBase):
         else:
             losses.backward()
 
-        if self.trainer.iter % self.accumulate_grad_steps == 0:
+        if self.trainer.inner_iter == self.accumulate_grad_steps:
             if self.grad_clipper is not None:
                 self.grad_clipper(self.tariner.model.paramters())
             self.trainer.optimizer.step()
@@ -184,7 +189,6 @@ class IterationTimer(HookBase):
         self._total_timer.pause()
 
     def after_train(self):
-        logger = logging.getLogger(__name__)
         total_time = time.perf_counter() - self._start_time
         total_time_minus_hooks = self._total_timer.seconds()
         hook_time = total_time - total_time_minus_hooks
@@ -270,7 +274,8 @@ class PeriodicCheckpointer(_PeriodicCheckpointer, HookBase):
     """
 
     def before_train(self):
-        self.max_iter = self.trainer.max_iter
+        # `self.max_iter` and `self.max_epoch` will be initialized in __init__
+        pass
 
     def after_step(self):
         # No way to use **kwargs
@@ -365,7 +370,7 @@ class AutogradProfiler(HookBase):
         if self._profiler is None:
             return
         self._profiler.__exit__(None, None, None)
-        PathManager.mkdirs(self._output_dir)
+        ensure_dir(self._output_dir)
         out_file = os.path.join(
             self._output_dir, "profiler-trace-iter{}.json".format(self.trainer.iter)
         )
@@ -378,7 +383,7 @@ class AutogradProfiler(HookBase):
                 self._profiler.export_chrome_trace(tmp_file)
                 with open(tmp_file) as f:
                     content = f.read()
-            with PathManager.open(out_file, "w") as f:
+            with megfile.smart_open(out_file, "w") as f:
                 f.write(content)
 
 
@@ -462,9 +467,8 @@ class PreciseBN(HookBase):
             num_iter (int): number of iterations used to compute the precise
                 statistics.
         """
-        self._logger = logging.getLogger(__name__)
         if len(get_bn_modules(model)) == 0:
-            self._logger.info(
+            logger.info(
                 "PreciseBN is disabled because model does not contain BN layers in training mode."
             )
             self._disabled = True
@@ -494,7 +498,7 @@ class PreciseBN(HookBase):
         def data_loader():
             for num_iter in itertools.count(1):
                 if num_iter % 100 == 0:
-                    self._logger.info(
+                    logger.info(
                         "Running precise-BN ... {}/{} iterations.".format(num_iter, self._num_iter)
                     )
                 # This way we can reuse the same iterator
@@ -507,7 +511,7 @@ class PreciseBN(HookBase):
                 yield item
 
         with EventStorage():  # capture events in a new storage to discard them
-            self._logger.info(
+            logger.info(
                 "Running precise-BN for {} iterations...  ".format(self._num_iter)
                 + "Note that this could produce different statistics every time."
             )

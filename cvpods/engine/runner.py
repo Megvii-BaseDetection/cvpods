@@ -1,16 +1,20 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-# Modified by BaseDetection, Inc. and its affiliates.
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-import logging
 import math
 import os
 from collections import OrderedDict
+from loguru import logger
 
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
 from cvpods.checkpoint import DefaultCheckpointer
 from cvpods.data import build_test_loader, build_train_loader
+from cvpods.data.samplers.infinite import Infinite
 from cvpods.evaluation import (
     DatasetEvaluator,
     inference_on_dataset,
@@ -21,13 +25,12 @@ from cvpods.evaluation import (
 from cvpods.modeling.nn_utils.module_converter import maybe_convert_module
 from cvpods.modeling.nn_utils.precise_bn import get_bn_modules
 from cvpods.solver import build_lr_scheduler, build_optimizer
-from cvpods.utils import comm, setup_logger
+from cvpods.utils import comm
+from cvpods.utils.compat_wrapper import deprecated
 from cvpods.utils.dump.events import CommonMetricPrinter, JSONWriter, TensorboardXWriter
 
 from . import hooks
 from .base_runner import RUNNERS, SimpleRunner
-
-logger = logging.getLogger(__name__)
 
 
 @RUNNERS.register()
@@ -79,51 +82,55 @@ class DefaultRunner(SimpleRunner):
         Args:
             cfg (config dict):
         """
-        logger = logging.getLogger("cvpods")
-        if not logger.isEnabledFor(logging.INFO):  # setup_logger is not called for cvpods
-            setup_logger()
-        self.logger = logger
 
         self.data_loader = self.build_train_loader(cfg)
         # Assume these objects must be constructed in this order.
         model = build_model(cfg)
         self.model = maybe_convert_module(model)
-        self.logger.info(f"Model: \n{self.model}")
+        logger.info(f"Model: \n{self.model}")
 
         # Assume these objects must be constructed in this order.
         self.optimizer = self.build_optimizer(cfg, self.model)
 
+        if cfg.TRAINER.FP16.ENABLED:
+            self.mixed_precision = True
+            if cfg.TRAINER.FP16.TYPE == "APEX":
+                from apex import amp
+                self.model, self.optimizer = amp.initialize(
+                    self.model, self.optimizer, opt_level=cfg.TRAINER.FP16.OPTS.OPT_LEVEL
+                )
+        else:
+            self.mixed_precision = False
+
         # For training, wrap with DDP. But don't need this for inference.
         if comm.get_world_size() > 1:
-            if cfg.TRAINER.FP16.ENABLED:
-                self.mixed_precision = True
-                if cfg.TRAINER.FP16.TYPE == "APEX":
-                    from apex import amp
-                    self.model, self.optimizer = amp.initialize(
-                        self.model, self.optimizer, opt_level=cfg.TRAINER.FP16.OPTS.OPT_LEVEL
-                    )
-            else:
-                self.mixed_precision = False
             torch.cuda.set_device(comm.get_local_rank())
-            self.model = DistributedDataParallel(
-                self.model,
-                device_ids=[comm.get_local_rank()],
-                broadcast_buffers=False,
-                find_unused_parameters=True)
+            if cfg.MODEL.DDP_BACKEND == "torch":
+                self.model = DistributedDataParallel(
+                    self.model,
+                    device_ids=[comm.get_local_rank()],
+                    broadcast_buffers=False,
+                    find_unused_parameters=True
+                )
+            elif cfg.MODEL.DDP_BACKEND == "apex":
+                from apex.parallel import DistributedDataParallel as ApexDistributedDataParallel
+                self.model = ApexDistributedDataParallel(self.model)
+            else:
+                raise ValueError("non-supported DDP backend: {}".format(cfg.MODEL.DDP_BACKEND))
 
         super().__init__(
             self.model,
             self.data_loader,
             self.optimizer,
         )
-        auto_scale_config(cfg, self.data_loader)
 
         if not cfg.SOLVER.LR_SCHEDULER.get("EPOCH_WISE", False):
             epoch_iters = -1
         else:
             epoch_iters = cfg.SOLVER.LR_SCHEDULER.get("EPOCH_ITERS")
-            self.logger.warning(f"Setup LR Scheduler in EPOCH mode: {epoch_iters}")
+            logger.warning(f"Setup LR Scheduler in EPOCH mode: {epoch_iters}")
 
+        auto_scale_config(cfg, self.data_loader)
         self.scheduler = self.build_lr_scheduler(cfg, self.optimizer, epoch_iters=epoch_iters)
         # Assume no other objects need to be checkpointed.
         # We can later make it checkpoint the stateful hooks
@@ -165,7 +172,11 @@ class DefaultRunner(SimpleRunner):
         self.start_iter = (self.checkpointer.resume_or_load(
             self.cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1)
         if self.max_epoch is not None:
-            self.start_epoch = self.start_iter // len(self.data_loader)
+            if isinstance(self.data_loader.sampler, Infinite):
+                length = len(self.data_loader.sampler.sampler)
+            else:
+                length = len(self.data_loader)
+            self.start_epoch = self.start_iter // length
 
     def build_hooks(self):
         """
@@ -222,8 +233,11 @@ class DefaultRunner(SimpleRunner):
             # Here the default print/log frequency of each writer is used.
             # run writers in the end, so that evaluation metrics are written
             ret.append(hooks.PeriodicWriter(
-                self.build_writers(),
-                period=self.window_size))
+                self.build_writers(), period=self.cfg.GLOBAL.LOG_INTERVAL
+            ))
+            # Put `PeriodicDumpLog` after writers so that can dump all the files,
+            # including the files generated by writers
+
         return ret
 
     def build_writers(self):
@@ -327,6 +341,7 @@ class DefaultRunner(SimpleRunner):
         It is not implemented by default.
         """
         raise NotImplementedError(
+            # TODO: add this tutorial
             """
 If you want DefaultRunner to automatically run evaluation,
 please implement `build_evaluator()` in subclasses (see train_net.py for example).
@@ -347,7 +362,6 @@ Alternatively, you can call evaluation functions yourself (see Colab balloon tut
         Returns:
             dict: a dict of result metrics
         """
-        logger = logging.getLogger(__name__)
         if isinstance(evaluators, DatasetEvaluator):
             evaluators = [evaluators]
         if evaluators is not None:
@@ -368,10 +382,11 @@ Alternatively, you can call evaluation functions yourself (see Colab balloon tut
                         cfg, dataset_name, data_loader.dataset, output_folder=output_folder)
                 except NotImplementedError:
                     logger.warn(
-                        "No evaluator found. Use `DefaultTrainer.test(evaluators=)`, "
+                        "No evaluator found. Use `DefaultRunner.test(evaluators=)`, "
                         "or implement its `build_evaluator` method.")
                     results[dataset_name] = {}
                     continue
+            results_i = inference_on_dataset(model, data_loader, evaluator)
             if cfg.TEST.ON_FILES:
                 results_i = inference_on_files(evaluator)
             else:
@@ -392,9 +407,6 @@ Alternatively, you can call evaluation functions yourself (see Colab balloon tut
 
 
 def auto_scale_config(cfg, dataloader):
-
-    logger = logging.getLogger(__name__)
-
     max_epoch = cfg.SOLVER.LR_SCHEDULER.MAX_EPOCH
     max_iter = cfg.SOLVER.LR_SCHEDULER.MAX_ITER
 
@@ -426,3 +438,9 @@ def auto_scale_config(cfg, dataloader):
         epoch_iter = -1
 
     cfg.SOLVER.LR_SCHEDULER.EPOCH_ITERS = epoch_iter
+
+
+@RUNNERS.register()
+@deprecated("Use DefaultRunner instead.")
+class DefaultTrainer(DefaultRunner):
+    pass

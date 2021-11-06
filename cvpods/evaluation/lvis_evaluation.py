@@ -1,21 +1,26 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 import contextlib
 import copy
 import io
 import itertools
 import json
-import logging
 import os
 import pickle
 from collections import OrderedDict
+import megfile
+from loguru import logger
 
 from lvis import LVISEval, LVISResults
 
 import torch
 
-from cvpods.evaluation.fast_lvis_eval_api import LVISEval_opt
 from cvpods.structures import Boxes, BoxMode, pairwise_iou
-from cvpods.utils import PathManager, comm, create_small_table
+from cvpods.utils import comm, create_small_table, ensure_dir
 
 from .coco_evaluation import instances_to_coco_json
 from .evaluator import DatasetEvaluator
@@ -29,8 +34,7 @@ class LVISEvaluator(DatasetEvaluator):
     LVIS's metrics and evaluation API.
     """
 
-    def __init__(self, dataset_name, meta, cfg, distributed,
-                 output_dir=None, dump=False, use_fast_impl=True):
+    def __init__(self, dataset_name, meta, cfg, distributed, output_dir=None, dump=False):
         """
         Args:
             dataset_name (str): name of the dataset to be evaluated.
@@ -39,15 +43,13 @@ class LVISEvaluator(DatasetEvaluator):
                     "json_file": the path to the LVIS format annotation
 
             meta (SimpleNamespace): dataset metadata.
-            cfg (config dict): cvpods Config instance.
+            cfg (CfgNode): cvpods Config instance.
             distributed (True): if True, will collect results from all ranks for evaluation.
                 Otherwise, will evaluate the results in the current process.
             output_dir (str): optional, an output directory to dump results.
             dump (bool): If True, after the evaluation is completed, a Markdown file
                 that records the model evaluation metrics and corresponding scores
                 will be generated in the working directory.
-            use_fast_impl (bool): If True, use the C++ version lvis evaluation api instead of
-                the python version, to reduce the time of the evalutation.
         """
         from lvis import LVIS
         # TODO: really use dataset_name
@@ -56,15 +58,11 @@ class LVISEvaluator(DatasetEvaluator):
         self._tasks = self._tasks_from_config(cfg)
         self._distributed = distributed
         self._output_dir = output_dir
-        self._use_fast_impl = use_fast_impl
-        self._max_dets = cfg.TEST.DETECTIONS_PER_IMAGE
-
         self._cpu_device = torch.device("cpu")
-        self._logger = logging.getLogger(__name__)
 
         self._metadata = meta
-        json_file = PathManager.get_local_path(self._metadata.json_file)
-        self._lvis_api = LVIS(json_file)
+        # json_file = PathManager.get_local_path(self._metadata.json_file)
+        self._lvis_api = LVIS(self._metadata.json_file)
         # Test set json files do not contain annotations (evaluation must be
         # performed using the LVIS evaluation server).
         self._do_evaluation = len(self._lvis_api.get_ann_ids()) > 0
@@ -113,48 +111,14 @@ class LVISEvaluator(DatasetEvaluator):
                 return
 
         if len(self._predictions) == 0:
-            self._logger.warning("[LVISEvaluator] Did not receive valid predictions.")
+            logger.warning("[LVISEvaluator] Did not receive valid predictions.")
             return {}
 
         if self._output_dir:
-            PathManager.mkdirs(self._output_dir)
+            ensure_dir(self._output_dir)
             file_path = os.path.join(self._output_dir, "instances_predictions.pth")
-            with PathManager.open(file_path, "wb") as f:
+            with megfile.smart_open(file_path, "wb") as f:
                 torch.save(self._predictions, f)
-
-        self._results = OrderedDict()
-        if "proposals" in self._predictions[0]:
-            self._eval_box_proposals()
-        if "instances" in self._predictions[0]:
-            self._eval_predictions(set(self._tasks))
-
-        if self._dump:
-            _dump_to_markdown(self._dump_infos)
-
-        # Copy so the caller can do whatever with results
-        return copy.deepcopy(self._results)
-
-    def evaluate_files(self):
-        """
-        Only evaluate files without inference
-        """
-        if self._distributed:
-            comm.synchronize()
-
-            if not comm.is_main_process():
-                return
-
-        del self._predictions
-
-        if self._output_dir:
-            file_path = os.path.join(self._output_dir, "instances_predictions.pth")
-            self._predictions = torch.load(file_path)
-            self._logger.info("Read predictions from {}".format(file_path))
-        else:
-            self._logger.warning(
-                "Stored predictions is None, you need to run the inference_on_dataset"
-            )
-            raise NotImplementedError
 
         self._results = OrderedDict()
         if "proposals" in self._predictions[0]:
@@ -173,7 +137,7 @@ class LVISEvaluator(DatasetEvaluator):
         Evaluate self._predictions on the given tasks.
         Fill self._results with the metrics of the tasks.
         """
-        self._logger.info("Preparing results in the LVIS format ...")
+        logger.info("Preparing results in the LVIS format ...")
         self._lvis_results = list(itertools.chain(*[x["instances"] for x in self._predictions]))
 
         # LVIS evaluator can be used to evaluate results for COCO dataset categories.
@@ -191,29 +155,25 @@ class LVISEvaluator(DatasetEvaluator):
 
         if self._output_dir:
             file_path = os.path.join(self._output_dir, "lvis_instances_results.json")
-            self._logger.info("Saving results to {}".format(file_path))
-            with PathManager.open(file_path, "w") as f:
+            logger.info("Saving results to {}".format(file_path))
+            with megfile.smart_open(file_path, "w") as f:
                 f.write(json.dumps(self._lvis_results))
                 f.flush()
 
         if not self._do_evaluation:
-            self._logger.info("Annotations are not available for evaluation.")
+            logger.info("Annotations are not available for evaluation.")
             return
 
-        self._logger.info(
-            "Evaluating predictions with use_fast_impl={} ...".format(self._use_fast_impl)
-        )
+        logger.info("Evaluating predictions ...")
         for task in sorted(tasks):
             lvis_eval, summary = (
                 _evaluate_predictions_on_lvis(
-                    self._lvis_api, self._lvis_results, task,
-                    use_fast_impl=self._use_fast_impl,
-                    max_dets=self._max_dets
+                    self._lvis_api, self._lvis_results, task
                 )
                 if len(self._lvis_results) > 0
                 else None
             )
-            self._logger.info("\n" + summary.getvalue())
+            logger.info("\n" + summary.getvalue())
             res = self._derive_lvis_results(lvis_eval, task, summary)
             self._results[task] = res
 
@@ -238,14 +198,14 @@ class LVISEvaluator(DatasetEvaluator):
                 "ids": ids,
                 "bbox_mode": bbox_mode,
             }
-            with PathManager.open(os.path.join(self._output_dir, "box_proposals.pkl"), "wb") as f:
+            with megfile.smart_open(os.path.join(self._output_dir, "box_proposals.pkl"), "wb") as f:
                 pickle.dump(proposal_data, f)
 
         if not self._do_evaluation:
-            self._logger.info("Annotations are not available for evaluation.")
+            logger.info("Annotations are not available for evaluation.")
             return
 
-        self._logger.info("Evaluating bbox proposals ...")
+        logger.info("Evaluating bbox proposals ...")
         res = {}
         areas = {"all": "", "small": "s", "medium": "m", "large": "l"}
         for limit in [100, 1000]:
@@ -255,7 +215,7 @@ class LVISEvaluator(DatasetEvaluator):
                 )
                 key = "AR{}@{:d}".format(suffix, limit)
                 res[key] = float(stats["ar"].item() * 100)
-        self._logger.info("Proposal metrics: \n" + create_small_table(res))
+        logger.info("Proposal metrics: \n" + create_small_table(res))
         self._results["box_proposals"] = res
 
     def _derive_lvis_results(self, lvis_eval, iou_type, summary):
@@ -275,14 +235,14 @@ class LVISEvaluator(DatasetEvaluator):
         }[iou_type]
 
         if lvis_eval is None:
-            self._logger.warn("No predictions from the model!")
+            logger.warning("No predictions from the model!")
             return {metric: float("nan") for metric in metrics}
 
         # Pull the standard metrics from the LVIS results
         results = lvis_eval.get_results()
         results = {metric: float(results[metric] * 100) for metric in metrics}
         small_table = create_small_table(results)
-        self._logger.info("Evaluation results for {}: \n".format(iou_type) + small_table)
+        logger.info("Evaluation results for {}: \n".format(iou_type) + small_table)
 
         if self._dump:
             dump_info_one_task = {
@@ -403,8 +363,7 @@ def _evaluate_box_proposals(dataset_predictions, lvis_api, thresholds=None, area
     }
 
 
-def _evaluate_predictions_on_lvis(lvis_gt, lvis_results, iou_type,
-                                  use_fast_impl=True, max_dets=300):
+def _evaluate_predictions_on_lvis(lvis_gt, lvis_results, iou_type):
     """
     Evaluate the lvis results using LVISEval API.
     """
@@ -419,8 +378,8 @@ def _evaluate_predictions_on_lvis(lvis_gt, lvis_results, iou_type,
         for c in lvis_results:
             c.pop("bbox", None)
 
-    lvis_results = LVISResults(lvis_gt, lvis_results, max_dets=max_dets)
-    lvis_eval = (LVISEval_opt if use_fast_impl else LVISEval)(lvis_gt, lvis_results, iou_type)
+    lvis_results = LVISResults(lvis_gt, lvis_results)
+    lvis_eval = LVISEval(lvis_gt, lvis_results, iou_type)
     lvis_eval.run()
     summary = io.StringIO()
     with contextlib.redirect_stdout(summary):

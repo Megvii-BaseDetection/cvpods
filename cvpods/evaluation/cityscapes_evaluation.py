@@ -1,9 +1,14 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 import glob
-import logging
 import os
 import tempfile
 from collections import OrderedDict
+from loguru import logger
 from tabulate import tabulate
 
 from PIL import Image
@@ -42,7 +47,6 @@ class CityscapesEvaluator(DatasetEvaluator):
         self._dump = dump
         self._metadata = meta
         self._cpu_device = torch.device("cpu")
-        self._logger = logging.getLogger(__name__)
 
     def reset(self):
         self._working_dir = tempfile.TemporaryDirectory(prefix="cityscapes_eval_")
@@ -52,7 +56,7 @@ class CityscapesEvaluator(DatasetEvaluator):
         self._temp_dir = comm.all_gather(self._temp_dir)[0]
         if self._temp_dir != self._working_dir.name:
             self._working_dir.cleanup()
-        self._logger.info(
+        logger.info(
             "Writing cityscapes results to temporary directory {} ...".format(self._temp_dir)
         )
 
@@ -95,7 +99,7 @@ class CityscapesEvaluator(DatasetEvaluator):
         # since the script reads CITYSCAPES_DATASET into global variables at load time.
         import cityscapesscripts.evaluation.evalInstanceLevelSemanticLabeling as cityscapes_eval
 
-        self._logger.info("Evaluating results under {} ...".format(self._temp_dir))
+        logger.info("Evaluating results under {} ...".format(self._temp_dir))
 
         # set some global states in cityscapes evaluation API, before evaluating
         cityscapes_eval.args.predictionPath = os.path.abspath(self._temp_dir)
@@ -124,7 +128,7 @@ class CityscapesEvaluator(DatasetEvaluator):
         self._working_dir.cleanup()
 
         small_table = create_small_table(ret["segm"])
-        self._logger.info("Evaluation results for segm: \n" + small_table)
+        logger.info("Evaluation results for segm: \n" + small_table)
 
         results_per_category = []
         for cat, ap in results["classes"].items():
@@ -138,7 +142,7 @@ class CityscapesEvaluator(DatasetEvaluator):
             floatfmt=".3f",
             numalign="left"
         )
-        self._logger.info("Per-category segm AP: \n" + table)
+        logger.info("Per-category segm AP: \n" + table)
 
         if self._dump:
             dump_info_one_task = {

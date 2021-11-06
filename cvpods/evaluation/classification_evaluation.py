@@ -1,16 +1,17 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import copy
 import itertools
-import logging
 import os
 from collections import OrderedDict
+import megfile
+from loguru import logger
 
 import torch
 
-from cvpods.utils import PathManager, comm, create_small_table
+from cvpods.utils import comm, create_small_table, ensure_dir
 
 from .evaluator import DatasetEvaluator
 from .registry import EVALUATOR
@@ -28,7 +29,7 @@ class ClassificationEvaluator(DatasetEvaluator):
         Args:
             dataset_name (str): name of the dataset to be evaluated.
             meta (SimpleNamespace): dataset metadata.
-            cfg (config dict): cvpods Config instance.
+            cfg (CfgNode): cvpods Config instance.
             distributed (True): if True, will collect results from all ranks for evaluation.
                 Otherwise, will evaluate the results in the current process.
             output_dir (str): optional, an output directory to dump all
@@ -47,9 +48,7 @@ class ClassificationEvaluator(DatasetEvaluator):
         self._dump = dump
         self._distributed = distributed
         self._output_dir = output_dir
-
         self._cpu_device = torch.device("cpu")
-        self._logger = logging.getLogger(__name__)
 
         self._metadata = meta
 
@@ -84,13 +83,13 @@ class ClassificationEvaluator(DatasetEvaluator):
                 return {}
 
         if len(self._predictions) == 0:
-            self._logger.warning("[ClassificationEvaluator] Did not receive valid predictions.")
+            logger.warning("[ClassificationEvaluator] Did not receive valid predictions.")
             return {}
 
         if self._output_dir:
-            PathManager.mkdirs(self._output_dir)
+            ensure_dir(self._output_dir)
             file_path = os.path.join(self._output_dir, "instances_predictions.pth")
-            with PathManager.open(file_path, "wb") as f:
+            with megfile.smart_open(file_path, "wb") as f:
                 torch.save(self._predictions, f)
 
         self._results = OrderedDict()
@@ -123,7 +122,7 @@ class ClassificationEvaluator(DatasetEvaluator):
         self._results["Accuracy"] = results
 
         small_table = create_small_table(results)
-        self._logger.info("Evaluation results for classification: \n" + small_table)
+        logger.info("Evaluation results for classification: \n" + small_table)
 
         if self._dump:
             dump_info_one_task = {

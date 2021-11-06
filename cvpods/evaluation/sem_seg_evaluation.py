@@ -1,9 +1,15 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 import itertools
 import json
-import logging
 import os
 from collections import OrderedDict
+import megfile
+from loguru import logger
 
 import numpy as np
 import PIL.Image as Image
@@ -11,7 +17,7 @@ import pycocotools.mask as mask_util
 
 import torch
 
-from cvpods.utils import PathManager, comm, create_small_table
+from cvpods.utils import comm, create_small_table, ensure_dir
 
 from .evaluator import DatasetEvaluator
 from .registry import EVALUATOR
@@ -52,9 +58,7 @@ class SemSegEvaluator(DatasetEvaluator):
         self._num_classes = num_classes
         self._ignore_label = ignore_label
         self._N = num_classes + 1
-
         self._cpu_device = torch.device("cpu")
-        self._logger = logging.getLogger(__name__)
 
         dataset_dicts = []
         if hasattr(dataset, "datasets"):
@@ -92,8 +96,7 @@ class SemSegEvaluator(DatasetEvaluator):
         for input, output in zip(inputs, outputs):
             output = output["sem_seg"].argmax(dim=0).to(self._cpu_device)
             pred = np.array(output, dtype=np.int)
-            with PathManager.open(
-                    self.input_file_to_gt_file[input["file_name"]], "rb") as f:
+            with megfile.smart_open(self.input_file_to_gt_file[input["file_name"]], "rb") as f:
                 gt = np.array(Image.open(f), dtype=np.int)
 
             gt[gt == self._ignore_label] = self._num_classes
@@ -127,10 +130,10 @@ class SemSegEvaluator(DatasetEvaluator):
                 self._conf_matrix += conf_matrix
 
         if self._output_dir:
-            PathManager.mkdirs(self._output_dir)
+            ensure_dir(self._output_dir)
             file_path = os.path.join(self._output_dir,
                                      "sem_seg_predictions.json")
-            with PathManager.open(file_path, "w") as f:
+            with megfile.smart_open(file_path, "w") as f:
                 f.write(json.dumps(self._predictions))
 
         acc = np.zeros(self._num_classes, dtype=np.float)
@@ -156,14 +159,13 @@ class SemSegEvaluator(DatasetEvaluator):
         res["pACC"] = 100 * pacc
 
         if self._output_dir:
-            file_path = os.path.join(self._output_dir,
-                                     "sem_seg_evaluation.pth")
-            with PathManager.open(file_path, "wb") as f:
+            file_path = os.path.join(self._output_dir, "sem_seg_evaluation.pth")
+            with megfile.smart_open(file_path, "wb") as f:
                 torch.save(res, f)
         results = OrderedDict({"sem_seg": res})
 
         small_table = create_small_table(res)
-        self._logger.info("Evaluation results for sem_seg: \n" + small_table)
+        logger.info("Evaluation results for sem_seg: \n" + small_table)
 
         if self._dump:
             dump_info_one_task = {

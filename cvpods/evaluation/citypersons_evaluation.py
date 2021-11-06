@@ -1,14 +1,15 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 import contextlib
 import copy
 import io
 import itertools
 import json
-import logging
 import os
 from collections import OrderedDict
+import megfile
+from loguru import logger
 
 import numpy as np
 import pycocotools.mask as mask_util
@@ -18,9 +19,8 @@ import torch
 
 from cvpods.data.datasets.coco import convert_to_coco_json
 from cvpods.structures import BoxMode
-from cvpods.utils import PathManager, comm, create_small_table
+from cvpods.utils import comm, create_small_table, ensure_dir
 
-# from pycocotools.cocoeval import COCOeval
 from .eval_MR_multisetup import COCOeval
 from .evaluator import DatasetEvaluator
 from .registry import EVALUATOR
@@ -34,13 +34,14 @@ class CityPersonsEvaluator(DatasetEvaluator):
     """
 
     def __init__(
-            self,
-            dataset_name,
-            meta,
-            cfg,
-            distributed,
-            output_dir=None,
-            dump=False):
+        self,
+        dataset_name,
+        meta,
+        cfg,
+        distributed,
+        output_dir=None,
+        dump=False
+    ):
         """
         Args:
             dataset_name (str): name of the dataset to be evaluated.
@@ -51,7 +52,7 @@ class CityPersonsEvaluator(DatasetEvaluator):
                 Or it must be in cvpods's standard dataset format
                 so it can be converted to COCO format automatically.
             meta (SimpleNamespace): dataset metadata.
-            cfg (config dict): cvpods Config instance.
+            cfg (CfgNode): cvpods Config instance.
             distributed (True): if True, will collect results from all ranks for evaluation.
                 Otherwise, will evaluate the results in the current process.
             output_dir (str): optional, an output directory to dump results.
@@ -63,21 +64,19 @@ class CityPersonsEvaluator(DatasetEvaluator):
         self._tasks = self._tasks_from_config(cfg)
         self._distributed = distributed
         self._output_dir = output_dir
-
         self._cpu_device = torch.device("cpu")
-        self._logger = logging.getLogger(__name__)
 
         self._metadata = meta
         if not hasattr(self._metadata, "json_file"):
-            self._logger.warning(
+            logger.warning(
                 f"json_file was not found in MetaDataCatalog for '{dataset_name}'")
 
             cache_path = convert_to_coco_json(dataset_name, output_dir)
             self._metadata.json_file = cache_path
 
-        json_file = PathManager.get_local_path(self._metadata.json_file)
+        # json_file = PathManager.get_local_path(self._metadata.json_file)
         with contextlib.redirect_stdout(io.StringIO()):
-            self._coco_api = COCO(json_file)
+            self._coco_api = COCO(self._metadata.json_file)
 
         self._kpt_oks_sigmas = cfg.TEST.KEYPOINT_OKS_SIGMAS
         # Test set json files do not contain annotations (evaluation must be
@@ -133,15 +132,14 @@ class CityPersonsEvaluator(DatasetEvaluator):
                 return {}
 
         if len(self._predictions) == 0:
-            self._logger.warning(
+            logger.warning(
                 "[COCOEvaluator] Did not receive valid predictions.")
             return {}
 
         if self._output_dir:
-            PathManager.mkdirs(self._output_dir)
-            file_path = os.path.join(
-                self._output_dir, "instances_predictions.pth")
-            with PathManager.open(file_path, "wb") as f:
+            ensure_dir(self._output_dir)
+            file_path = os.path.join(self._output_dir, "instances_predictions.pth")
+            with megfile.smart_open(file_path, "wb") as f:
                 torch.save(self._predictions, f)
 
         self._results = OrderedDict()
@@ -159,7 +157,7 @@ class CityPersonsEvaluator(DatasetEvaluator):
         Evaluate self._predictions on the given tasks.
         Fill self._results with the metrics of the tasks.
         """
-        self._logger.info("Preparing results for COCO format ...")
+        logger.info("Preparing results for COCO format ...")
         self._coco_results = list(itertools.chain(
             *[x["instances"] for x in self._predictions]))
 
@@ -180,16 +178,16 @@ class CityPersonsEvaluator(DatasetEvaluator):
         if self._output_dir:
             file_path = os.path.join(
                 self._output_dir, "coco_instances_results.json")
-            self._logger.info("Saving results to {}".format(file_path))
-            with PathManager.open(file_path, "w") as f:
+            logger.info("Saving results to {}".format(file_path))
+            with megfile.smart_open(file_path, "w") as f:
                 f.write(json.dumps(self._coco_results))
                 f.flush()
 
         if not self._do_evaluation:
-            self._logger.info("Annotations are not available for evaluation.")
+            logger.info("Annotations are not available for evaluation.")
             return
 
-        self._logger.info("Evaluating predictions ...")
+        logger.info("Evaluating predictions ...")
         for task in sorted(tasks):
             coco_eval = (
                 _evaluate_predictions_on_coco(
@@ -224,7 +222,7 @@ class CityPersonsEvaluator(DatasetEvaluator):
             "All"]
 
         if coco_eval is None:
-            self._logger.warn(
+            logger.warning(
                 "No predictions from the model! Set scores to -1")
             return {metric: -1 for metric in metrics}
 
@@ -232,7 +230,7 @@ class CityPersonsEvaluator(DatasetEvaluator):
         results = {metric: coco_eval[idx]
                    for idx, metric in enumerate(metrics)}
         small_table = create_small_table(results)
-        self._logger.info(
+        logger.info(
             "Evaluation results for {}: \n".format(iou_type) + small_table
         )
 

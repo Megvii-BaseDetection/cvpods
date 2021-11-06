@@ -1,22 +1,25 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 import contextlib
 import io
 import itertools
 import json
-import logging
 import os
 import tempfile
 from collections import OrderedDict
+import megfile
+from loguru import logger
 from tabulate import tabulate
 
 from PIL import Image
 
-from cvpods.utils import PathManager, comm
+from cvpods.utils import comm
 
 from .evaluator import DatasetEvaluator
 from .registry import EVALUATOR
-
-logger = logging.getLogger(__name__)
 
 
 @EVALUATOR.register()
@@ -98,7 +101,8 @@ class COCOPanopticEvaluator(DatasetEvaluator):
         if not comm.is_main_process():
             return
 
-        gt_json = PathManager.get_local_path(self._metadata.panoptic_json)
+        # gt_json = PathManager.get_local_path(self._metadata.panoptic_json)
+        gt_json = self._metadata.panoptic_json
         gt_folder = self._metadata.panoptic_root
 
         with tempfile.TemporaryDirectory(prefix="panoptic_eval") as pred_dir:
@@ -110,7 +114,7 @@ class COCOPanopticEvaluator(DatasetEvaluator):
             with open(gt_json, "r") as f:
                 json_data = json.load(f)
             json_data["annotations"] = self._predictions
-            with PathManager.open(self._predictions_json, "w") as f:
+            with megfile.smart_open(self._predictions_json, "w") as f:
                 f.write(json.dumps(json_data))
 
             from panopticapi.evaluation import pq_compute
@@ -118,7 +122,7 @@ class COCOPanopticEvaluator(DatasetEvaluator):
             with contextlib.redirect_stdout(io.StringIO()):
                 pq_res = pq_compute(
                     gt_json,
-                    PathManager.get_local_path(self._predictions_json),
+                    self._predictions_json,
                     gt_folder=gt_folder,
                     pred_folder=pred_dir,
                 )
@@ -192,10 +196,9 @@ def _dump_to_markdown(dump_infos, md_file="README.md"):
 
 
 if __name__ == "__main__":
-    from cvpods.utils import setup_logger
-
-    logger = setup_logger()
     import argparse
+    from cvpods.utils import setup_logger
+    setup_logger()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--gt-json")

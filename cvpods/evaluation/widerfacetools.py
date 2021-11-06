@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
-__author__ = 'tsungyi'
 
 import copy
 import datetime

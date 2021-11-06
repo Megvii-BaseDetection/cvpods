@@ -1,5 +1,11 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-import logging
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
+import os
+from loguru import logger
 
 import torch
 import torch.distributed as dist
@@ -36,13 +42,15 @@ def launch(main_func, num_gpus_per_machine, num_machines=1, machine_rank=0, dist
                        Can be set to auto to automatically select a free port on localhost
         args (tuple): arguments passed to main_func
     """
+    # set the NCCL related environment variables
+    comm.configure_nccl()
+
     world_size = num_machines * num_gpus_per_machine
     if world_size > 1:
         # https://github.com/pytorch/pytorch/pull/14391
         # TODO prctl in spawned processes
 
         if dist_url == "auto":
-            assert num_machines == 1, "dist_url=auto cannot work with distributed training."
             port = _find_free_port()
             dist_url = f"tcp://127.0.0.1:{port}"
 
@@ -52,6 +60,7 @@ def launch(main_func, num_gpus_per_machine, num_machines=1, machine_rank=0, dist
             args=(main_func, world_size, num_gpus_per_machine, machine_rank, dist_url, args),
             daemon=False,
         )
+        comm.synchronize()
     else:
         main_func(*args)
 
@@ -61,12 +70,12 @@ def _distributed_worker(
 ):
     assert torch.cuda.is_available(), "cuda is not available. Please check your installation."
     global_rank = machine_rank * num_gpus_per_machine + local_rank
+
     try:
         dist.init_process_group(
             backend="NCCL", init_method=dist_url, world_size=world_size, rank=global_rank
         )
     except Exception as e:
-        logger = logging.getLogger(__name__)
         logger.error("Process group URL: {}".format(dist_url))
         raise e
     # synchronize is needed here to prevent a possible timeout after calling init_process_group

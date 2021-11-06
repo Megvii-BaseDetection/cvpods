@@ -1,8 +1,14 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import itertools
 import json
 import os
+import megfile
+from loguru import logger
 
 import numpy as np
 from pycocotools.cocoeval import COCOeval, maskUtils
@@ -10,7 +16,6 @@ from pycocotools.cocoeval import COCOeval, maskUtils
 import torch
 
 from cvpods.structures import BoxMode, RotatedBoxes, pairwise_iou_rotated
-from cvpods.utils import PathManager
 
 from .coco_evaluation import COCOEvaluator
 from .registry import EVALUATOR
@@ -155,7 +160,7 @@ class RotatedCOCOEvaluator(COCOEvaluator):
         Evaluate self._predictions on the given tasks.
         Fill self._results with the metrics of the tasks.
         """
-        self._logger.info("Preparing results for COCO format ...")
+        logger.info("Preparing results for COCO format ...")
         self._coco_results = list(itertools.chain(*[x["instances"] for x in self._predictions]))
 
         # unmap the category ids for COCO
@@ -168,16 +173,16 @@ class RotatedCOCOEvaluator(COCOEvaluator):
 
         if self._output_dir:
             file_path = os.path.join(self._output_dir, "coco_instances_results.json")
-            self._logger.info("Saving results to {}".format(file_path))
-            with PathManager.open(file_path, "w") as f:
+            logger.info("Saving results to {}".format(file_path))
+            with megfile.smart_open(file_path, "w") as f:
                 f.write(json.dumps(self._coco_results))
                 f.flush()
 
         if not self._do_evaluation:
-            self._logger.info("Annotations are not available for evaluation.")
+            logger.info("Annotations are not available for evaluation.")
             return
 
-        self._logger.info("Evaluating predictions ...")
+        logger.info("Evaluating predictions ...")
         for task in sorted(tasks):
             assert task == "bbox", "Task {} is not supported".format(task)
             coco_eval = (
