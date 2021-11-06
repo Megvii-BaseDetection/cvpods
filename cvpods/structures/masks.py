@@ -207,9 +207,11 @@ class BitMasks:
             Boxes: tight bounding boxes around bit masks.
         """
         # TODO Make this method faster
-        boxes = torch.zeros(len(self.tensor), 4, dtype=torch.float32)
+        boxes = torch.zeros(len(self.tensor), 4, dtype=torch.float32).to(self.device)
         shift_y, shift_x = torch.meshgrid(torch.arange(self.tensor.shape[-2]),
                                           torch.arange(self.tensor.shape[-1]))
+        shift_y = shift_y.cuda()
+        shift_x = shift_x.cuda()
         for idx in range(len(self.tensor)):
             bitmask = self.tensor[idx]
             if bitmask.sum() == 0:
@@ -284,7 +286,7 @@ class PolygonMasks:
                 assert len(polygon) % 2 == 0 and len(polygon) >= 6
             return polygons_per_instance
 
-        self.polygons: List[List[torch.Tensor]] = [
+        self.polygons: List[List[np.ndarray]] = [
             process_polygons(polygons_per_instance) for polygons_per_instance in polygons
         ]
 
@@ -294,7 +296,7 @@ class PolygonMasks:
 
     @property
     def device(self) -> torch.device:
-        return self.tensor.device
+        return torch.device("cpu")
 
     def get_bounding_boxes(self) -> Boxes:
         """
