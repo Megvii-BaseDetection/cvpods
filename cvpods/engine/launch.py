@@ -4,7 +4,6 @@
 # This file has been modified by Megvii ("Megvii Modifications").
 # All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
-import os
 from loguru import logger
 
 import torch

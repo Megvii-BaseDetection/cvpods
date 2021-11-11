@@ -7,7 +7,6 @@
 import datetime
 import itertools
 import os
-import re
 import tempfile
 import time
 from collections import Counter
