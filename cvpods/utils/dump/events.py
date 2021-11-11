@@ -172,7 +172,6 @@ class CommonMetricPrinter(EventWriter):
             max_iter (int): the maximum number of iterations to train.
                 Used to compute ETA.
         """
-        self.logger = logger
         self._max_iter = max_iter
         if "epoch" in kwargs:
             self._epoch = kwargs["epoch"]
@@ -251,7 +250,7 @@ class CommonMetricPrinter(EventWriter):
                 cur_iter=iteration + 1,
                 max_iter=self._max_iter,
             )
-        self.logger.info(
+        logger.info(
             ("eta: {eta}  {progress}  {losses}  {other_metrics}  {time}  "
              "{data_time}  lr: {lr}  {memory}").format(
                  eta=eta_string,

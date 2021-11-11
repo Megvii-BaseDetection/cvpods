@@ -21,7 +21,7 @@ from pycocotools.coco import COCO
 import torch
 
 from cvpods.data.datasets.coco import convert_to_coco_json
-from cvpods.evaluation.fast_eval_api import COCOeval_opt as COCOeval
+from cvpods.evaluation.fast_coco_eval_api import COCOeval_opt as COCOeval
 from cvpods.structures import Boxes, BoxMode, pairwise_iou
 from cvpods.utils import comm, create_small_table, create_table_with_header, ensure_dir
 

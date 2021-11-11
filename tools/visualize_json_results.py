@@ -1,10 +1,14 @@
-#!/usr/bin/env python
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import argparse
 import json
 import os
 from collections import defaultdict
+import megfile
 import tqdm
 
 import cv2
@@ -12,7 +16,7 @@ import numpy as np
 
 from cvpods.data import build_dataset
 from cvpods.structures import Boxes, BoxMode, Instances
-from cvpods.utils import PathManager, Visualizer, dynamic_import, setup_logger
+from cvpods.utils import Visualizer, dynamic_import, setup_logger
 
 
 def setup_cfg(path, logger):
@@ -71,7 +75,7 @@ if __name__ == "__main__":
 
     logger = setup_logger()
     cfg = setup_cfg(args.config, logger)
-    with PathManager.open(args.input, "r") as f:
+    with megfile.smart_open(args.input, "r") as f:
         predictions = json.load(f)
 
     pred_by_image = defaultdict(list)

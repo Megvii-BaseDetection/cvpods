@@ -1,23 +1,21 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 """
 Debuging Script.
 """
-import logging
 import os
 import re
+import sys
+from loguru import logger
 
 from cvpods.checkpoint import Checkpointer
-from cvpods.engine import TrainerBase, default_argument_parser, default_setup, launch
+from cvpods.engine import RunnerBase, default_argument_parser, default_setup, launch
 from cvpods.solver import build_optimizer
 from cvpods.utils import comm
 
-from config import config
-from net import build_model
 
-
-class DebugTrainer(TrainerBase):
+class DebugRunner(RunnerBase):
 
     def __init__(self, model, data, optimizer):
         model.train()
@@ -30,7 +28,7 @@ class DebugTrainer(TrainerBase):
         """
         Implement the standard training logic described above.
         """
-        assert self.model.training, "[SimpleTrainer] model was changed to eval mode!"
+        assert self.model.training, "[SimpleRunner] model was changed to eval mode!"
 
         self.optimizer.zero_grad()
 
@@ -55,17 +53,20 @@ class DebugTrainer(TrainerBase):
 def debug_parser():
     parser = default_argument_parser()
     parser.add_argument(
+        "--dir", type=str, default=None,
+        help="path of dir that contains config and network, default to working dir"
+    )
+    parser.add_argument(
         "--ckpt-file", type=str, default=None, help="path of debug checkpoint file"
     )
     return parser
 
 
 def stage_main(args, cfg, build):
-    logger = logging.getLogger(__name__)
     assert comm.get_world_size() == 1, "DEBUG mode only supported for 1 GPU"
 
     cfg.merge_from_list(args.opts)
-    cfg, logger = default_setup(cfg, args)
+    cfg = default_setup(cfg, args)
     model = build(cfg)
     optimizer = build_optimizer(cfg, model)
     debug_ckpt = Checkpointer(model, resume=True, optimizer=optimizer)
@@ -83,13 +84,13 @@ def stage_main(args, cfg, build):
     assert "inputs" in left_dict, "input data not found in checkpoints"
     data = left_dict["inputs"]
 
-    trainer = DebugTrainer(model, data, optimizer)
+    Runner = DebugRunner(model, data, optimizer)
     logger.info("start run models")
-    trainer.run_step()
+    Runner.run_step()
     logger.info("finish debuging")
 
 
-def main(args):
+def main(args, config, build_model):
     if isinstance(config, list):
         assert isinstance(build_model, list) and len(config) == len(build_model)
         for cfg, build in zip(config, build_model):
@@ -101,19 +102,25 @@ def main(args):
 if __name__ == "__main__":
     args = debug_parser().parse_args()
 
+    extra_sys_path = ".." if args.dir is None else args.dir
+    sys.path.append(extra_sys_path)
+
+    from config import config
+    from net import build_model
+
     if isinstance(config, list):
         assert len(config) > 0
-        print("soft link first config in list to {}".format(config[0].OUTPUT_DIR))
+        logger.info("soft link first config in list to {}".format(config[0].OUTPUT_DIR))
         config[0].link_log()
     else:
-        print("soft link to {}".format(config.OUTPUT_DIR))
+        logger.info("soft link to {}".format(config.OUTPUT_DIR))
         config.link_log()
-    print("Command Line Args:", args)
+    logger.info(f"Command Line Args: {args}")
     launch(
         main,
         args.num_gpus,
         num_machines=args.num_machines,
         machine_rank=args.machine_rank,
         dist_url=args.dist_url,
-        args=(args,),
+        args=(args, config, build_model),
     )

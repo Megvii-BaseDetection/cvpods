@@ -195,6 +195,8 @@ _config_dict = dict(
             SCALE_RANGES=(),
         ),
         PRECISE_BN=dict(ENABLED=False, NUM_ITER=200),
+        # If True, evaluate the dumped prediction without run the inference on dataset.
+        ON_FILES=False,
     ),
     # Directory where output files are written
     OUTPUT_DIR="./output",

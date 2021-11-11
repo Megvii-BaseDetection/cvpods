@@ -218,7 +218,6 @@ def _cast_cfg_value_type(replacement, original, full_key):
     the right type. The type is correct if it matches exactly or is one of a few
     cases in which the type can be easily coerced.
     """
-    # logger = logging.getLogger(__name__)
     ori_type = type(original)
     new_type = type(replacement)
 

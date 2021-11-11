@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
+# Some code in this file comes from:
+# https://github.com/facebookresearch/detectron2/blob/main/detectron2/data/datasets/coco.py
+# original file LICENSE: Apache2.0
+
 import contextlib
 import copy
 import datetime

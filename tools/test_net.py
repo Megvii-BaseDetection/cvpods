@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
-
-# pylint: disable=W0613
-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 """
 Testing Script for cvpods.
 
@@ -20,30 +19,28 @@ this file as an example of how to use the library.
 You may want to write your own script with your datasets and other customizations.
 """
 import glob
-import logging
 import os
 import re
+import sys
 from collections import OrderedDict
 from pprint import pformat
-
-from torch.nn.parallel import DistributedDataParallel
+import megfile
+from loguru import logger
+import torch
 
 from cvpods.checkpoint import DefaultCheckpointer
 from cvpods.engine import RUNNERS, default_argument_parser, default_setup, launch
 from cvpods.evaluation import build_evaluator, verify_results
 from cvpods.modeling import GeneralizedRCNN, GeneralizedRCNNWithTTA, TTAWarper
-from cvpods.utils import PathManager, comm
-
-from config import config
-from net import build_model
+from cvpods.utils import comm
 
 
 def runner_decrator(cls):
     """
-    We use the "DefaultTrainer" which contains a number pre-defined logic for
+    We use the "DefaultRunner" which contains a number pre-defined logic for
     standard training workflow. They may not work for you, especially if you
     are working on a new research project. In that case you can use the cleaner
-    "SimpleTrainer", or write your own training loop.
+    "SimpleRunner", or write your own training loop.
     """
 
     def custom_build_evaluator(cls, cfg, dataset_name, dataset, output_folder=None):
@@ -53,17 +50,16 @@ def runner_decrator(cls):
         For your own dataset, you can simply create an evaluator manually in your
         script and do not have to worry about the hacky if-else logic here.
         """
-        dump_test = config.GLOBAL.DUMP_TEST
+        dump_test = cfg.GLOBAL.DUMP_TEST
         return build_evaluator(cfg, dataset_name, dataset, output_folder, dump=dump_test)
 
     def custom_test_with_TTA(cls, cfg, model):
-        logger = logging.getLogger("cvpods.runner")
         # In the end of training, run an evaluation with TTA
-        # Only support some R-CNN models.
         logger.info("Running inference with test-time augmentation ...")
 
         module = model
-        if isinstance(module, DistributedDataParallel):
+
+        if isinstance(module, comm.DDP_TYPES):
             module = model.module
         if isinstance(module, GeneralizedRCNN):
             model = GeneralizedRCNNWithTTA(cfg, model)
@@ -81,6 +77,10 @@ def runner_decrator(cls):
 
 def test_argument_parser():
     parser = default_argument_parser()
+    parser.add_argument(
+        "--dir", type=str, default=None,
+        help="path of dir that contains config and network, default to working dir"
+    )
     parser.add_argument("--start-iter", type=int, default=None, help="start iter used to test")
     parser.add_argument("--end-iter", type=int, default=None, help="end iter used to test")
     parser.add_argument("--debug", action="store_true", help="use debug mode or not")
@@ -90,7 +90,7 @@ def test_argument_parser():
 def filter_by_iters(file_list, start_iter, end_iter):
     # sort file_list by modified time
     if file_list[0].startswith("s3://"):
-        file_list.sort(key=lambda x: PathManager.stat(x).m_date)
+        file_list.sort(key=lambda x: megfile.smart_stat(x).extra["LastModified"])
     else:
         file_list.sort(key=os.path.getmtime)
 
@@ -125,7 +125,7 @@ def get_valid_files(args, cfg, logger):
 
     if "MODEL.WEIGHTS" in args.opts:
         model_weights = cfg.MODEL.WEIGHTS
-        assert PathManager.exists(model_weights), "{} not exist!!!".format(model_weights)
+        assert megfile.smart_exists(model_weights), "{} not exist!!!".format(model_weights)
         return [model_weights]
 
     file_list = glob.glob(os.path.join(cfg.OUTPUT_DIR, "model_*.pth"))
@@ -137,8 +137,8 @@ def get_valid_files(args, cfg, logger):
             f"load the corresponding dump file on OSS site: {remote_file_path}."
         )
         file_list = [
-            str(filename) for filename in PathManager.ls(remote_file_path)
-            if re.match(r"model_.+\.pth", filename.name) is not None
+            str(filename) for filename in megfile.smart_listdir(remote_file_path)
+            if re.match(r"model_.+\.pth", os.path.basename(filename)) is not None
         ]
         assert len(file_list) != 0, "No valid file found on OSS"
 
@@ -148,9 +148,12 @@ def get_valid_files(args, cfg, logger):
     return file_list
 
 
-def main(args):
+@logger.catch
+def main(args, config, build_model):
     config.merge_from_list(args.opts)
-    cfg, logger = default_setup(config, args)
+    cfg = default_setup(config, args)
+    if args.num_gpus is None:
+        args.num_gpus = torch.cuda.device_count()
     if args.debug:
         batches = int(cfg.SOLVER.IMS_PER_DEVICE * args.num_gpus)
         if cfg.SOLVER.IMS_PER_BATCH != batches:
@@ -179,12 +182,21 @@ def main(args):
 
 if __name__ == "__main__":
     args = test_argument_parser().parse_args()
-    print("Command Line Args:", args)
+    logger.info("Command Line Args: {}".format(args))
+    if args.num_gpus is None:
+        args.num_gpus = torch.cuda.device_count()
+
+    extra_sys_path = ".." if args.dir is None else args.dir
+    sys.path.append(extra_sys_path)
+
+    from config import config  # isort:skip  # noqa: E402
+    from net import build_model  # isort:skip  # noqa: E402
+
     launch(
         main,
         args.num_gpus,
         num_machines=args.num_machines,
         machine_rank=args.machine_rank,
         dist_url=args.dist_url,
-        args=(args,),
+        args=(args, config, build_model),
     )

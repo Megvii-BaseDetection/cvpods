@@ -13,7 +13,7 @@ import portalocker
 from ..compat_wrapper import deprecated_func
 from .download import download
 
-__all__ = ["get_cache_dir", "file_lock", "ensure_dir", "set_megfile"]
+__all__ = ["PathManager", "get_cache_dir", "file_lock", "ensure_dir", "set_megfile"]
 
 
 def ensure_dir(path: str):
@@ -114,8 +114,8 @@ set_megfile()
 # PathManager will be deprecated in the future.
 class PathManager:
 
-    @deprecated_func("use megfile.smart_open instead")
     @staticmethod
+    @deprecated_func("use megfile.smart_open instead")
     def open(path: str, mode: str = "r"):
         """
         Open a stream to a URI, similar to the built-in `open`.
@@ -128,8 +128,8 @@ class PathManager:
         """
         return megfile.smart_open(path, mode)
 
-    @deprecated_func("use megfile.smart_copy instead")
     @staticmethod
+    @deprecated_func("use megfile.smart_copy instead")
     def copy(src_path: str, dst_path: str) -> bool:
         """
         Copies a source path to a destination path.
@@ -144,8 +144,8 @@ class PathManager:
         """
         return megfile.smart_copy(src_path, dst_path)
 
-    @deprecated_func("use megfile.smart_realpath instead")
     @staticmethod
+    @deprecated_func("use megfile.smart_realpath instead")
     def get_local_path(path: str) -> str:
         """
         Get a filepath which is compatible with native Python I/O such as `open`
@@ -162,8 +162,8 @@ class PathManager:
         """
         return megfile.smart_realpath(path)
 
-    @deprecated_func("use megfile.smart_exists instead")
     @staticmethod
+    @deprecated_func("use megfile.smart_exists instead")
     def exists(path: str) -> bool:
         """
         Checks if there is a resource at the given URI.
@@ -176,8 +176,8 @@ class PathManager:
         """
         return megfile.smart_exists(path)
 
-    @deprecated_func("use megfile.smart_isfile instead")
     @staticmethod
+    @deprecated_func("use megfile.smart_isfile instead")
     def isfile(path: str) -> bool:
         """
         Checks if there the resource at the given URI is a file.
@@ -190,8 +190,8 @@ class PathManager:
         """
         return megfile.smart_isfile(path)
 
-    @deprecated_func("use megfile.smart_isdir instead")
     @staticmethod
+    @deprecated_func("use megfile.smart_isdir instead")
     def isdir(path: str) -> bool:
         """
         Checks if the resource at the given URI is a directory.
@@ -204,8 +204,8 @@ class PathManager:
         """
         return megfile.smart_isdir(path)
 
-    @deprecated_func("use megfile.smart_listdir instead")
     @staticmethod
+    @deprecated_func("use megfile.smart_listdir instead")
     def ls(path: str):
         """
         List the contents of the directory at the provided URI.
@@ -218,8 +218,8 @@ class PathManager:
         """
         return megfile.smart_listdir(path)
 
-    @deprecated_func("use megfile.smart_makedirs instead")
     @staticmethod
+    @deprecated_func("use megfile.smart_makedirs instead")
     def mkdirs(path: str, exist_ok: bool = True) -> None:
         """
         Recursive directory creation function. Like mkdir(), but makes all
@@ -232,8 +232,8 @@ class PathManager:
         """
         return megfile.smart_makedirs(path, exist_ok=exist_ok)
 
-    @deprecated_func("use megfile.smart_remove instead")
     @staticmethod
+    @deprecated_func("use megfile.smart_remove instead")
     def rm(path: str) -> None:
         """
         Remove the file (not directory) at the provided URI.
@@ -243,8 +243,8 @@ class PathManager:
         """
         return megfile.smart_remove(path)
 
-    @deprecated_func("use megfile.smart_stat instead")
     @staticmethod
+    @deprecated_func("use megfile.smart_stat instead")
     def stat(path: str):
         """
         get status of the file at the provided URI.
@@ -254,8 +254,8 @@ class PathManager:
         """
         return megfile.smart_stat(path)
 
-    @deprecated_func("use megfile.s3_upload instead")
     @staticmethod
+    @deprecated_func("use megfile.s3_upload instead")
     def upload(local: str, remote: str):
         """
         Upload the local file (not directory) to the specified remote URI.
@@ -270,7 +270,7 @@ class PathManager:
             return False
         return True
 
-    @deprecated_func("use megfile.smart_path_join instead")
     @staticmethod
+    @deprecated_func("use megfile.smart_path_join instead")
     def join(*paths):
         return megfile.smart_path_join(*paths)

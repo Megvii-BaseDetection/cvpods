@@ -96,6 +96,7 @@ class ModelCatalog(object):
         return url
 
 
+# TODO @wangfeng: write a general logic of the following handler
 @SmartPath.register
 class ModelCatalogHandler(HttpsPath):
     """
@@ -108,6 +109,11 @@ class ModelCatalogHandler(HttpsPath):
         catalog_path = ModelCatalog.get(self.path_without_protocol)
         logger.info("Catalog entry {} points to {}".format(self.path, catalog_path))
         return megfile.smart_open(catalog_path, mode, **kwargs)
+
+    def is_file(self):
+        catalog_path = ModelCatalog.get(self.path_without_protocol)
+        logger.info("Catalog entry {} points to {}".format(self.path, catalog_path))
+        return megfile.smart_isfile(catalog_path)
 
 
 @SmartPath.register
@@ -123,3 +129,7 @@ class Detectron2Path(HttpsPath):
         # TODO add cache logic
         d2_path = self.DETECTRON2_PREFIX + self.path_without_protocol
         return megfile.smart_open(d2_path, mode=mode, **kwargs)
+
+    def is_file(self):
+        d2_path = self.DETECTRON2_PREFIX + self.path_without_protocol
+        return megfile.smart_open(d2_path)

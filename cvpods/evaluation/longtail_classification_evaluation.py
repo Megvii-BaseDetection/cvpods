@@ -4,12 +4,12 @@
 
 import copy
 import itertools
-import logging
 import os
 import os.path as osp
 from collections import OrderedDict
 import json
 from sklearn.metrics import f1_score
+from loguru import logger
 
 import torch
 
@@ -53,7 +53,6 @@ class LongTailClassificationEvaluator(DatasetEvaluator):
         self._output_dir = output_dir
 
         self._cpu_device = torch.device("cpu")
-        self._logger = logging.getLogger(__name__)
 
         self._metadata = meta
         # for long tail evaluation metrics
@@ -92,7 +91,7 @@ class LongTailClassificationEvaluator(DatasetEvaluator):
                 return {}
 
         if len(self._predictions) == 0:
-            self._logger.warning("[ClassificationEvaluator] Did not receive valid predictions.")
+            logger.warning("[ClassificationEvaluator] Did not receive valid predictions.")
             return {}
 
         if self._output_dir:
@@ -144,7 +143,7 @@ class LongTailClassificationEvaluator(DatasetEvaluator):
         self._results["Accuracy"] = results
 
         small_table = create_small_table(results)
-        self._logger.info("Evaluation results for classification: \n" + small_table)
+        logger.info("Evaluation results for classification: \n" + small_table)
 
         if self._dump:
             dump_info_one_task = {

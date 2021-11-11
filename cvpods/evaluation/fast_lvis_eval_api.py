@@ -7,6 +7,7 @@ import time
 
 import numpy as np
 from lvis import LVISEval
+from loguru import logger
 
 from cvpods import _C
 
@@ -22,8 +23,8 @@ class LVISEval_opt(LVISEval):
         Run per image evaluation on given images and store results
         (a list of dict) in self.eval_imgs.
         """
-        self.logger.info("Running per image evaluation.")
-        self.logger.info("Evaluate annotation type *{}*".format(self.params.iou_type))
+        logger.info("Running per image evaluation.")
+        logger.info("Evaluate annotation type *{}*".format(self.params.iou_type))
         tic = time.time()
 
         self.params.img_ids = list(np.unique(self.params.img_ids))
@@ -83,17 +84,17 @@ class LVISEval_opt(LVISEval):
         self._eval_imgs = None
 
         toc = time.time()
-        self.logger.info("LVISeval_opt.evaluate() finished in {:0.2f} seconds.".format(toc - tic))
+        logger.info("LVISeval_opt.evaluate() finished in {:0.2f} seconds.".format(toc - tic))
 
     def accumulate(self):
         """Accumulate per image evaluation results and store the result in
         self.eval.
         """
-        self.logger.info("Accumulating evaluation results.")
+        logger.info("Accumulating evaluation results.")
         tic = time.time()
 
         if not hasattr(self, "_eval_imgs_cpp"):
-            self.logger.error("Please run evaluate() first")
+            logger.error("Please run evaluate() first")
 
         self._params_eval = copy.deepcopy(self.params)
         source = ["rec_thrs", "max_dets", "iou_thrs", "rec_thrs", "use_cats",
@@ -117,4 +118,4 @@ class LVISEval_opt(LVISEval):
         self.eval["scores"] = np.array(self.eval["scores"]).reshape(self.eval["counts"])
 
         toc = time.time()
-        self.logger.info("LVISeval_opt.accumulate() finished in {:0.2f} seconds.".format(toc - tic))
+        logger.info("LVISeval_opt.accumulate() finished in {:0.2f} seconds.".format(toc - tic))
