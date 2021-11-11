@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+# Copyright (C) Megvii, Inc. and its affiliates. All rights reserved.
 
 # This file is modified by the following file:
 # https://github.com/facebookresearch/detectron2/blob/main/detectron2/projects/__init__.py
-# Copyright (C) Facebook, Inc. and its affiliates. All rights reserved.
-# Copyright (C) Megvii, Inc. and its affiliates. All rights reserved.
+# original file LICENSE: Apache2.0
 
 import importlib
 from pathlib import Path

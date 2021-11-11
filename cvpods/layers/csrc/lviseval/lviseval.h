@@ -1,5 +1,8 @@
-// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-// Copyright (c) BaseDetection, Inc. and its affiliates. All Rights Reserved
+// Copyright (c) Megvii, Inc. and its affiliates. All Rights Reserved
+
+// modified from
+// https://github.com/facebookresearch/detectron2/blob/main/detectron2/layers/csrc/cocoeval/cocoeval.h
+// Original license: Apache 2.0
 #pragma once
 
 #include <pybind11/numpy.h>

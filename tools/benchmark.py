@@ -6,9 +6,9 @@ Note: this script has an extra dependency of psutil.
 """
 
 import itertools
-import logging
 import psutil
 import tqdm
+from loguru import logger
 
 import torch
 from torch.nn.parallel import DistributedDataParallel
@@ -16,12 +16,10 @@ from torch.nn.parallel import DistributedDataParallel
 from cvpods.checkpoint import DefaultCheckpointer
 from cvpods.config import get_cfg
 from cvpods.data import DatasetFromList, build_test_loader, build_train_loader
-from cvpods.engine import SimpleTrainer, default_argument_parser, hooks, launch
+from cvpods.engine import SimpleRunner, default_argument_parser, hooks, launch
 from cvpods.modeling import build_model
 from cvpods.solver import build_optimizer
 from cvpods.utils import CommonMetricPrinter, Timer, comm, setup_logger
-
-logger = logging.getLogger("cvpods")
 
 
 def setup(args):
@@ -85,11 +83,11 @@ def benchmark_train(args):
             yield from DatasetFromList(dummy_data, copy=False)
 
     max_iter = 400
-    trainer = SimpleTrainer(model, f(), optimizer)
-    trainer.register_hooks(
+    runner = SimpleRunner(model, f(), optimizer)
+    runner.register_hooks(
         [hooks.IterationTimer(), hooks.PeriodicWriter([CommonMetricPrinter(max_iter)])]
     )
-    trainer.train(1, max_iter)
+    runner.train(1, max_iter)
 
 
 @torch.no_grad()

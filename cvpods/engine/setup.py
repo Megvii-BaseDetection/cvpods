@@ -42,8 +42,8 @@ def default_argument_parser():
                         help="perform evaluation only")
     parser.add_argument("--num-gpus",
                         type=int,
-                        default=1,
-                        help="number of gpus *per machine*")
+                        default=None,
+                        help="number of gpus *per machine*, defalut to None")
     parser.add_argument("--num-machines", type=int, default=1)
     parser.add_argument("--machine-rank",
                         type=int,

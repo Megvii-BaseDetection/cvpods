@@ -4,6 +4,7 @@
 
 import glob
 import os
+import subprocess
 from os import path
 from setuptools import find_packages, setup
 
@@ -14,6 +15,39 @@ torch_ver = [int(x) for x in torch.__version__.split(".")[:2]]
 assert torch_ver >= [1, 3], "Requires PyTorch >= 1.3"
 
 
+def get_cuda_version():
+    cuda_version = ""
+    try:
+        nvcc = get_command_path("nvcc")
+        nvcc = subprocess.check_output(
+            "'{}' -V | grep 'Cuda compilation tools'".format(nvcc),
+            shell=True
+        )
+        nvcc = nvcc.decode("utf-8").strip()
+        version = "".join(nvcc.split()[-1].split(".")[:2])
+        version = version[1:]
+    except subprocess.SubprocessError:
+        nvcc = "Not Available"
+        version = 'none'
+    finally:
+        cuda_version = version
+
+    return cuda_version
+
+
+def get_command_path(command_name):
+    """
+    Get path of given command.
+
+    NOTE: This function only works on linux platform.
+    """
+    with open(os.devnull, "w") as devnull:
+        command_path = subprocess.check_output(
+            ["which", command_name], stderr=devnull
+        ).decode().rstrip('\r\n')
+    return command_path
+
+
 def get_version():
     init_py_path = path.join(path.abspath(path.dirname(__file__)), "cvpods", "__init__.py")
     init_py = open(init_py_path, "r").readlines()
@@ -22,8 +56,10 @@ def get_version():
 
     # The following is used to build release packages.
     # Users should never use it.
-    suffix = os.getenv("D2_VERSION_SUFFIX", "")
+    suffix = os.getenv("PODS_VERSION_SUFFIX", "")
     version = version + suffix
+    cuda_version = get_cuda_version()
+    version += "+cu{}torch{}".format(cuda_version, "".join([str(x) for x in torch_ver]))
     if os.getenv("BUILD_NIGHTLY", "0") == "1":
         from datetime import datetime
 
@@ -88,7 +124,7 @@ def get_extensions():
 
 def build_cvpods_script():
     cur_dir = os.getcwd()
-    head = "#!/bin/bash\n\nOMP_NUM_THREADS=1 PYTHONPATH=./:$PYTHONPATH "
+    head = ("#!/bin/bash\n")
     with open("tools/pods_train", "w") as pods_train:
         pods_train.write(head + f"python3 {os.path.join(cur_dir, 'tools', 'train_net.py')} $@")
 
@@ -119,9 +155,13 @@ if __name__ == "__main__":
             "termcolor>=1.1",
             "colorama",
             "Pillow>=7.1",  # or use pillow-simd for better performance
+            "opencv-python",
             "tabulate",
             "cloudpickle",
             "matplotlib",
+            "loguru",
+            "timm",
+            "megfile",
             "tqdm>4.29.0",
             "tensorboard",
             "pycocotools>=2.0.2",  # corresponds to https://github.com/ppwwyyxx/cocoapi
@@ -132,6 +172,7 @@ if __name__ == "__main__":
             "appdirs",
             "seaborn",
             "pandas",
+            "lvis",
             "sklearn",
         ],
         extras_require={
@@ -140,7 +181,6 @@ if __name__ == "__main__":
                 "psutil",
                 "hydra-core",
                 "panopticapi @ https://github.com/cocodataset/panopticapi/archive/master.zip",
-                "lvis",
                 "cityscapesscripts",
             ],
         },

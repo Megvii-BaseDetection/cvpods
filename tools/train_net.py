@@ -1,31 +1,35 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-# Modified by BaseDetection, Inc. and its affiliates. All Rights Reserved
-
-# pylint: disable=W0613
-
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 """
 Detection Training Script.
+
 This scripts reads a given config file and runs the training or evaluation.
 It is an entry point that is made to train standard models in cvpods.
+
 In order to let one script support training of many models,
 this script contains logic that are specific to these built-in models and therefore
 may not be suitable for your own project.
 For example, your research project perhaps only needs a single "evaluator".
+
 Therefore, we recommend you to use cvpods as an library and take
 this file as an example of how to use the library.
 You may want to write your own script with your datasets and other customizations.
 """
-import logging
 import os
+import pickle as pkl
+import sys
 from collections import OrderedDict
-from colorama import Fore, Style
+from loguru import logger
+
+import torch
 
 from cvpods.engine import RUNNERS, default_argument_parser, default_setup, hooks, launch
 from cvpods.evaluation import build_evaluator
 from cvpods.modeling import GeneralizedRCNNWithTTA
-
-from config import config
-from net import build_model
+from cvpods.utils import comm
 
 
 def runner_decrator(cls):
@@ -44,11 +48,10 @@ def runner_decrator(cls):
         For your own dataset, you can simply create an evaluator manually in your
         script and do not have to worry about the hacky if-else logic here.
         """
-        dump_train = config.GLOBAL.DUMP_TRAIN
+        dump_train = cfg.GLOBAL.DUMP_TRAIN
         return build_evaluator(cfg, dataset_name, dataset, output_folder, dump=dump_train)
 
     def custom_test_with_TTA(cls, cfg, model):
-        logger = logging.getLogger("cvpods.runner")
         # In the end of training, run an evaluation with TTA
         # Only support some R-CNN models.
         logger.info("Running inference with test-time augmentation ...")
@@ -63,9 +66,20 @@ def runner_decrator(cls):
     return cls
 
 
-def main(args):
+def train_argument_parser():
+    parser = default_argument_parser()
+    parser.add_argument(
+        "--dir", type=str, default=None,
+        help="path of dir that contains config and network, default to working dir"
+    )
+    parser.add_argument("--clearml", action="store_true", help="use clearml or not")
+    return parser
+
+
+@logger.catch
+def main(args, config, build_model):
     config.merge_from_list(args.opts)
-    cfg, logger = default_setup(config, args)
+    cfg = default_setup(config, args)
 
     """
     If you'd like to do anything fancier than the standard training logic,
@@ -74,19 +88,17 @@ def main(args):
     runner = runner_decrator(RUNNERS.get(cfg.TRAINER.NAME))(cfg, build_model)
     runner.resume_or_load(resume=args.resume)
 
-    # check wheather worksapce has enough storeage space
-    # assume that a single dumped model is 700Mb
-    file_sys = os.statvfs(cfg.OUTPUT_DIR)
-    free_space_Gb = (file_sys.f_bfree * file_sys.f_frsize) / 2**30
-    eval_space_Gb = (cfg.SOLVER.LR_SCHEDULER.MAX_ITER // cfg.SOLVER.CHECKPOINT_PERIOD) * 700 / 2**10
-    if eval_space_Gb > free_space_Gb:
-        logger.warning(f"{Fore.RED}Remaining space({free_space_Gb}GB) "
-                       f"is less than ({eval_space_Gb}GB){Style.RESET_ALL}")
-
+    extra_hooks = []
+    if args.clearml:
+        from cvpods.engine.clearml import ClearMLHook
+        if comm.is_main_process():
+            extra_hooks.append(ClearMLHook())
     if cfg.TEST.AUG.ENABLED:
-        runner.register_hooks(
-            [hooks.EvalHook(0, lambda: runner.test_with_TTA(cfg, runner.model))]
+        extra_hooks.append(
+            hooks.EvalHook(0, lambda: runner.test_with_TTA(cfg, runner.model))
         )
+    if extra_hooks:
+        runner.register_hooks(extra_hooks)
 
     logger.info("Running with full config:\n{}".format(cfg))
     base_config = cfg.__class__.__base__()
@@ -94,17 +106,59 @@ def main(args):
 
     runner.train()
 
+    if comm.is_main_process() and cfg.MODEL.AS_PRETRAIN:
+        # convert last ckpt to pretrain format
+        convert_to_pretrained_model(
+            input=os.path.join(cfg.OUTPUT_DIR, "model_final.pth"),
+            save_path=os.path.join(cfg.OUTPUT_DIR, "model_final_pretrain_weight.pkl")
+        )
+
+
+def convert_to_pretrained_model(input, save_path):
+    obj = torch.load(input, map_location="cpu")
+    obj = obj["model"]
+
+    newmodel = {}
+    for k, v in obj.items():
+        if not k.startswith("encoder_q.") and not k.startswith("network"):
+            continue
+        old_k = k
+        if k.startswith("encoder_q."):
+            k = k.replace("encoder_q.", "")
+        elif k.startswith("network"):
+            k = k.replace("network.", "")
+        print(old_k, "->", k)
+        newmodel[k] = v.numpy()
+
+    res = {
+        "model": newmodel,
+        "__author__": "MOCO" if k.startswith("encoder_q.") else "CLS",
+        "matching_heuristics": True
+    }
+
+    with open(save_path, "wb") as f:
+        pkl.dump(res, f)
+
 
 if __name__ == "__main__":
-    args = default_argument_parser().parse_args()
-    print("Command Line Args:", args)
+    args = train_argument_parser().parse_args()
+    if args.num_gpus is None:
+        args.num_gpus = torch.cuda.device_count()
+
+    extra_sys_path = ".." if args.dir is None else args.dir
+    sys.path.append(extra_sys_path)
+
+    from config import config
+    from net import build_model
+
     config.link_log()
-    print("soft link to {}".format(config.OUTPUT_DIR))
+    logger.info("Create soft link to {}".format(config.OUTPUT_DIR))
+
     launch(
         main,
         args.num_gpus,
         num_machines=args.num_machines,
         machine_rank=args.machine_rank,
         dist_url=args.dist_url,
-        args=(args,),
+        args=(args, config, build_model),
     )
