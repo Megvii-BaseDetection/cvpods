@@ -272,8 +272,7 @@ class RPNTest(unittest.TestCase):
         pred_logits[0][1][3:5].fill_(float("inf"))
         find_top_rpn_proposals(
             proposals, pred_logits, images,
-            0.5, "normal", 1000, 1000,
-            0, False
+            0.5, "normal", 1000, 1000, 0,
         )
 
 
