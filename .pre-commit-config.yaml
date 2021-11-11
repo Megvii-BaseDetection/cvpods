@@ -18,10 +18,3 @@ repos:
       - id: flake8
         args:
         - --jobs=4
-  - repo: local
-    hooks:
-    - id: lint
-      name: lint
-      entry: pylint --rcfile pylint.cfg
-      language: system
-      files: \.py$
