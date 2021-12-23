@@ -129,18 +129,7 @@ def get_valid_files(args, cfg, logger):
         return [model_weights]
 
     file_list = glob.glob(os.path.join(cfg.OUTPUT_DIR, "model_*.pth"))
-    if len(file_list) == 0:  # local file invalid, get it from oss
-        model_prefix = cfg.OUTPUT_DIR.split("cvpods_playground")[-1][1:]
-        remote_file_path = os.path.join(cfg.OSS.DUMP_PREFIX, model_prefix)
-        logger.warning(
-            "No checkpoint file was found locally, try to "
-            f"load the corresponding dump file on OSS site: {remote_file_path}."
-        )
-        file_list = [
-            str(filename) for filename in megfile.smart_listdir(remote_file_path)
-            if re.match(r"model_.+\.pth", os.path.basename(filename)) is not None
-        ]
-        assert len(file_list) != 0, "No valid file found on OSS"
+    assert len(file_list) > 0, "Plz provide model to evaluate"
 
     file_list = filter_by_iters(file_list, args.start_iter, args.end_iter)
     assert file_list, "No checkpoint valid in {}.".format(cfg.OUTPUT_DIR)
