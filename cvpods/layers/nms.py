@@ -14,6 +14,22 @@ from cvpods.utils.apex_wrapper import float_function
 
 ml_nms = _C.ml_nms
 
+__all__ = [
+    "batched_clusternms",
+    "batched_nms",
+    "batched_nms_rotated",
+    "batched_softnms",
+    "batched_softnms_rotated",
+    "cluster_nms",
+    "generalized_batched_nms",
+    "matrix_nms",
+    "ml_nms",
+    "nms",
+    "nms_rotated",
+    "softnms",
+    "softnms_rotated",
+]
+
 
 @float_function
 def batched_nms(boxes, scores, idxs, iou_threshold):

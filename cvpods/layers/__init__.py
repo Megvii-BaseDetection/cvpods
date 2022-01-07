@@ -3,6 +3,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
 # This file has been modified by Megvii ("Megvii Modifications").
 # All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+
 from .activation_funcs import MemoryEfficientSwish, Swish
 from .batch_norm import (
     FrozenBatchNorm2d,
@@ -15,21 +16,7 @@ from .border_align import BorderAlign, BorderAlignFunc
 from .deform_conv import DeformConv, ModulatedDeformConv
 from .deform_conv_with_off import DeformConvWithOff, ModulatedDeformConvWithOff
 from .mask_ops import paste_masks_in_image
-from .nms import (
-    batched_clusternms,
-    batched_nms,
-    batched_nms_rotated,
-    batched_softnms,
-    batched_softnms_rotated,
-    cluster_nms,
-    generalized_batched_nms,
-    matrix_nms,
-    ml_nms,
-    nms,
-    nms_rotated,
-    softnms,
-    softnms_rotated
-)
+from .nms import *
 from .position_encoding import (
     PositionEmbeddingLearned,
     PositionEmbeddingSine,
@@ -40,17 +27,7 @@ from .roi_align_rotated import ROIAlignRotated, roi_align_rotated
 from .shape_spec import ShapeSpec
 from .swap_align2nat import SwapAlign2Nat, swap_align2nat
 from .tree_filter_v2 import TreeFilterV2
-from .wrappers import (
-    BatchNorm1d,
-    BatchNorm2d,
-    Conv2d,
-    Conv2dSamePadding,
-    ConvTranspose2d,
-    MaxPool2dSamePadding,
-    SeparableConvBlock,
-    cat,
-    interpolate
-)
+from .wrappers import *
 
 ## SplAtConv2d must be imported after Conv2d
 from .splat import SplAtConv2d  # isort:skip
