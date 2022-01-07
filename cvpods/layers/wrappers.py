@@ -17,6 +17,22 @@ from torch.nn.modules.utils import _ntuple
 
 TORCH_VERSION = tuple(int(x) for x in torch.__version__.split(".")[:2])
 
+__all__ = [
+    "BatchNorm1d",
+    "BatchNorm2d",
+    "Conv2d",
+    "Conv2dSamePadding",
+    "ConvTranspose2d",
+    "DisAlignLinear",
+    "DisAlignNormalizedLinear",
+    "MaxPool2dSamePadding",
+    "NormalizedConv2d",
+    "NormalizedLinear",
+    "SeparableConvBlock",
+    "cat",
+    "interpolate",
+]
+
 
 def cat(tensors, dim=0):
     """
@@ -495,25 +511,29 @@ class SeparableConvBlock(torch.nn.Module):
 
         It assumes that norm layer is used before activation.
         """
-        super(SeparableConvBlock, self).__init__()
+        super().__init__()
         self.norm = norm
         self.activation = activation
-        self.depthwise = Conv2dSamePadding(in_channels=in_channels,
-                                           out_channels=in_channels,
-                                           kernel_size=kernel_size,
-                                           stride=stride,
-                                           padding=padding,
-                                           dilation=dilation,
-                                           groups=in_channels,
-                                           bias=False)
-        self.pointwise = Conv2dSamePadding(in_channels=in_channels,
-                                           out_channels=out_channels,
-                                           kernel_size=1,
-                                           stride=1,
-                                           padding=0,
-                                           dilation=1,
-                                           groups=1,
-                                           bias=bias)
+        self.depthwise = Conv2dSamePadding(
+            in_channels=in_channels,
+            out_channels=in_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            groups=in_channels,
+            bias=False,
+        )
+        self.pointwise = Conv2dSamePadding(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            dilation=1,
+            groups=1,
+            bias=bias,
+        )
         if bias:
             self.bias = self.pointwise.bias
 
