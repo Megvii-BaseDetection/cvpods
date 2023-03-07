@@ -108,9 +108,6 @@ def set_megfile():
     megfile.HttpsPath.open = cache_file(megfile.HttpsPath.open)
 
 
-set_megfile()
-
-
 # PathManager will be deprecated in the future.
 class PathManager:
 

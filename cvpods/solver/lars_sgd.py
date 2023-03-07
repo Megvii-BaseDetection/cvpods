@@ -1,9 +1,78 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
+# Copyright (C) Megvii Inc. All rights reserved.
 
 import torch
+from torch import optim
 from torch.optim.optimizer import Optimizer, required
+
+__all__  = ["AngularSGD", "LARS_SGD"]
+
+
+class AugularSGD(optim.SGD):
+    """Implements Angular SGD"""
+
+    @torch.no_grad()
+    def step(self, closure=None):
+        """Performs a single optimization step.
+
+        Arguments:
+            closure (callable, optional): A closure that reevaluates the model
+                and returns the loss.
+        """
+        loss = None
+        if closure is not None:
+            loss = closure()
+
+        for group in self.param_groups:
+            weight_decay = group['weight_decay']
+            momentum = group['momentum']
+            dampening = group['dampening']
+            nesterov = group['nesterov']
+            lr = group['lr']
+
+            for p in group['params']:
+                if p.grad is None:
+                    continue
+                d_p = p.grad
+                if weight_decay != 0:
+                    d_p = d_p.add(p, alpha=weight_decay)
+                if momentum != 0:
+                    param_state = self.state[p]
+                    if 'momentum_buffer' not in param_state:
+                        buf = param_state['momentum_buffer'] = torch.clone(d_p).detach()
+                    else:
+                        buf = param_state['momentum_buffer']
+                        buf.mul_(momentum).add_(d_p, alpha=1 - dampening)
+                    if nesterov:
+                        d_p = d_p.add(buf, alpha=momentum)
+                    else:
+                        d_p = buf
+
+            w_n2, g_n2, d_n2, inner, inner2 = 0, 0, 0, 0, 0
+            for p in group['params']:
+                w_n2 += (p * p).sum().item()
+                delta = self.state[p]['momentum_buffer']
+                d_n2 += (delta * delta).sum().item()
+                g_n2 += (p.grad * p.grad).sum().item()
+                inner += (p * p.grad).sum().item()
+                inner2 += (p * delta).sum().item()
+
+            w_n = w_n2 ** 0.5
+            g_n = g_n2 ** 0.5
+            d_n = d_n2 ** 0.5
+            cos = inner / (w_n * g_n + 1e-5)
+            cos2 = inner2 / (w_n * d_n + 1e-5)
+            sin2 = (1 - min(1, cos2 ** 2)) ** 0.5
+
+            group['w_n'] = w_n
+            group['g_n'] = g_n
+            group['d_n'] = d_n
+            group['au'] = lr * d_n * sin2 / (w_n + 1e-5)
+            group['cos'] = cos
+
+            for p in group['params']:
+                p.add_(d_p, alpha=-group['lr'])
+        return loss
 
 
 class LARS_SGD(Optimizer):

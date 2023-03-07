@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
 # This file has been modified by Megvii ("Megvii Modifications").
 # All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
@@ -10,7 +9,8 @@ import torch
 from torch import optim
 
 from cvpods.utils.registry import Registry
-from .lars_sgd import LARS_SGD
+
+from cvpods.solver import lars_sgd
 
 OPTIMIZER_BUILDER = Registry("Optimizer builder")
 
@@ -115,7 +115,7 @@ class LARS_SGDBuilder(OptimizerBuilder):
             )
         else:
             param = model.parameters()
-        optimizer = LARS_SGD(
+        optimizer = lars_sgd.LARS_SGD(
             param,
             lr=cfg.SOLVER.OPTIMIZER.BASE_LR,
             momentum=cfg.SOLVER.OPTIMIZER.MOMENTUM,
@@ -195,6 +195,38 @@ class SGDGateLRBuilder(OptimizerBuilder):
 
                 params += [{"params": [value], "lr": lr, "weight_decay": weight_decay}]
         optimizer = torch.optim.SGD(
+            params,
+            cfg.SOLVER.OPTIMIZER.BASE_LR,
+            momentum=cfg.SOLVER.OPTIMIZER.MOMENTUM
+        )
+        return optimizer
+
+
+@OPTIMIZER_BUILDER.register()
+class AngularSGDBuilder(OptimizerBuilder):
+
+    @staticmethod
+    def build(model, cfg):
+        params: List[Dict[str, Any]] = []
+        memo: Set[torch.nn.parameter.Parameter] = set()
+        for module in model.modules():
+            for key, value in module.named_parameters(recurse=False):
+                if not value.requires_grad:
+                    continue
+                # Avoid duplicating parameters
+                if value in memo:
+                    continue
+                memo.add(value)
+                lr = cfg.SOLVER.OPTIMIZER.BASE_LR
+                weight_decay = cfg.SOLVER.OPTIMIZER.WEIGHT_DECAY
+                if isinstance(module, NORM_MODULE_TYPES):
+                    weight_decay = cfg.SOLVER.OPTIMIZER.WEIGHT_DECAY_NORM
+                elif key == "bias":
+                    lr = cfg.SOLVER.OPTIMIZER.BASE_LR * cfg.SOLVER.OPTIMIZER.BIAS_LR_FACTOR
+                    weight_decay = cfg.SOLVER.OPTIMIZER.WEIGHT_DECAY
+                params += [{"params": [value], "lr": lr, "weight_decay": weight_decay}]
+
+        optimizer = lars_sgd.AugularSGD(
             params,
             cfg.SOLVER.OPTIMIZER.BASE_LR,
             momentum=cfg.SOLVER.OPTIMIZER.MOMENTUM

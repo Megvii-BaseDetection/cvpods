@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 # Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
 # This file has been modified by Megvii ("Megvii Modifications").
 # All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
@@ -8,6 +7,7 @@ import math
 import os
 from collections import OrderedDict
 from loguru import logger
+import functools
 
 import torch
 from torch.nn.parallel import DistributedDataParallel
@@ -27,7 +27,7 @@ from cvpods.modeling.nn_utils.precise_bn import get_bn_modules
 from cvpods.solver import build_lr_scheduler, build_optimizer
 from cvpods.utils import comm
 from cvpods.utils.compat_wrapper import deprecated
-from cvpods.utils.dump.events import CommonMetricPrinter, JSONWriter, TensorboardXWriter
+from cvpods.utils.dump.events import CommonMetricPrinter, JSONWriter, TensorboardXWriter, get_event_storage
 
 from . import hooks
 from .base_runner import RUNNERS, SimpleRunner
@@ -82,7 +82,6 @@ class DefaultRunner(SimpleRunner):
         Args:
             cfg (config dict):
         """
-
         self.data_loader = self.build_train_loader(cfg)
         # Assume these objects must be constructed in this order.
         model = build_model(cfg)
@@ -148,9 +147,17 @@ class DefaultRunner(SimpleRunner):
         self.max_epoch = cfg.SOLVER.LR_SCHEDULER.MAX_EPOCH
         self.window_size = cfg.TRAINER.WINDOW_SIZE
 
+        self.angular_update = cfg.GLOBAL.ANGULAR_UPDATE
+
         self.cfg = cfg
 
         self.register_hooks(self.build_hooks())
+    
+    def _write_metrics(self, loss_dict, data_time: float, prefix: str = ""):
+        super()._write_metrics(loss_dict, data_time, prefix)
+        if self.angular_update and comm.is_main_process() and self.inner_iter != 0:
+            writer: TensorboardXWriter = self.get_writer(writer_type="tensorboard")
+            writer.write_angular_update(self.optimizer)
 
     def resume_or_load(self, resume=True):
         """
@@ -266,7 +273,7 @@ class DefaultRunner(SimpleRunner):
             ),
             TensorboardXWriter(
                 self.cfg.OUTPUT_DIR,
-                window_size=self.window_size
+                window_size=self.window_size,
             ),
         ]
 
@@ -320,6 +327,29 @@ class DefaultRunner(SimpleRunner):
         Overwrite it if you'd like a different data loader.
         """
         return build_train_loader(cfg)
+
+    @functools.lru_cache
+    def get_writer(self, writer_type="tensorboard"):
+        """get specific writer
+
+        Args:
+            writer_type (str, optional): type of writer. Defaults to "tensorboard".
+        """
+        from cvpods.engine.hooks import PeriodicWriter
+        writers = None
+        for hook in self._hooks:
+            if isinstance(hook, PeriodicWriter):
+                writers = hook._writers
+
+        w_type = CommonMetricPrinter
+        if writer_type == "tensorboard":
+            w_type = TensorboardXWriter
+        elif writer_type == "json":
+            w_type = JSONWriter
+
+        for writer in writers:
+            if isinstance(writer, w_type):
+                return writer
 
     @classmethod
     def build_test_loader(cls, cfg):

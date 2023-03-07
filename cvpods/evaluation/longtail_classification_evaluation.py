@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # Copyright (c) Megvii, Inc. and its affiliates. All Rights Reserved
 
 import copy
@@ -8,7 +7,6 @@ import os
 import os.path as osp
 from collections import OrderedDict
 import json
-from sklearn.metrics import f1_score
 from loguru import logger
 
 import torch
@@ -116,6 +114,7 @@ class LongTailClassificationEvaluator(DatasetEvaluator):
         Evaluate self._predictions on the classification task.
         Fill self._results with the metrics of the tasks.
         """
+        from sklearn.metrics import f1_score
         batch_size = len(self._targets)
 
         pred = torch.cat(self._predictions, dim=1)
