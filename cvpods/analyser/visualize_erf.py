@@ -5,15 +5,16 @@
 # Scaling Up Your Kernels to 31x31: Revisiting Large Kernel Design in CNNs (https://arxiv.org/abs/2203.06717)
 # Github source: https://github.com/DingXiaoH/RepLKNet-pytorch  MIT License
 
-import os
 import argparse
-import numpy as np
-import torch
-from torch import nn
+import os
 from typing import List
-
 import timm
 from timm.utils import AverageMeter
+
+import numpy as np
+
+import torch
+from torch import nn
 
 FEATURE_LIST = []
 
