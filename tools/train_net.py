@@ -1,5 +1,4 @@
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
 # This file has been modified by Megvii ("Megvii Modifications").
 # All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
@@ -73,6 +72,7 @@ def train_argument_parser():
         help="path of dir that contains config and network, default to working dir"
     )
     parser.add_argument("--clearml", action="store_true", help="use clearml or not")
+    parser.add_argument("--angular", action="store_true", help="record auglar update into tensorboard")
     return parser
 
 
@@ -80,6 +80,9 @@ def train_argument_parser():
 def main(args, config, build_model):
     config.merge_from_list(args.opts)
     cfg = default_setup(config, args)
+    if args.angular:
+        cfg.GLOBAL.ANGULAR_UPDATE = True
+        cfg.SOLVER.OPTIMIZER.NAME = "AngularSGD"
 
     """
     If you'd like to do anything fancier than the standard training logic,
@@ -88,6 +91,7 @@ def main(args, config, build_model):
     runner = runner_decrator(RUNNERS.get(cfg.TRAINER.NAME))(cfg, build_model)
     runner.resume_or_load(resume=args.resume)
 
+    # hook that possibly used in training and determined by args
     extra_hooks = []
     if args.clearml:
         from cvpods.engine.clearml import ClearMLHook

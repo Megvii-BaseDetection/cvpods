@@ -8,9 +8,8 @@ from typing import Any, Dict, List, Set
 import torch
 from torch import optim
 
-from cvpods.utils.registry import Registry
-
 from cvpods.solver import lars_sgd
+from cvpods.utils.registry import Registry
 
 OPTIMIZER_BUILDER = Registry("Optimizer builder")
 
@@ -207,27 +206,54 @@ class AngularSGDBuilder(OptimizerBuilder):
 
     @staticmethod
     def build(model, cfg):
-        params: List[Dict[str, Any]] = []
+        match_keys = ["res2", "res3", "res4", "res5"]
+        weight_decay = cfg.SOLVER.OPTIMIZER.WEIGHT_DECAY_NORM
+        lr = cfg.SOLVER.OPTIMIZER.BASE_LR
+
+        norm_pg = [
+            {'params': [], 'name': f'layer{x}', 'weight_decay': weight_decay, "lr": lr}
+            for x in range(1, 1 + len(match_keys)))
+        ]
+        other_pg: List[Dict[str, Any]] = []
+
+        def get_match_idx(name):
+            for i, key in enumerate(match_keys):
+                if key in name:
+                    return i
+
         memo: Set[torch.nn.parameter.Parameter] = set()
-        for module in model.modules():
+        for name, module in model.named_modules():
             for key, value in module.named_parameters(recurse=False):
                 if not value.requires_grad:
                     continue
                 # Avoid duplicating parameters
                 if value in memo:
                     continue
-                memo.add(value)
-                lr = cfg.SOLVER.OPTIMIZER.BASE_LR
-                weight_decay = cfg.SOLVER.OPTIMIZER.WEIGHT_DECAY
+
                 if isinstance(module, NORM_MODULE_TYPES):
                     weight_decay = cfg.SOLVER.OPTIMIZER.WEIGHT_DECAY_NORM
+                    lr = cfg.SOLVER.OPTIMIZER.BASE_LR
+                    match_idx = get_match_idx(name)
+                    if match_idx is None:
+                        other_pg += [{
+                            "params": [module.weight, module.bias],
+                            "lr": lr, "weight_decay": weight_decay
+                        }]
+                    else:
+                        norm_pg[match_idx]["params"].extend([module.weight, module.bias])
+
+                    memo.add(module.weight)
+                    memo.add(module.bias)
+                    continue
                 elif key == "bias":
                     lr = cfg.SOLVER.OPTIMIZER.BASE_LR * cfg.SOLVER.OPTIMIZER.BIAS_LR_FACTOR
                     weight_decay = cfg.SOLVER.OPTIMIZER.WEIGHT_DECAY
-                params += [{"params": [value], "lr": lr, "weight_decay": weight_decay}]
+
+                other_pg += [{"params": [value], "lr": lr, "weight_decay": weight_decay}]
+                memo.add(value)
 
         optimizer = lars_sgd.AugularSGD(
-            params,
+            norm_pg + other_pg,
             cfg.SOLVER.OPTIMIZER.BASE_LR,
             momentum=cfg.SOLVER.OPTIMIZER.MOMENTUM
         )

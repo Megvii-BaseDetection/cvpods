@@ -4,10 +4,10 @@
 
 import copy
 import time
+from loguru import logger
 
 import numpy as np
 from lvis import LVISEval
-from loguru import logger
 
 from cvpods import _C
 

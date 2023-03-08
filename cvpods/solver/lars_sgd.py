@@ -11,6 +11,22 @@ __all__  = ["AngularSGD", "LARS_SGD"]
 class AugularSGD(optim.SGD):
     """Implements Angular SGD"""
 
+    def __init__(self, params, lr=required, momentum=0, dampening=0,
+                 weight_decay=0, nesterov=False):
+        if lr is not required and lr < 0.0:
+            raise ValueError("Invalid learning rate: {}".format(lr))
+        if momentum < 0.0:
+            raise ValueError("Invalid momentum value: {}".format(momentum))
+        if weight_decay < 0.0:
+            raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
+
+        # In AuglarSGD, add name field to param_groups
+        defaults = dict(lr=lr, momentum=momentum, dampening=dampening,
+                        weight_decay=weight_decay, nesterov=nesterov, name=None)
+        if nesterov and (momentum <= 0 or dampening != 0):
+            raise ValueError("Nesterov momentum requires a momentum and zero dampening")
+        super(optim.SGD, self).__init__(params, defaults)
+
     @torch.no_grad()
     def step(self, closure=None):
         """Performs a single optimization step.
@@ -28,8 +44,10 @@ class AugularSGD(optim.SGD):
             momentum = group['momentum']
             dampening = group['dampening']
             nesterov = group['nesterov']
+            name = group['name']
             lr = group['lr']
 
+            w_n2, g_n2, d_n2, inner, inner2 = 0, 0, 0, 0, 0
             for p in group['params']:
                 if p.grad is None:
                     continue
@@ -48,30 +66,32 @@ class AugularSGD(optim.SGD):
                     else:
                         d_p = buf
 
-            w_n2, g_n2, d_n2, inner, inner2 = 0, 0, 0, 0, 0
-            for p in group['params']:
-                w_n2 += (p * p).sum().item()
-                delta = self.state[p]['momentum_buffer']
-                d_n2 += (delta * delta).sum().item()
-                g_n2 += (p.grad * p.grad).sum().item()
-                inner += (p * p.grad).sum().item()
-                inner2 += (p * delta).sum().item()
+                if name is not None:
+                    # update weight
+                    w_n2 += (p * p).sum().item()
+                    delta = self.state[p]['momentum_buffer']
+                    d_n2 += (delta * delta).sum().item()
+                    g_n2 += (p.grad * p.grad).sum().item()
+                    inner += (p * p.grad).sum().item()
+                    inner2 += (p * delta).sum().item()
 
-            w_n = w_n2 ** 0.5
-            g_n = g_n2 ** 0.5
-            d_n = d_n2 ** 0.5
-            cos = inner / (w_n * g_n + 1e-5)
-            cos2 = inner2 / (w_n * d_n + 1e-5)
-            sin2 = (1 - min(1, cos2 ** 2)) ** 0.5
-
-            group['w_n'] = w_n
-            group['g_n'] = g_n
-            group['d_n'] = d_n
-            group['au'] = lr * d_n * sin2 / (w_n + 1e-5)
-            group['cos'] = cos
-
-            for p in group['params']:
+                # update gradient
                 p.add_(d_p, alpha=-group['lr'])
+
+            if name is not None:
+                w_n = w_n2 ** 0.5
+                g_n = g_n2 ** 0.5
+                d_n = d_n2 ** 0.5
+                cos = inner / (w_n * g_n + 1e-5)
+                cos2 = inner2 / (w_n * d_n + 1e-5)
+                sin2 = (1 - min(1, cos2 ** 2)) ** 0.5
+
+                group['w_n'] = w_n
+                group['g_n'] = g_n
+                group['d_n'] = d_n
+                group['au'] = lr * d_n * sin2 / (w_n + 1e-5)
+                group['cos'] = cos
+
         return loss
 
 

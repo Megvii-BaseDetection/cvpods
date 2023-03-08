@@ -156,15 +156,17 @@ class TensorboardXWriter(EventWriter):
     def write_angular_update(self, optimizer):
         storage = get_event_storage()
         for pg in optimizer.param_groups:
-            import ipdb; ipdb.set_trace()
-            tb_sum = dict(
-                au=pg['au'], weight_norm=pg['w_n'], unit_gradient_norm=pg['g_n'] * pg['w_n'],
-                gradient_norm=pg['g_n'], momentum_norm=pg['d_n'], cos=pg['cos'],
-            )
-            for key in tb_sum:
-                self._writer.add_scalar(
-                    '{}/{}'.format(pg['name'], key), tb_sum[key], global_step=storage.iteration,
+            name = pg.get("name", None)
+            if name is not None:
+                tb_sum = dict(
+                    au=pg['au'], weight_norm=pg['w_n'],
+                    unit_gradient_norm=pg['g_n'] * pg['w_n'],
+                    gradient_norm=pg['g_n'], momentum_norm=pg['d_n'], cos=pg['cos'],
                 )
+                for key in tb_sum:
+                    self._writer.add_scalar(
+                        f"{name}/{key}", tb_sum[key], global_step=storage.iteration,
+                    )
 
     def close(self):
         if hasattr(self, "_writer"):  # doesn't exist when the code fails at import

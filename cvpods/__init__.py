@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-from .utils import setup_environment, set_megfile
+from .utils import set_megfile, setup_environment
 
 setup_environment()
 set_megfile()

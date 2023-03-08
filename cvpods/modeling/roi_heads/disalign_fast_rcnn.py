@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from cvpods.layers import cat, NormalizedLinear
+from cvpods.layers import NormalizedLinear, cat
 
 
 class DisAlignFastRCNNOutputLayers(nn.Module):

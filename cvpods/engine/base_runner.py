@@ -79,7 +79,7 @@ class RunnerBase:
             try:
                 self.before_train()
                 for self.iter in range(start_iter, max_iter):
-                    self.inner_iter = 0
+                    self.inner_iter = 0  # inner_iter is used for accumulating gradients
                     self.before_step()
                     # by default, a step contains data_loading and model forward,
                     # loss backward is executed in after_step for better expansibility

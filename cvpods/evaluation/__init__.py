@@ -15,10 +15,10 @@ from .evaluator import (
     DatasetEvaluators,
     inference_context,
     inference_on_dataset,
-    inference_on_files,
+    inference_on_files
 )
-from .lvis_evaluation import LVISEvaluator
 from .longtail_classification_evaluation import LongTailClassificationEvaluator
+from .lvis_evaluation import LVISEvaluator
 from .panoptic_evaluation import COCOPanopticEvaluator
 from .pascal_voc_evaluation import PascalVOCDetectionEvaluator
 from .registry import EVALUATOR

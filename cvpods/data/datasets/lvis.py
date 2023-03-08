@@ -29,6 +29,7 @@ from .lvis_v0_5_categories import LVIS_CATEGORIES as LVIS_V0_5_CATEGORIES
 from .lvis_v1_categories import LVIS_CATEGORIES as LVIS_V1_CATEGORIES
 from .paths_route import _PREDEFINED_SPLITS_LVIS
 
+
 """
 This file contains functions to parse LVIS-format annotations into dicts in "cvpods format".
 """

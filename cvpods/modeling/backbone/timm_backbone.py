@@ -3,8 +3,8 @@
 # Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 from collections import OrderedDict
-
 import timm
+
 from torch import nn
 
 from cvpods.layers import ShapeSpec
