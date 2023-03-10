@@ -220,6 +220,8 @@ _config_dict = dict(
         LOG_INTERVAL=20,
         DUMP_TRAIN=True,
         DUMP_TEST=False,
+        # Save angular update value to storage
+        ANGULAR_UPDATE=False,
         CLEARML=dict(
             ENABLE=False,
             PROJECT_NAME="cvpods",

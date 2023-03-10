@@ -16,8 +16,9 @@ from cvpods.utils import Timer
 
 from ..base_dataset import BaseDataset
 from ..registry import DATASETS
-from .paths_route import _PREDEFINED_SPLITS_IMAGENETLT
 from .imagenet_categories import IMAGENET_CATEGORIES
+from .paths_route import _PREDEFINED_SPLITS_IMAGENETLT
+
 
 """
 This file contains functions to parse ImageNet-format annotations into dicts in "cvpods format".

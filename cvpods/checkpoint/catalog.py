@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 # Copyright (c) Facebook, Inc. and its affiliates.
 # This file has been modified by Megvii ("Megvii Modifications").
 # All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
@@ -110,7 +109,7 @@ class ModelCatalogHandler(HttpsPath):
         logger.info("Catalog entry {} points to {}".format(self.path, catalog_path))
         return megfile.smart_open(catalog_path, mode, **kwargs)
 
-    def is_file(self):
+    def is_file(self, **kwargs):  # kwargs is used for symlink workaround
         catalog_path = ModelCatalog.get(self.path_without_protocol)
         logger.info("Catalog entry {} points to {}".format(self.path, catalog_path))
         return megfile.smart_isfile(catalog_path)
@@ -130,6 +129,6 @@ class Detectron2Path(HttpsPath):
         d2_path = self.DETECTRON2_PREFIX + self.path_without_protocol
         return megfile.smart_open(d2_path, mode=mode, **kwargs)
 
-    def is_file(self):
+    def is_file(self, **kwargs):
         d2_path = self.DETECTRON2_PREFIX + self.path_without_protocol
         return megfile.smart_open(d2_path)

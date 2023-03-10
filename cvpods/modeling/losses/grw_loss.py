@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
+import numpy as np
+
 import torch
 from torch.nn import functional as F
 from torch.nn.modules.loss import _WeightedLoss
-import numpy as np
 
 
 class GRWCrossEntropyLoss(_WeightedLoss):

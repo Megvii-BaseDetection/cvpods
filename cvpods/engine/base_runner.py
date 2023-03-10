@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 # Copyright (c) Facebook, Inc. and its affiliates.
 # This file has been modified by Megvii ("Megvii Modifications").
 # All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
@@ -80,7 +79,7 @@ class RunnerBase:
             try:
                 self.before_train()
                 for self.iter in range(start_iter, max_iter):
-                    self.inner_iter = 0
+                    self.inner_iter = 0  # inner_iter is used for accumulating gradients
                     self.before_step()
                     # by default, a step contains data_loading and model forward,
                     # loss backward is executed in after_step for better expansibility

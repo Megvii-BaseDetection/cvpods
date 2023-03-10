@@ -1,5 +1,4 @@
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All rights reserved.
 # This file has been modified by Megvii ("Megvii Modifications").
 # All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
@@ -104,6 +103,7 @@ def build_optimizer(cfg, model: torch.nn.Module) -> torch.optim.Optimizer:
             "Adam": "AdamBuilder",
             "AdamW": "AdamWBuilder",
             "SGD_GATE_LR_MULTI": "SGDGateLRBuilder",
+            "AngularSGD": "AngularSGDBuilder",
         }
         if name in map_dict:
             name = map_dict[name]

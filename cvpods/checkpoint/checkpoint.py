@@ -108,7 +108,7 @@ class Checkpointer(object):
                 "No checkpoint found. Initializing model from scratch"
             )
             return {}
-        logger.info("Loading checkpoint from {}".format(path))
+        logger.info(f"Loading checkpoint from {path}")
         assert megfile.smart_isfile(path), "Checkpoint {} not found!".format(path)
 
         checkpoint = self._load_file(path)
