@@ -2,7 +2,7 @@
 # Copyright Megvii Inc. All Rights Reserved
 
 # A script to visualize the ERF(effective receptive field).
-# Scaling Up Your Kernels to 31x31: Revisiting Large Kernel Design in CNNs (https://arxiv.org/abs/2203.06717)
+# Scaling Up Your Kernels to 31x31: Revisiting Large Kernel Design in CNNs (https://arxiv.org/abs/2203.06717)  # noqa
 # Github source: https://github.com/DingXiaoH/RepLKNet-pytorch  MIT License
 
 import argparse
@@ -23,11 +23,19 @@ def make_parser():
     parser = argparse.ArgumentParser('Script for visualizing the ERF', add_help=False)
     parser.add_argument('--model', default='resnet50', type=str, help='model name')
     parser.add_argument('--weights', default=None, type=str, help='path to weights file.')
-    parser.add_argument('--pretrained', action="store_true", help='whether to use pretrained weights')
+    parser.add_argument(
+        '--pretrained', action="store_true", help='whether to use pretrained weights'
+    )
     parser.add_argument('--num_images', default=50, type=int, help='num of images to use')
-    parser.add_argument('--name_list', default=["conv1"], nargs='+', type=str, help='layer name of the modules to analyze effective receptive field')
+    parser.add_argument(
+        '--name_list', default=["conv1"], nargs='+', type=str,
+        help='layer name of the modules to analyze effective receptive field'
+    )
     parser.add_argument('--save_path', default='./', type=str, help='directory to save the heatmap')
-    parser.add_argument('--threshold', default=(0.2, 0.3, 0.5, 0.99), nargs='+', type=float, help='thresh holds for get high-contribution area')
+    parser.add_argument(
+        '--threshold', default=(0.2, 0.3, 0.5, 0.99), nargs='+', type=float,
+        help='thresh holds for get high-contribution area'
+    )
     return parser
 
 
@@ -62,11 +70,11 @@ def analyze_erf(layer_name, data, thresh_list=[0.2, 0.3, 0.5, 0.99], save_path='
 
     Args:
         name: name of the layer
-        data: input data 
-        thresh_list: 
+        data: input data
+        thresh_list: list of threshold
         save_path: directory to save the heatmap
     """
-    data = np.log10(data + 1)   # the scores differ in magnitude. take the logarithm for better readability
+    data = np.log10(data + 1)   # the scores differ in magnitude. take the logarithm for better readability  # noqa
     data = data / np.max(data)  # rescale to [0,1] for the comparability among models
     save_name = os.path.join(save_path, 'erf_' + layer_name + '.png')
     plot_erf_img(layer_name, data, save_name)
@@ -83,9 +91,9 @@ def analyze_erf(layer_name, data, thresh_list=[0.2, 0.3, 0.5, 0.99], save_path='
         area_ratio_list.append(area_ratio)
 
     print(f"\nERF analysis of model.{layer_name}:")
-    print("\tThreshold\t"+'\t'.join(map(str, thresh_list)))
-    print("\tArea Ratio\t"+'\t'.join(map(str, np.round(area_ratio_list, 4))))
-    print("\tSide Length\t"+'\t'.join(map(str, side_length_list)))
+    print("\tThreshold\t" + '\t'.join(map(str, thresh_list)))
+    print("\tArea Ratio\t" + '\t'.join(map(str, np.round(area_ratio_list, 4))))
+    print("\tSide Length\t" + '\t'.join(map(str, side_length_list)))
     print(f"Check the the visualized erf of model.{layer_name} at {save_name}")
 
 
@@ -97,7 +105,9 @@ def get_input_grad(model, samples):
     grad_map_list = []
     for feat in FEATURE_LIST:
         feat_size = feat.size()
-        central_point = torch.nn.functional.relu(feat[:, :, feat_size[2] // 2, feat_size[3] // 2]).sum()
+        central_point = torch.nn.functional.relu(
+            feat[:, :, feat_size[2] // 2, feat_size[3] // 2]
+        ).sum()
         grad = torch.autograd.grad(central_point, samples, retain_graph=True)[0]
         grad = torch.nn.functional.relu(grad)
         grad_map = grad.sum((0, 1)).cpu().numpy()
@@ -121,12 +131,12 @@ def visualize_erf(
     """visualize the effective receptive field of specified layers in `layer_names`.
 
     Args:
-        model (nn.Module): 
+        model (nn.Module): torch module to visualize erf.
         layer_names (List[str]): name of model layers to be analyzed.
         dataloader : data provider to analyze the erf.
         num_images (int, optional): total number of images to analyze. Defaults to 10.
         thresh_list (List[float], optional): Defaults to [0.2, 0.3, 0.5, 0.99].
-        save_path (str, optional): path to save the img. Defaults to current dir. 
+        save_path (str, optional): path to save the img. Defaults to current dir.
     """
 
     for name, module in model.named_modules():

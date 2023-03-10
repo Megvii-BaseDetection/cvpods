@@ -212,7 +212,7 @@ class AngularSGDBuilder(OptimizerBuilder):
 
         norm_pg = [
             {'params': [], 'name': f'layer{x}', 'weight_decay': weight_decay, "lr": lr}
-            for x in range(1, 1 + len(match_keys)))
+            for x in range(1, 1 + len(match_keys))
         ]
         other_pg: List[Dict[str, Any]] = []
 

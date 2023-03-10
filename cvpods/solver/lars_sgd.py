@@ -5,7 +5,7 @@ import torch
 from torch import optim
 from torch.optim.optimizer import Optimizer, required
 
-__all__  = ["AngularSGD", "LARS_SGD"]
+__all__  = ["AugularSGD", "LARS_SGD"]
 
 
 class AugularSGD(optim.SGD):

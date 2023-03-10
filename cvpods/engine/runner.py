@@ -27,12 +27,7 @@ from cvpods.modeling.nn_utils.precise_bn import get_bn_modules
 from cvpods.solver import build_lr_scheduler, build_optimizer
 from cvpods.utils import comm
 from cvpods.utils.compat_wrapper import deprecated
-from cvpods.utils.dump.events import (
-    CommonMetricPrinter,
-    JSONWriter,
-    TensorboardXWriter,
-    get_event_storage
-)
+from cvpods.utils.dump.events import CommonMetricPrinter, JSONWriter, TensorboardXWriter
 
 from . import hooks
 from .base_runner import RUNNERS, SimpleRunner
@@ -156,7 +151,7 @@ class DefaultRunner(SimpleRunner):
         self.cfg = cfg
 
         self.register_hooks(self.build_hooks())
-    
+
     def _write_metrics(self, loss_dict, data_time: float, prefix: str = ""):
         super()._write_metrics(loss_dict, data_time, prefix)
         if self.angular_update and comm.is_main_process() and self.iter != 0:
