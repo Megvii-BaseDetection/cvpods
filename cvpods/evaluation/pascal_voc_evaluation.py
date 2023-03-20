@@ -5,7 +5,6 @@
 # All Megvii Modifications are Copyright (C) 2019-2021 Megvii Inc. All rights reserved.
 
 import os
-import tempfile
 import xml.etree.ElementTree as ET
 from collections import OrderedDict, defaultdict
 from functools import lru_cache
@@ -15,7 +14,7 @@ import numpy as np
 
 import torch
 
-from cvpods.utils import comm, create_small_table
+from cvpods.utils import PathManager, comm, create_small_table
 
 from .evaluator import DatasetEvaluator
 from .registry import EVALUATOR
@@ -32,7 +31,7 @@ class PascalVOCDetectionEvaluator(DatasetEvaluator):
     the official API.
     """
 
-    def __init__(self, dataset_name, meta, dump=False):
+    def __init__(self, dataset_name, meta, output_folder=None, dump=False):
         """
         Args:
             dataset_name (str): name of the dataset, e.g., "voc_2007_test".
@@ -42,6 +41,7 @@ class PascalVOCDetectionEvaluator(DatasetEvaluator):
                 will be generated in the working directory.
         """
         self._dump = dump
+        self._output_dir = output_folder
         self._dataset_name = dataset_name
         self._anno_file_template = os.path.join(meta.dirname, "Annotations", "{}.xml")
         self._image_set_path = os.path.join(meta.dirname, "ImageSets", "Main", meta.split + ".txt")
@@ -90,14 +90,15 @@ class PascalVOCDetectionEvaluator(DatasetEvaluator):
             )
         )
 
-        with tempfile.TemporaryDirectory(prefix="pascal_voc_eval_") as dirname:
-            res_file_template = os.path.join(dirname, "{}.txt")
+        if self._output_dir is not None:
+            PathManager.mkdirs(self._output_dir)
+            res_file_template = os.path.join(self._output_dir, "{}.txt")
 
             aps = defaultdict(list)  # iou -> ap per class
             for cls_id, cls_name in enumerate(self._class_names):
                 lines = predictions.get(cls_id, [""])
 
-                with open(res_file_template.format(cls_name), "w") as f:
+                with PathManager.open(res_file_template.format(cls_name), "w") as f:
                     f.write("\n".join(lines))
 
                 for thresh in range(50, 100, 5):

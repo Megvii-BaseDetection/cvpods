@@ -51,7 +51,7 @@ def build_evaluator(cfg, dataset_name, dataset, output_folder=None, dump=False):
         ), "CityscapesEvaluator currently do not work with multiple machines."
         return EVALUATOR.get("CityscapesEvaluator")(dataset_name, meta, dump)
     elif evaluator_type == "pascal_voc":
-        return EVALUATOR.get("PascalVOCDetectionEvaluator")(dataset_name, meta, dump)
+        return EVALUATOR.get("PascalVOCDetectionEvaluator")(dataset_name, meta, output_folder, dump)
     elif evaluator_type == "lvis":
         return EVALUATOR.get("LVISEvaluator")(dataset_name, meta, cfg, True, output_folder, dump)
     elif evaluator_type == "citypersons":
